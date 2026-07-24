@@ -38,6 +38,22 @@ const MainTitle = memo(() => (
   </div>
 ));
 
+const ProfilePhoto = memo(() => (
+  <div className="flex sm:justify-start justify-center mb-4 lg:mb-0" data-aos="fade-right" data-aos-delay="100">
+    <div className="relative group">
+      <div className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-full blur-lg opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:border-white/40">
+        <img
+          src="/Profil.jpeg"
+          alt="Profile"
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </div>
+));
+
 const TechStack = memo(({ tech }) => (
   <div className="px-4 py-2 hidden sm:block rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors">
     {tech}
@@ -173,6 +189,7 @@ const Home = () => {
                 data-aos="fade-right"
                 data-aos-delay="200">
                 <div className="space-y-4 sm:space-y-6">
+                  <ProfilePhoto />
                   <StatusBadge />
                   <MainTitle />
 
