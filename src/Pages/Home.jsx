@@ -46,7 +46,7 @@ const ProfilePhoto = memo(() => (
         <img
           src="/Profil.jpeg"
           alt="Profile"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-[center_40%]"
           loading="lazy"
         />
       </div>
