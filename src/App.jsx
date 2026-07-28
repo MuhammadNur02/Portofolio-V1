@@ -18,6 +18,7 @@ const ContactPage = lazy(() => import("./Pages/Contact"));
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
 const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
+const SeedCertificates = lazy(() => import("./Pages/SeedCertificates"));
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
   return (
@@ -90,6 +91,16 @@ function App() {
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
+            }
+          />
+
+          {/* SEED */}
+          <Route
+            path="/seed"
+            element={
+              <Suspense fallback={null}>
+                <SeedCertificates />
+              </Suspense>
             }
           />
 

@@ -123,7 +123,7 @@ const Home = () => {
 
   useEffect(() => {
     setIsLoaded(true);
-    return () => setIsLoaded(false);
+    return () => setIsLoaded(false); 
   }, []);
 
   const handleTyping = useCallback(() => {
