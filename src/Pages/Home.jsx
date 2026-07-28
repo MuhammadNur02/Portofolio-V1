@@ -24,7 +24,7 @@ const MainTitle = memo(() => (
       <span className="relative inline-block">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-          Frontend
+          Game UI
         </span>
       </span>
       <br />
@@ -92,7 +92,7 @@ const SocialLink = memo(({ icon: Icon, link, label }) => (
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
-const WORDS = ["Frontend Developer", "Engine UI Specialist"];
+const WORDS = ["Game UI Developer", "Engine UI Specialist"];
 const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/MuhammadNur02", label: "GitHub Profile" },
@@ -156,12 +156,12 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>Muhammad Nurrahman Juliansyah — Frontend Web Developer</title>
-        <meta name="description" content="Website resmi Muhammad Nurrahman Juliansyah, Front-End Web Developer. Saya berfokus pada penciptaan pengalaman digital yang menarik dan selalu berupaya memberikan solusi terbaik dalam setiap proyek yang saya kerjakan." />
+        <title>Muhammad Nurrahman Juliansyah — Game UI Developer</title>
+        <meta name="description" content="Website resmi Muhammad Nurrahman Juliansyah, Game UI Developer. Saya berfokus pada penciptaan pengalaman digital yang menarik dan selalu berupaya memberikan solusi terbaik dalam setiap proyek yang saya kerjakan." />
      <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://portofolio-v1-one-gamma.vercel.app/" />
-        <meta property="og:title" content="Muhammad Nurrahman Juliansyah — Frontend Web Developer" />
-     <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, Front-End Web Developer." />
+        <meta property="og:title" content="Muhammad Nurrahman Juliansyah — Game UI Developer" />
+     <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, Game UI Developer." />
         <meta property="og:url" content="https://portofolio-v1-one-gamma.vercel.app/" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{`
@@ -169,7 +169,7 @@ const Home = () => {
             "@context": "https://schema.org",
             "@type": "Person",
             "name": "Muhammad Nurrahman Juliansyah",
-            "jobTitle": "Frontend Developer",
+            "jobTitle": "Game UI Developer",
             "url": "https://portofolio-v1-one-gamma.vercel.app/",
             "sameAs": [
               "https://github.com/MuhammadNur02",
