@@ -189,7 +189,6 @@ const Home = () => {
                 data-aos="fade-right"
                 data-aos-delay="200">
                 <div className="space-y-4 sm:space-y-6">
-                  <ProfilePhoto />
                   <StatusBadge />
                   <MainTitle />
 
