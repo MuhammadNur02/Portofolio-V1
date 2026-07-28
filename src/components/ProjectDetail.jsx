@@ -156,7 +156,7 @@ const ProjectDetails = () => {
     );
   }
 
-  const projectUrl = `https://ekizr.com/project/${toSlug(project.Title)}`;
+  const projectUrl = `https://portofolio-v1-one-gamma.vercel.app/project/${toSlug(project.Title)}`;
 
   return (
     <>
@@ -193,7 +193,7 @@ const ProjectDetails = () => {
             "author": {
               "@type": "Person",
               "name": "Muhammad Nurrahman Juliansyah",
-              "url": "https://ekizr.com"
+              "url": "https://portofolio-v1-one-gamma.vercel.app/"
             }
           }
         `}</script>
