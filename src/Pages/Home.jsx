@@ -92,11 +92,11 @@ const SocialLink = memo(({ icon: Icon, link, label }) => (
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
-const WORDS = ["Frontend Developer", "Tech Enthusiast"];
+const WORDS = ["Frontend Developer", "Engine UI Specialist"];
 const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/MuhammadNur02", label: "GitHub Profile" },
-  { icon: Linkedin, link: "https://www.linkedin.com/in/ekizr/", label: "LinkedIn Profile" },
+  { icon: Linkedin, link: "https://www.linkedin.com/in/MuchammadNur/", label: "LinkedIn Profile" },
   { icon: Instagram, link: "https://www.instagram.com/rianz_yan/", label: "Instagram Profile" }
 ];
 
@@ -159,10 +159,10 @@ const Home = () => {
         <title>Muhammad Nurrahman Juliansyah — Frontend Web Developer</title>
         <meta name="description" content="Website resmi Muhammad Nurrahman Juliansyah, Front-End Web Developer. Saya berfokus pada penciptaan pengalaman digital yang menarik dan selalu berupaya memberikan solusi terbaik dalam setiap proyek yang saya kerjakan." />
      <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://ekizr.com" />
+        <link rel="canonical" href="https://portofolio-v1-one-gamma.vercel.app/" />
         <meta property="og:title" content="Muhammad Nurrahman Juliansyah — Frontend Web Developer" />
      <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, Front-End Web Developer." />
-        <meta property="og:url" content="https://ekizr.com" />
+        <meta property="og:url" content="https://portofolio-v1-one-gamma.vercel.app/" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{`
           {
@@ -170,10 +170,10 @@ const Home = () => {
             "@type": "Person",
             "name": "Muhammad Nurrahman Juliansyah",
             "jobTitle": "Frontend Developer",
-            "url": "https://ekizr.com",
+            "url": "https://portofolio-v1-one-gamma.vercel.app/",
             "sameAs": [
               "https://github.com/MuhammadNur02",
-              "https://www.linkedin.com/in/ekizr/",
+              "https://www.linkedin.com/in/MuchammadNur/",
               "https://www.instagram.com/rianz_yan/"
             ]
           }
