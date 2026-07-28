@@ -167,7 +167,7 @@ const ProjectDetails = () => {
           content={
             project.Description
               ? project.Description.slice(0, 155)
-            : `Project ${project.Title} oleh Muhammad Nurrahman Juliansyah — Frontend Web Developer.`
+            : `Project ${project.Title} oleh Muhammad Nurrahman Juliansyah — Game UI Developer.`
           }
         />
         <meta name="robots" content="index, follow" />
