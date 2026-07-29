@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, memo } from "react"
+import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { Helmet } from "react-helmet-async"
-import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles } from "lucide-react"
+import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles, Gamepad2 } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import SpaceGame from "../components/SpaceGame"
 
 const StatusBadge = memo(() => (
   <div className="inline-block animate-float lg:mx-0" data-aos="zoom-in" data-aos-delay="400">
@@ -42,9 +43,6 @@ const ProfilePhoto = memo(() => (
   <div className="flex sm:justify-start justify-center mb-4 lg:mb-0" data-aos="fade-right" data-aos-delay="100">
     <div className="relative group" id="home-profile-photo">
       <div className="absolute -inset-3 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-full blur-xl opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
-      {/* Blackhole event horizon aura ring */}
-      <div className="absolute -inset-4 rounded-full border-2 border-cyan-400/30 blur-sm opacity-60 animate-pulse"></div>
-      <div className="absolute -inset-5 rounded-full border border-white/20 blur-md opacity-30 animate-pulse animation-delay-2000"></div>
       <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-cyan-300/50 shadow-xl shadow-cyan-500/20 transition-all duration-500 group-hover:scale-110 group-hover:border-white/40">
         <img
           src="/Profil.jpeg"
@@ -110,6 +108,7 @@ const Home = () => {
   const [charIndex, setCharIndex] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   useEffect(() => {
     const initAOS = () => {
@@ -218,9 +217,24 @@ const Home = () => {
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="flex flex-row gap-3 w-full justify-start" data-aos="fade-up" data-aos-delay="1400">
+                  <div className="flex flex-row gap-3 w-full justify-start flex-wrap" data-aos="fade-up" data-aos-delay="1400">
                     <CTAButton href="#Portofolio" text="Projects" icon={ExternalLink} />
                     <CTAButton href="#Contact" text="Contact" icon={Mail} />
+                    <button
+                      onClick={() => setIsPlaying(true)}
+                      className="group relative w-[160px]"
+                    >
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#ef4444] rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700"></div>
+                      <div className="relative h-11 bg-[#030014] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
+                        <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#f59e0b]/20 to-[#ef4444]/20"></div>
+                        <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
+                          <span className="bg-gradient-to-r from-amber-200 to-orange-300 bg-clip-text text-transparent font-medium z-10">
+                            Play Game
+                          </span>
+                          <Gamepad2 className="w-4 h-4 text-amber-300 group-hover:rotate-12 transform transition-all duration-300 z-10" />
+                        </span>
+                      </div>
+                    </button>
                   </div>
 
                   {/* Social Links */}
@@ -232,40 +246,58 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* Right Column - WebM Video */}
-              <div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2  mt-5 sm:mt-0"
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => setIsHovering(false)}
-                data-aos="fade-left"
-                data-aos-delay="600">
-                <div className="relative w-full opacity-90">
-                  <div className={`absolute inset-0 bg-gradient-to-r from-[#00d2ff]/10 to-[#3b82f6]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
-                    isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
-                  }`}>
-                  </div>
-
-                  <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
-                    isHovering ? "scale-105" : "scale-100"
-                  }`}>
-                    <img
-                      src="Animation1.gif"
-                      alt="Developer Animation"
-                      className={`w-full h-full object-contain transition-all duration-500 ${
-                        isHovering 
-                          ? "scale-[95%] sm:scale-[90%] md:scale-[90%] lg:scale-[90%] rotate-2" 
-                          : "scale-[90%] sm:scale-[80%] md:scale-[80%] lg:scale-[80%]"
-                      }`}
-                    />
-                  </div>
-
-                  <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
-                    isHovering ? "opacity-50" : "opacity-20"
-                  }`}>
-                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
-                      isHovering ? "scale-110" : "scale-100"
+              {/* Right Column - Toggles between GIF illustration and SpaceGame */}
+              <div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2  mt-5 sm:mt-0">
+                {/* GIF Illustration (visible when NOT playing) */}
+                <div
+                  onMouseEnter={() => !isPlaying && setIsHovering(true)}
+                  onMouseLeave={() => !isPlaying && setIsHovering(false)}
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
+                    isPlaying
+                      ? "opacity-0 translate-x-20 scale-95 pointer-events-none"
+                      : "opacity-100 translate-x-0 scale-100"
+                  }`}
+                >
+                  <div className="relative w-full opacity-90">
+                    <div className={`absolute inset-0 bg-gradient-to-r from-[#00d2ff]/10 to-[#3b82f6]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
+                      isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
                     }`}>
                     </div>
+
+                    <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
+                      isHovering ? "scale-105" : "scale-100"
+                    }`}>
+                      <img
+                        src="Animation1.gif"
+                        alt="Developer Animation"
+                        className={`w-full h-full object-contain transition-all duration-500 ${
+                          isHovering
+                            ? "scale-[95%] sm:scale-[90%] md:scale-[90%] lg:scale-[90%] rotate-2"
+                            : "scale-[90%] sm:scale-[80%] md:scale-[80%] lg:scale-[80%]"
+                        }`}
+                      />
+                    </div>
+
+                    <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
+                      isHovering ? "opacity-50" : "opacity-20"
+                    }`}>
+                      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-cyan-500/10 to-blue-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
+                        isHovering ? "scale-110" : "scale-100"
+                      }`}>
+                      </div>
+                    </div>
                   </div>
+                </div>
+
+                {/* Space Game (visible when playing) */}
+                <div
+                  className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                    isPlaying
+                      ? "opacity-100 translate-x-0 scale-100"
+                      : "opacity-0 -translate-x-20 scale-95 pointer-events-none"
+                  }`}
+                >
+                  <SpaceGame onClose={() => setIsPlaying(false)} />
                 </div>
               </div>
             </div>
