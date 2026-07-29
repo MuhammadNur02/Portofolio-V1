@@ -1,30 +1,31 @@
-# TASK: Color Scheme Change + Galaxy Background + Tentacle Canvas
+# Implementation Todo: Mini Game & Visual Adjustments
 
-## Steps
+## Step 1: Create SpaceGame.jsx
+- [x] Create new component `src/components/SpaceGame.jsx`
+  - Canvas game engine with plane, meteors, bullets, particles ✅
+  - Mouse/touch controls ✅
+  - Game over logic with Play Again / Close buttons ✅
 
-### PHASE 1: Color Scheme Changes ✅
-- [x] 1. src/index.css - Update scrollbar colors to cyan/blue
-- [x] 2. src/components/Background.jsx - Update blob colors to blue/cyan + add galaxy stars
-- [x] 3. src/Pages/Home.jsx - Replace all purple with blue/cyan + blackhole aura
-- [x] 4. src/Pages/About.jsx - Replace all purple with blue/cyan
-- [x] 5. src/components/Navbar.jsx - Update gradient colors
-- [x] 6. src/Pages/Portofolio.jsx - Update all purple references
-- [x] 7. src/components/CardProject.jsx - Update purple to cyan
-- [x] 8. src/Pages/Contact.jsx - Update all purple references
-- [x] 9. src/components/SocialLinks.jsx - Minor updates
-- [x] 10. src/components/ProjectDetail.jsx - Update all purple gradients
-- [x] 11. src/Pages/WelcomeScreen.jsx - Update purple to blue
-- [x] 12. src/components/LoadingScreen.jsx - Update gradient colors
-- [x] 13. src/components/Commentar.jsx - Update indigo/purple colors
-- [x] 14. src/components/PresenceWidget.jsx - Update default type colors
+## Step 2: Update Home.jsx — Add Play Game Button & Game Toggle
+- [x] Add "Play Game" button next to Contact button ✅
+- [x] Add `isPlaying` state ✅
+- [x] Animate GIF illustration out / game in when playing ✅
+- [x] Animate game out / GIF illustration in when closed ✅
+- [x] Remove blackhole aura rings from ProfilePhoto ✅
 
-### PHASE 2: Galaxy & Blackhole Background ✅
-- [x] 15. src/components/Background.jsx - Add twinkling stars + blackhole suction effect
+## Step 3: Update Background.jsx — Remove Blackhole Suction
+- [x] Remove blackhole center tracking (`findProfilePhoto`) ✅
+- [x] Remove velocity suction logic on stars ✅
+- [x] Keep simple star twinkle + gentle floating motion ✅
+- [x] Keep galaxy ambient glow (centered on canvas center) ✅
 
-### PHASE 3: Interactive Tentacle Canvas ✅
-- [x] 16. Create src/components/TentacleCanvas.jsx
-- [x] 17. src/App.jsx - Add TentacleCanvas component
+## Step 4: Update TentacleCanvas.jsx — Scroll-Based Hide
+- [x] Add scroll listener to detect when past Portfolio section ✅
+- [x] Fade out tentacles (opacity) when scrolled past ✅
+- [x] Fade back in when scrolled back up ✅
+- [x] Use scroll position check + smooth opacity transition ✅
 
-### PHASE 4: Final ✅
-- [x] 18. Run build to verify - ✅ Build succeeded (3023 modules, 0 errors)
-
+## Step 5: Verify & Test
+- [ ] Run build/dev server to verify no errors
+- [ ] Ensure no layout shifts
+- [ ] Verify all changes work together

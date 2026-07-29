@@ -36,23 +36,7 @@ const AnimatedBackground = () => {
           baseAlpha: Math.random() * 0.8 + 0.2,
           twinkleSpeed: Math.random() * 0.02 + 0.005,
           twinklePhase: Math.random() * Math.PI * 2,
-          // For blackhole suction effect
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-        });
-      }
-    };
-
-    // Profile photo center position (default center if not found)
-    let blackholeX = window.innerWidth / 2;
-    let blackholeY = window.innerHeight / 2;
-
-    const findProfilePhoto = () => {
-      const profileImgs = document.querySelectorAll('img[alt="Profile"]');
-      if (profileImgs.length > 0) {
-        const rect = profileImgs[0].getBoundingClientRect();
-        blackholeX = rect.left + rect.width / 2;
-        blackholeY = rect.top + rect.height / 2;
+         });
       }
     };
 
@@ -64,19 +48,16 @@ const AnimatedBackground = () => {
     const draw = () => {
       time++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Find blackhole center periodically
-      if (time % 30 === 0) {
-        findProfilePhoto();
-      }
 
-      // Draw subtle galaxy background
+      // Draw subtle center galaxy ambient glow
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
       const gradient = ctx.createRadialGradient(
-        blackholeX, blackholeY, 0,
-        blackholeX, blackholeY, Math.max(canvas.width, canvas.height) * 0.8
+        cx, cy, 0,
+        cx, cy, Math.max(canvas.width, canvas.height) * 0.6
       );
       gradient.addColorStop(0, "rgba(6, 182, 212, 0.03)");
-      gradient.addColorStop(0.3, "rgba(59, 130, 246, 0.02)");
+      gradient.addColorStop(0.3, "rgba(59, 130, 246, 0.015)");
       gradient.addColorStop(0.6, "rgba(0, 0, 0, 0)");
       gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = gradient;
@@ -86,38 +67,10 @@ const AnimatedBackground = () => {
       stars.forEach((star) => {
         const twinkle = Math.sin(time * star.twinkleSpeed + star.twinklePhase);
         star.alpha = star.baseAlpha + twinkle * 0.3;
-        
-        // Suction effect toward blackhole
-        const dx = blackholeX - star.x;
-        const dy = blackholeY - star.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = Math.max(canvas.width, canvas.height) * 0.6;
-        
-        if (dist < maxDist && dist > 10) {
-          const force = (1 - dist / maxDist) * 0.3;
-          star.vx += (dx / dist) * force * 0.02;
-          star.vy += (dy / dist) * force * 0.02;
-          
-          // Damping
-          star.vx *= 0.998;
-          star.vy *= 0.998;
-        } else {
-          // Random wander for distant stars
-          star.vx += (Math.random() - 0.5) * 0.01;
-          star.vy += (Math.random() - 0.5) * 0.01;
-          star.vx *= 0.99;
-          star.vy *= 0.99;
-        }
 
-        // Clamp velocity
-        const speed = Math.sqrt(star.vx * star.vx + star.vy * star.vy);
-        if (speed > 1) {
-          star.vx = (star.vx / speed) * 1;
-          star.vy = (star.vy / speed) * 1;
-        }
-
-        star.x += star.vx;
-        star.y += star.vy;
+        // Gentle floating motion (no suction)
+        star.x += Math.sin(time * 0.001 + star.twinklePhase) * 0.08;
+        star.y += Math.cos(time * 0.001 + star.twinklePhase * 1.3) * 0.08;
 
         // Wrap around edges
         if (star.x < 0) star.x = canvas.width;
@@ -129,9 +82,8 @@ const AnimatedBackground = () => {
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         
-        // Star color - white/blue tint
-        const blueTint = Math.min(1, dist / maxDist);
-        ctx.fillStyle = `rgba(${200 + 55 * (1 - blueTint)}, ${220 + 35 * (1 - blueTint)}, 255, ${star.alpha})`;
+        // Star color - white with slight blue tint
+        ctx.fillStyle = `rgba(220, 230, 255, ${star.alpha})`;
         ctx.fill();
 
         // Glow for larger/bright stars

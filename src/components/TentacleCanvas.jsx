@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const TentacleCanvas = () => {
   const canvasRef = useRef(null);
@@ -10,7 +10,9 @@ const TentacleCanvas = () => {
   const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
   const animationFrameRef = useRef(null);
   const timeRef = useRef(0);
-
+  const visibleRef = useRef(true);
+  const targetOpacityRef = useRef(1);
+ 
   // --- CONFIGURATION ---
   const NUM_TENTACLES = 16;
   const TENTACLE_LENGTH = 240;
@@ -113,9 +115,26 @@ const TentacleCanvas = () => {
       }
     };
 
+    // ---- SCROLL VISIBILITY ----
+    const checkScrollVisibility = () => {
+      const portfolioSection = document.querySelector("#Portofolio");
+      if (portfolioSection) {
+        const rect = portfolioSection.getBoundingClientRect();
+        // Hide tentacles if portfolio section top is above the viewport bottom (i.e., scrolled into view)
+        const shouldHide = rect.top < window.innerHeight - 100;
+        targetOpacityRef.current = shouldHide ? 0 : 1;
+      }
+    };
+
     // ---- DRAW ----
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
+
+      // Smooth opacity transition
+      const currentOpacity = parseFloat(ctx.globalAlpha) || 1;
+      const targetOpacity = targetOpacityRef.current;
+      const newOpacity = currentOpacity + (targetOpacity - currentOpacity) * 0.06;
+      ctx.globalAlpha = Math.max(0, Math.min(1, newOpacity));
 
       const tentacles = tentaclesRef.current;
 
@@ -243,6 +262,11 @@ const TentacleCanvas = () => {
     // ---- EVENTS ----
     resize();
     update();
+    checkScrollVisibility();
+
+    const handleScroll = () => {
+      checkScrollVisibility();
+    };
 
     const handleMouseMove = (e) => {
       mouseRef.current.x = e.clientX;
@@ -290,6 +314,7 @@ const TentacleCanvas = () => {
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     document.addEventListener("touchmove", handleTouchMove, { passive: false });
     document.addEventListener("touchstart", handleTouchStart, { passive: true });
     document.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -300,6 +325,7 @@ const TentacleCanvas = () => {
       clearTimeout(mouseTimeoutRef.current);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
