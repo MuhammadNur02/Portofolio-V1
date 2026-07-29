@@ -9,12 +9,12 @@ const Comment = memo(({ comment, formatDate, index, isPinned = false }) => (
     <div 
         className={`px-4 pt-4 pb-2 rounded-xl border transition-all group hover:shadow-lg hover:-translate-y-0.5 ${
             isPinned 
-                ? 'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30 hover:bg-gradient-to-r hover:from-indigo-500/15 hover:to-purple-500/15' 
+                ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-cyan-500/30 hover:bg-gradient-to-r hover:from-cyan-500/15 hover:to-blue-500/15' 
                 : 'bg-white/5 border-white/10 hover:bg-white/10'
         }`}
     >
         {isPinned && (
-            <div className="flex items-center gap-2 mb-3 text-indigo-400">
+            <div className="flex items-center gap-2 mb-3 text-cyan-400">
                 <Pin className="w-4 h-4" />
                 <span className="text-xs font-medium uppercase tracking-wide">Pinned Comment</span>
             </div>
@@ -25,13 +25,13 @@ const Comment = memo(({ comment, formatDate, index, isPinned = false }) => (
                     src={comment.profile_image}
                     alt={`${comment.user_name}'s profile`}
                     className={`w-10 h-10 rounded-full object-cover border-2 flex-shrink-0  ${
-                        isPinned ? 'border-indigo-500/50' : 'border-indigo-500/30'
+                        isPinned ? 'border-cyan-500/50' : 'border-cyan-500/30'
                     }`}
                     loading="lazy"
                 />
             ) : (
-                <div className={`p-2 rounded-full text-indigo-400 group-hover:bg-indigo-500/30 transition-colors ${
-                    isPinned ? 'bg-indigo-500/30' : 'bg-indigo-500/20'
+                <div className={`p-2 rounded-full text-cyan-400 group-hover:bg-cyan-500/30 transition-colors ${
+                    isPinned ? 'bg-cyan-500/30' : 'bg-cyan-500/20'
                 }`}>
                     <UserCircle2 className="w-5 h-5" />
                 </div>
@@ -40,12 +40,12 @@ const Comment = memo(({ comment, formatDate, index, isPinned = false }) => (
                 <div className="flex items-center justify-between gap-4 mb-2">
                     <div className="flex items-center gap-2">
                         <h4 className={`font-medium truncate ${
-                            isPinned ? 'text-indigo-200' : 'text-white'
+                            isPinned ? 'text-cyan-200' : 'text-white'
                         }`}>
                             {comment.user_name}
                         </h4>
                         {isPinned && (
-                            <span className="px-2 py-0.5 text-xs bg-indigo-500/20 text-indigo-300 rounded-full">
+                            <span className="px-2 py-0.5 text-xs bg-cyan-500/20 text-cyan-300 rounded-full">
                                 Admin
                             </span>
                         )}
@@ -128,7 +128,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
                     onChange={(e) => setUserName(e.target.value)}
                      maxLength={15}
                     placeholder="Enter your name"
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                     required
                 />
             </div>
@@ -144,7 +144,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
 
                     onChange={handleTextareaChange}
                     placeholder="Write your message here..."
-                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[120px]"
+                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none min-h-[120px]"
                     required
                 />
             </div>
@@ -159,7 +159,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
                             <img
                                 src={imagePreview}
                                 alt="Profile preview"
-                                className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/50"
+                                className="w-16 h-16 rounded-full object-cover border-2 border-cyan-500/50"
                             />
                             <button
                                 type="button"
@@ -186,7 +186,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-all border border-dashed border-indigo-500/50 hover:border-indigo-500 group"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-all border border-dashed border-cyan-500/50 hover:border-cyan-500 group"
                             >
                                 <ImagePlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                 <span>Choose Profile Photo</span>
@@ -203,7 +203,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
                 type="submit"
                 disabled={isSubmitting}
                 data-aos="fade-up" data-aos-duration="1000"
-                className="relative w-full h-12 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-xl font-medium text-white overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                className="relative w-full h-12 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-xl font-medium text-white overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-12 group-hover:translate-y-0 transition-transform duration-300" />
                 <div className="relative flex items-center justify-center gap-2">
@@ -380,11 +380,11 @@ const Komentar = () => {
         <div className="w-full bg-gradient-to-b from-white/10 to-white/5 rounded-2xl  backdrop-blur-xl shadow-xl" data-aos="fade-up" data-aos-duration="1000">
             <div className="p-6 border-b border-white/10" data-aos="fade-down" data-aos-duration="800">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-indigo-500/20">
-                        <MessageCircle className="w-6 h-6 text-indigo-400" />
+                    <div className="p-2 rounded-xl bg-cyan-500/20">
+                        <MessageCircle className="w-6 h-6 text-cyan-400" />
                     </div>
                     <h3 className="text-xl font-semibold text-white">
-                        Comments <span className="text-indigo-400">({totalComments})</span>
+                        Comments <span className="text-cyan-400">({totalComments})</span>
                     </h3>
                 </div>
             </div>
@@ -416,7 +416,7 @@ const Komentar = () => {
                     {/* Regular Comments */}
                     {comments.length === 0 && !pinnedComment ? (
                         <div className="text-center py-8" data-aos="fade-in">
-                            <UserCircle2 className="w-12 h-12 text-indigo-400 mx-auto mb-3 opacity-50" />
+                            <UserCircle2 className="w-12 h-12 text-cyan-400 mx-auto mb-3 opacity-50" />
                             <p className="text-gray-400">No comments yet. Start the conversation!</p>
                         </div>
                     ) : (
@@ -441,11 +441,11 @@ const Komentar = () => {
                     border-radius: 6px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(99, 102, 241, 0.5);
+                    background: rgba(6, 182, 212, 0.5);
                     border-radius: 6px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(99, 102, 241, 0.7);
+                    background: rgba(6, 182, 212, 0.7);
                 }
             `}</style>
         </div>
