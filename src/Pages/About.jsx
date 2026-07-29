@@ -30,11 +30,11 @@ const Header = memo(() => (
 const ProfileImage = memo(() => (
   <div className="flex justify-end items-center sm:p-12 sm:py-0 sm:pb-0 p-0 py-2 pb-2">
     <div 
-      className="relative group" 
-      data-aos="fade-up"
-      data-aos-duration="1000"
-      id="about-profile-photo"
-    >
+  className="relative z-10 group" 
+  data-aos="fade-up"
+  data-aos-duration="1000"
+  id="about-profile-photo"
+>
       {/* Optimized gradient backgrounds with reduced complexity for mobile */}
       <div className="absolute -inset-6 opacity-[25%] z-0 hidden sm:block">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 rounded-full blur-2xl animate-spin-slower" />
@@ -205,11 +205,11 @@ const AboutPage = () => {
 
   return (
     <div
-      className="h-auto pb-[10%] text-white overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%] mt-10 sm-mt-0" 
-      id="About"
-      itemScope
-      itemType="https://schema.org/Person"
-    >
+  className="relative z-10 h-auto pb-[10%] text-white overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%] mt-10 sm-mt-0" 
+  id="About"
+  itemScope
+  itemType="https://schema.org/Person"
+>
       <Header />
 
       <div className="w-full mx-auto pt-8 sm:pt-12 relative">
@@ -234,13 +234,15 @@ const AboutPage = () => {
             </h2>
 
             {/* --- DESKRIPSI TENTANG SAYA (DI ATAS QUOTE) --- */}
-            <p 
-              className="text-gray-300 text-sm sm:text-base leading-relaxed text-center lg:text-left"
-              data-aos="fade-up"
-              data-aos-duration="1500"
-            >
-              I am a Game UI Developer and Web Designer dedicated to crafting intuitive, visually immersive user interfaces for players. Passionate about blending aesthetics with functional interactive design, I transform complex game systems into seamless player experiences.
-            </p>
+            <div 
+  className="bg-gray-900/40 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-white/10 shadow-xl"
+  data-aos="fade-up"
+  data-aos-duration="1500"
+>
+  <p className="text-gray-300 text-sm sm:text-base leading-relaxed text-center lg:text-left">
+    I am a Game UI Developer and Web Designer dedicated to crafting intuitive, visually immersive user interfaces for players. Passionate about blending aesthetics with functional interactive design, I transform complex game systems into seamless player experiences.
+  </p>
+</div>
 
             {/* Quote Section */}
             <div 
