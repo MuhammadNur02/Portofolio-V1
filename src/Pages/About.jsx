@@ -238,7 +238,7 @@ const AboutPage = () => {
               data-aos="fade-up"
               data-aos-duration="1500"
             >
-              Saya seorang Web Developer & UI/UX Designer yang berfokus pada pembuatan antarmuka yang intuitif serta pengalaman digital yang responsif. Berbekal minat kuat pada teknologi web modern dan game development, saya selalu berusaha menggabungkan estetika visual dengan fungsi aplikasi yang optimal.
+              I am a Game UI Developer and Web Designer dedicated to crafting intuitive, visually immersive user interfaces for players. Passionate about blending aesthetics with functional interactive design, I transform complex game systems into seamless player experiences.
             </p>
 
             {/* Quote Section */}
