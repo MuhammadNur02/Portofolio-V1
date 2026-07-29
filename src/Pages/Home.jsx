@@ -187,7 +187,7 @@ const Home = () => {
           <div className="container mx-auto min-h-screen">
             <div className="flex flex-col lg:flex-row items-center justify-center h-screen md:justify-between gap-0 sm:gap-12 lg:gap-20">
               {/* Left Column */}
-              <div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0"
+              <div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0 relative z-20"
                 data-aos="fade-right"
                 data-aos-delay="200">
                 <div className="space-y-4 sm:space-y-6">
@@ -220,21 +220,21 @@ const Home = () => {
                   <div className="flex flex-row gap-3 w-full justify-start flex-wrap" data-aos="fade-up" data-aos-delay="1400">
                     <CTAButton href="#Portofolio" text="Projects" icon={ExternalLink} />
                     <CTAButton href="#Contact" text="Contact" icon={Mail} />
-                    <button
-                      onClick={() => setIsPlaying(true)}
-                      className="group relative w-[160px]"
-                    >
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#ef4444] rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700"></div>
-                      <div className="relative h-11 bg-[#030014] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
-                        <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#f59e0b]/20 to-[#ef4444]/20"></div>
-                        <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
-                          <span className="bg-gradient-to-r from-amber-200 to-orange-300 bg-clip-text text-transparent font-medium z-10">
-                            Play Game
-                          </span>
-                          <Gamepad2 className="w-4 h-4 text-amber-300 group-hover:rotate-12 transform transition-all duration-300 z-10" />
-                        </span>
-                      </div>
-                    </button>
+<button
+  onClick={() => setIsPlaying(!isPlaying)}
+  className="group relative w-[160px] z-30"
+>
+  <div className={`absolute -inset-0.5 bg-gradient-to-r ${isPlaying ? 'from-red-500 to-rose-600' : 'from-[#f59e0b] to-[#ef4444]'} rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700`}></div>
+  <div className="relative h-11 bg-[#030014] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
+    <div className={`absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r ${isPlaying ? 'from-red-500/20 to-rose-600/20' : 'from-[#f59e0b]/20 to-[#ef4444]/20'}`}></div>
+    <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
+      <span className={`bg-gradient-to-r ${isPlaying ? 'from-red-200 to-rose-300' : 'from-amber-200 to-orange-300'} bg-clip-text text-transparent font-medium z-10`}>
+        {isPlaying ? "Stop Game" : "Play Game"}
+      </span>
+      <Gamepad2 className={`w-4 h-4 ${isPlaying ? 'text-red-400' : 'text-amber-300'} group-hover:rotate-12 transform transition-all duration-300 z-10`} />
+    </span>
+  </div>
+</button>
                   </div>
 
                   {/* Social Links */}
@@ -271,10 +271,10 @@ const Home = () => {
                         src="Animation1.gif"
                         alt="Developer Animation"
                         className={`w-full h-full object-contain transition-all duration-500 ${
-                          isHovering
-                            ? "scale-[95%] sm:scale-[90%] md:scale-[90%] lg:scale-[90%] rotate-2"
-                            : "scale-[90%] sm:scale-[80%] md:scale-[80%] lg:scale-[80%]"
-                        }`}
+  isHovering
+    ? "scale-[75%] sm:scale-[85%] md:scale-[90%] lg:scale-[90%] rotate-2"
+    : "scale-[65%] sm:scale-[75%] md:scale-[80%] lg:scale-[80%]"
+}`}
                       />
                     </div>
 
@@ -289,21 +289,17 @@ const Home = () => {
                   </div>
                 </div>
 
-                {/* Space Game (visible when playing) */}
-                <div
-                  className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                    isPlaying
-                      ? "opacity-100 translate-x-0 scale-100"
-                      : "opacity-0 -translate-x-20 scale-95 pointer-events-none"
-                  }`}
-                >
-                  <SpaceGame onClose={() => setIsPlaying(false)} />
-                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      {/* SpaceGame Fullscreen */}
+{isPlaying && (
+  <div className="fixed inset-0 w-screen h-screen z-10 pointer-events-auto">
+    <SpaceGame onClose={() => setIsPlaying(false)} />
+  </div>
+)}
     </>
   );
 };

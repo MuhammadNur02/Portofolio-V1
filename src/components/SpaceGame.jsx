@@ -78,7 +78,7 @@ const SpaceGame = ({ onClose }) => {
   const fireBullet = useCallback(() => {
     const gs = gameStateRef.current;
     const { plane } = gs;
-    const angle = -Math.PI / 6;
+    const angle = -Math.PI*(2 / 3);
     const bx = plane.x + Math.cos(angle) * GAME_CONFIG.planeSize * 0.8;
     const by = plane.y + Math.sin(angle) * GAME_CONFIG.planeSize * 0.8;
     gs.bullets.push({ x: bx, y: by, vx: Math.cos(angle) * GAME_CONFIG.bulletSpeed, vy: Math.sin(angle) * GAME_CONFIG.bulletSpeed, life: 0, maxLife: 60, size: 3 });
@@ -115,7 +115,7 @@ const SpaceGame = ({ onClose }) => {
     plane.y += (plane.targetY - plane.y) * 0.12;
     plane.x = Math.max(20, Math.min(w - 20, plane.x));
     plane.y = Math.max(20, Math.min(h - 20, plane.y));
-    const baseAngle = -Math.PI / 6;
+    const baseAngle = -Math.PI * (2 / 3);
     const rollTarget = Math.atan2(plane.targetY - plane.y, plane.targetX - plane.x) * 0.3;
     plane.roll += (rollTarget - plane.roll) * 0.1;
     plane.angle = baseAngle + plane.roll;
@@ -311,7 +311,6 @@ const SpaceGame = ({ onClose }) => {
       gs.plane.targetY = e.clientY - rect.top;
     };
     const handleTouchMove = (e) => {
-      e.preventDefault();
       const touch = e.touches[0];
       if (!touch) return;
       const rect = container.getBoundingClientRect();
@@ -328,7 +327,7 @@ const SpaceGame = ({ onClose }) => {
       gs.plane.targetY = touch.clientY - rect.top;
     };
     container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    container.addEventListener("touchmove", handleTouchMove, { passive: true });
     container.addEventListener("touchstart", handleTouchStart, { passive: true });
     return () => {
       container.removeEventListener("mousemove", handleMouseMove);
