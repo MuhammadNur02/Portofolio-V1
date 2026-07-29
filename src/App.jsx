@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import AnimatedBackground from "./components/Background";
+import TentacleCanvas from "./components/TentacleCanvas";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 
@@ -65,6 +66,7 @@ function App() {
     <HelmetProvider>
       <div>
   <AnimatedBackground />
+  <TentacleCanvas />
 </div>
       <BrowserRouter>
         <Routes>
