@@ -6,7 +6,7 @@ const GAME_CONFIG = {
   bulletFireRate: 80,
   meteorBaseSpeed: 1.2,
   meteorSpawnInterval: 1200,
-  meteorHP: 3,
+  meteorHP: 6,
   meteorSize: 24,
   maxMeteors: 12,
   trailParticlesPerFrame: 2,
