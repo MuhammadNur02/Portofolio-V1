@@ -19,6 +19,11 @@ const AnimatedBackground = () => {
     let animationFrameId;
     let stars = [];
     
+    // --- ANTI-RESIZE-RESET: Track previous dimensions for detecting address-bar toggle ---
+    let lastBgWidth = window.innerWidth;
+    let lastBgHeight = window.innerHeight;
+    let resizeBgTimeout = null;
+
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -101,8 +106,26 @@ const AnimatedBackground = () => {
     draw();
 
     const handleResize = () => {
+      const newW = window.innerWidth;
+      const newH = window.innerHeight;
+      const wDelta = Math.abs(newW - lastBgWidth);
+      const hDelta = Math.abs(newH - lastBgHeight);
+      
+      // Only recreate stars on real resize, skip address-bar toggle
+      const isAddressBarToggleBg = wDelta <= 2 && hDelta > 0 && hDelta < 100;
+      
+      lastBgWidth = newW;
+      lastBgHeight = newH;
+      
       resize();
-      createStars();
+      
+      if (!isAddressBarToggleBg) {
+        // Debounce to avoid rapid recreations
+        if (resizeBgTimeout) clearTimeout(resizeBgTimeout);
+        resizeBgTimeout = setTimeout(() => {
+          createStars();
+        }, 200);
+      }
     };
 
     window.addEventListener("resize", handleResize);

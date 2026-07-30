@@ -20,6 +20,11 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
   const sizeScaleRef = useRef(isMobileRef.current ? 0.5 : 1.0);
   const segmentDistRef = useRef(9.5 * sizeScaleRef.current);
 
+  // --- ANTI-RESIZE-RESET: Track previous dimensions to detect address-bar toggling vs real resize ---
+  const lastWidthRef = useRef(window.innerWidth);
+  const lastHeightRef = useRef(window.innerHeight);
+  const resizeTimeoutRef = useRef(null);
+
   useEffect(() => {
     isGamePlayingRef.current = isGamePlaying;
   }, [isGamePlaying]);
@@ -55,24 +60,42 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
     let width, height;
 
     const resize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      const prevWidth = lastWidthRef.current;
+      const prevHeight = lastHeightRef.current;
+      const widthDelta = Math.abs(newWidth - prevWidth);
+      const heightDelta = Math.abs(newHeight - prevHeight);
+
+      // Detect address-bar toggle on mobile: height change < 100px, width unchanged
+      const isAddressBarToggle = widthDelta <= 2 && heightDelta > 0 && heightDelta < 100;
+
+      // Always update canvas dimensions and scale
+      width = newWidth;
+      height = newHeight;
       canvas.width = width;
       canvas.height = height;
 
-      // Update mobile detection & size scale on resize
-      isMobileRef.current = window.innerWidth < 768;
+      // Update mobile detection & size scale
+      isMobileRef.current = width < 768;
       sizeScaleRef.current = isMobileRef.current ? 0.5 : 1.0;
       segmentDistRef.current = 9.5 * sizeScaleRef.current;
 
-      const cx = width / 2;
-      const cy = height / 2;
-      headRef.current = { x: cx, y: cy };
-      mouseRef.current = { x: cx, y: cy };
-      targetRef.current = { x: cx, y: cy };
-      velocityRef.current = { x: 0, y: 0 };
+      // Store for next comparison
+      lastWidthRef.current = width;
+      lastHeightRef.current = height;
 
-      initBody(cx, cy);
+      // ONLY reset dragon position + body on REAL resizes (orientation change, window drag, etc.)
+      // SKIP reset for address-bar toggling to prevent glitch/jump
+      if (!isAddressBarToggle) {
+        const cx = width / 2;
+        const cy = height / 2;
+        headRef.current = { x: cx, y: cy };
+        mouseRef.current = { x: cx, y: cy };
+        targetRef.current = { x: cx, y: cy };
+        velocityRef.current = { x: 0, y: 0 };
+        initBody(cx, cy);
+      }
     };
 
     const initBody = (cx, cy) => {
@@ -108,12 +131,26 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
       }
     };
 
+    // IntersectionObserver untuk deteksi visibilitas scroll (lebih ringan, tanpa layout thrashing)
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          // isIntersecting = section terlihat → naga tetap muncul
+          // tidak intersecting = section tersembunyi → fade out naga
+          targetOpacityRef.current = entry.isIntersecting ? 1 : 0;
+        }
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px -100px 0px",
+        threshold: 0,
+      }
+    );
+
     const checkScrollVisibility = () => {
       const portfolioSection = document.querySelector("#Portofolio");
       if (portfolioSection) {
-        const rect = portfolioSection.getBoundingClientRect();
-        const shouldHide = rect.top < window.innerHeight - 100;
-        targetOpacityRef.current = shouldHide ? 0 : 1;
+        visibilityObserver.observe(portfolioSection);
       }
     };
 
@@ -445,8 +482,6 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
     update();
     checkScrollVisibility();
 
-    const handleScroll = () => checkScrollVisibility();
-
     // Deteksi Aktivitas Mouse / Touch dengan Timer Idle
     const activatePointer = (x, y) => {
       mouseRef.current.x = x;
@@ -477,16 +512,15 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("scroll", handleScroll, { passive: true });
     document.addEventListener("touchmove", handleTouchMove, { passive: true });
     document.addEventListener("touchstart", handleTouchMove, { passive: true });
     window.addEventListener("resize", resize);
 
     return () => {
       cancelAnimationFrame(animationFrameRef.current);
+      visibilityObserver.disconnect();
       if (mouseIdleTimeoutRef.current) clearTimeout(mouseIdleTimeoutRef.current);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchstart", handleTouchMove);
       window.removeEventListener("resize", resize);
