@@ -1,35 +1,49 @@
 import React, { useEffect, useRef } from "react";
 
-const DragonCanvas = ({ isGamePlaying = false }) => {
+const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const targetRef = useRef({ x: 0, y: 0 });
   const headRef = useRef({ x: 0, y: 0 });
   const velocityRef = useRef({ x: 0, y: 0 });
-  const isMouseActive = useRef(false);
-  const mouseTimeoutRef = useRef(null);
 
-  // --- AI Wandering & Smooth Motion Control ---
-  const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
-  const wanderSpeedRef = useRef(0.8);
-  const targetWanderSpeedRef = useRef(0.8);
-  const wanderStateTimeRef = useRef(0);
-  const wanderStateRef = useRef("cruising");
+  // Status Idle Kursor
+  const isMouseIdleRef = useRef(true);
+  const mouseIdleTimeoutRef = useRef(null);
 
-  const animationFrameRef = useRef(null);
-  const timeRef = useRef(0);
-  const targetOpacityRef = useRef(1);
-
-  // Status Game (apakah game sedang berjalan atau tidak)
+  // Status Game
   const isGamePlayingRef = useRef(isGamePlaying);
+
+  // Status WelcomeScreen & Mobile Detection
+  const showWelcomeRef = useRef(showWelcome);
+  const isMobileRef = useRef(window.innerWidth < 768);
+  const sizeScaleRef = useRef(isMobileRef.current ? 0.5 : 1.0);
+  const segmentDistRef = useRef(9.5 * sizeScaleRef.current);
 
   useEffect(() => {
     isGamePlayingRef.current = isGamePlaying;
   }, [isGamePlaying]);
 
+  useEffect(() => {
+    showWelcomeRef.current = showWelcome;
+    if (showWelcome) {
+      targetOpacityRef.current = 0;
+    }
+  }, [showWelcome]);
+
+  // --- AI Wandering (Gaya Terbang Halus & Estetik) ---
+  const wanderAngleRef = useRef(Math.random() * Math.PI * 2);
+  const wanderSpeedRef = useRef(1.2);
+  const targetWanderSpeedRef = useRef(1.2);
+  const wanderStateTimeRef = useRef(0);
+  const wanderStateRef = useRef("cruising");
+
+  const animationFrameRef = useRef(null);
+  const timeRef = useRef(0);
+  const targetOpacityRef = useRef(showWelcome ? 0 : 1);
+
   // --- KONFIGURASI SKELETAL & FAIRY DUST ---
   const N = 55;
-  const SEGMENT_DIST = 9.5;
   const bodyRef = useRef([]);
   const particlesRef = useRef([]);
 
@@ -46,6 +60,11 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
       canvas.width = width;
       canvas.height = height;
 
+      // Update mobile detection & size scale on resize
+      isMobileRef.current = window.innerWidth < 768;
+      sizeScaleRef.current = isMobileRef.current ? 0.5 : 1.0;
+      segmentDistRef.current = 9.5 * sizeScaleRef.current;
+
       const cx = width / 2;
       const cy = height / 2;
       headRef.current = { x: cx, y: cy };
@@ -60,7 +79,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
       const body = [];
       for (let i = 0; i < N; i++) {
         body.push({
-          x: cx - i * SEGMENT_DIST,
+          x: cx - i * segmentDistRef.current,
           y: cy,
           angle: 0,
         });
@@ -84,8 +103,8 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
         const angle = Math.atan2(dy, dx);
 
         current.angle = angle;
-        current.x = prev.x - Math.cos(angle) * SEGMENT_DIST;
-        current.y = prev.y - Math.sin(angle) * SEGMENT_DIST;
+        current.x = prev.x - Math.cos(angle) * segmentDistRef.current;
+        current.y = prev.y - Math.sin(angle) * segmentDistRef.current;
       }
     };
 
@@ -98,7 +117,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
       }
     };
 
-    // ---- RENDER VISUAL NAGA & DEBU PERI ----
+    // ---- RENDER VISUAL NAGA (DENGAN SIZE SCALE) ----
     const draw = (moveAngle) => {
       ctx.clearRect(0, 0, width, height);
 
@@ -109,16 +128,17 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
 
       const body = bodyRef.current;
       const time = timeRef.current;
+      const scale = sizeScaleRef.current;
 
       if (body.length === 0) return;
 
-      // 1. PARTIKEL DEBU PERI (FAIRY DUST)
+      // 1. PARTIKEL DEBU PERI (FAIRY DUST) - Scaled
       if (Math.random() < 0.95) {
         const randomSeg = body[Math.floor(Math.random() * body.length)];
         particlesRef.current.push({
-          x: randomSeg.x + (Math.random() - 0.5) * 20,
-          y: randomSeg.y + (Math.random() - 0.5) * 20,
-          size: Math.random() * 2.5 + 0.6,
+          x: randomSeg.x + (Math.random() - 0.5) * 20 * scale,
+          y: randomSeg.y + (Math.random() - 0.5) * 20 * scale,
+          size: (Math.random() * 2.5 + 0.6) * scale,
           alpha: 0.9,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5 - 0.2,
@@ -139,12 +159,12 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
           ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${pt.color}, ${pt.alpha})`;
           ctx.shadowColor = "#ffffff";
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 8 * scale;
           ctx.fill();
         }
       }
 
-      // 2. TULANG BELAKANG ORGANIK
+      // 2. TULANG BELAKANG ORGANIK - Scaled
       for (let i = 0; i < body.length - 1; i++) {
         const p1 = body[i];
         const p2 = body[i + 1];
@@ -153,13 +173,13 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
         ctx.moveTo(p1.x, p1.y);
         ctx.lineTo(p2.x, p2.y);
         ctx.strokeStyle = "rgba(240, 245, 250, 0.85)";
-        ctx.lineWidth = Math.max(1.2, (N - i) * 0.1);
+        ctx.lineWidth = Math.max(1.2, (N - i) * 0.1) * scale;
         ctx.shadowColor = "#79D7BE";
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 6 * scale;
         ctx.stroke();
       }
 
-      // 3. SAYAP & BULU AKSEN ESTETIK
+      // 3. SAYAP & BULU AKSEN ESTETIK - Scaled
       for (let i = 1; i < body.length; i++) {
         const seg = body[i];
         const angle = seg.angle;
@@ -176,7 +196,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
           ctx.scale(1, side);
 
           if (isBigWing) {
-            const wingSpan = 150 - i * 1.3;
+            const wingSpan = (150 - i * 1.3) * scale;
 
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -191,11 +211,11 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
 
             ctx.fillStyle = wingGrad;
             ctx.shadowColor = "rgba(121, 215, 190, 0.5)";
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 12 * scale;
             ctx.fill();
 
             ctx.strokeStyle = "rgba(220, 245, 250, 0.6)";
-            ctx.lineWidth = 1.4;
+            ctx.lineWidth = 1.4 * scale;
             ctx.stroke();
 
             if (Math.random() < 0.4) {
@@ -204,7 +224,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
               particlesRef.current.push({
                 x: tipX,
                 y: tipY,
-                size: Math.random() * 2 + 1,
+                size: (Math.random() * 2 + 1) * scale,
                 alpha: 0.85,
                 vx: (Math.random() - 0.5) * 0.4,
                 vy: (Math.random() - 0.5) * 0.4,
@@ -212,12 +232,12 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
               });
             }
           } else if (i < 45 && i % 2 === 0) {
-            const featherLen = Math.max(0, (45 - i) * 1.2);
+            const featherLen = Math.max(0, (45 - i) * 1.2) * scale;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.quadraticCurveTo(-featherLen * 0.5, featherLen * 0.6, -featherLen * 0.8, featherLen * (0.7 + wingFlex * 0.2));
             ctx.strokeStyle = i % 4 === 0 ? "rgba(121, 215, 190, 0.6)" : "rgba(180, 150, 220, 0.6)";
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 1.2 * scale;
             ctx.shadowBlur = 0;
             ctx.stroke();
           }
@@ -226,16 +246,16 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
         });
 
         ctx.beginPath();
-        ctx.arc(0, 0, Math.max(0.7, (N - i) * 0.08), 0, Math.PI * 2);
+        ctx.arc(0, 0, Math.max(0.7, (N - i) * 0.08) * scale, 0, Math.PI * 2);
         ctx.fillStyle = "#F0F5FA";
         ctx.shadowColor = "#79D7BE";
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 5 * scale;
         ctx.fill();
 
         ctx.restore();
       }
 
-      // 4. KEPALA NAGA ESTETIK
+      // 4. KEPALA NAGA ESTETIK - Scaled
       const head = body[0];
       const jawAngle = Math.sin(time * 5) * 0.12 + 0.05;
 
@@ -248,14 +268,14 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
         ctx.scale(1, side);
         
         ctx.beginPath();
-        ctx.moveTo(-2, 4);
-        ctx.quadraticCurveTo(-15, 18, -28, 14);
-        ctx.quadraticCurveTo(-18, 8, -6, 2);
+        ctx.moveTo(-2 * scale, 4 * scale);
+        ctx.quadraticCurveTo(-15 * scale, 18 * scale, -28 * scale, 14 * scale);
+        ctx.quadraticCurveTo(-18 * scale, 8 * scale, -6 * scale, 2 * scale);
         ctx.fillStyle = "#1A1025";
         ctx.strokeStyle = "rgba(220, 245, 250, 0.8)";
-        ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.2 * scale;
         ctx.shadowColor = "#79D7BE";
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 8 * scale;
         ctx.fill();
         ctx.stroke();
 
@@ -263,125 +283,144 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
       });
 
       ctx.beginPath();
-      ctx.moveTo(24, 0);
-      ctx.quadraticCurveTo(12, -8, -6, -10);
-      ctx.quadraticCurveTo(-14, -8, -12, 0);
-      ctx.quadraticCurveTo(-14, 8, -6, 10);
-      ctx.quadraticCurveTo(12, 8, 24, 0);
+      ctx.moveTo(24 * scale, 0);
+      ctx.quadraticCurveTo(12 * scale, -8 * scale, -6 * scale, -10 * scale);
+      ctx.quadraticCurveTo(-14 * scale, -8 * scale, -12 * scale, 0);
+      ctx.quadraticCurveTo(-14 * scale, 8 * scale, -6 * scale, 10 * scale);
+      ctx.quadraticCurveTo(12 * scale, 8 * scale, 24 * scale, 0);
       ctx.closePath();
 
       ctx.fillStyle = "#0D0E15";
       ctx.strokeStyle = "rgba(240, 245, 250, 0.9)";
-      ctx.lineWidth = 1.6;
+      ctx.lineWidth = 1.6 * scale;
       ctx.shadowColor = "#79D7BE";
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 12 * scale;
       ctx.fill();
       ctx.stroke();
 
       ctx.save();
       ctx.rotate(jawAngle);
       ctx.beginPath();
-      ctx.moveTo(20, 1);
-      ctx.quadraticCurveTo(8, 7, -8, 6);
-      ctx.lineTo(-4, 1);
+      ctx.moveTo(20 * scale, 1 * scale);
+      ctx.quadraticCurveTo(8 * scale, 7 * scale, -8 * scale, 6 * scale);
+      ctx.lineTo(-4 * scale, 1 * scale);
       ctx.closePath();
       ctx.fillStyle = "#08090D";
       ctx.strokeStyle = "rgba(240, 245, 250, 0.7)";
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.2 * scale;
       ctx.fill();
       ctx.stroke();
       ctx.restore();
 
       ctx.beginPath();
-      ctx.moveTo(4, 0);
-      ctx.lineTo(-2, -5);
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(-2, 5);
+      ctx.moveTo(4 * scale, 0);
+      ctx.lineTo(-2 * scale, -5 * scale);
+      ctx.lineTo(-6 * scale, 0);
+      ctx.lineTo(-2 * scale, 5 * scale);
       ctx.closePath();
       ctx.fillStyle = "#79D7BE";
       ctx.shadowColor = "#79D7BE";
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 10 * scale;
       ctx.fill();
 
       ctx.fillStyle = "#ffffff";
       ctx.shadowColor = "#79D7BE";
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 15 * scale;
       ctx.beginPath();
-      ctx.arc(8, -3.5, 1.8, 0, Math.PI * 2);
-      ctx.arc(8, 3.5, 1.8, 0, Math.PI * 2);
+      ctx.arc(8 * scale, -3.5 * scale, 1.8 * scale, 0, Math.PI * 2);
+      ctx.arc(8 * scale, 3.5 * scale, 1.8 * scale, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();
       ctx.shadowBlur = 0;
     };
 
-    // ---- MAIN LOOP (MODE GAME VS MODE POINTER) ----
+    // ---- MAIN LOOP (MOBILE: ALWAYS WANDER | DESKTOP: FOLLOW MOUSE THEN WANDER ON IDLE) ----
     let lastMoveAngle = 0;
 
     const update = () => {
       timeRef.current += 0.016;
 
-      // JIKA GAME SEDANG DIMAINKAN: Naga terbang bebas keluar layar (Off-Screen Wandering)
-      if (isGamePlayingRef.current) {
+      // Mobile: always wandering (ignore touch)
+      // Desktop: wander when mouse idle or game playing
+      const isMobile = isMobileRef.current;
+      const shouldWander = isMobile || isGamePlayingRef.current || isMouseIdleRef.current;
+
+      if (shouldWander) {
+        // --- LOGIKA AI WANDERING (HALUS & ELEGAN) ---
         wanderStateTimeRef.current -= 0.016;
 
         if (wanderStateTimeRef.current <= 0) {
           const r = Math.random();
-          if (r < 0.4) {
+          if (r < 0.5) {
+            // Mode Kalem / Santai
             wanderStateRef.current = "cruising";
-            targetWanderSpeedRef.current = 1.5 + Math.random() * 1.5;
+            targetWanderSpeedRef.current = 1.0 + Math.random() * 0.8; 
             wanderStateTimeRef.current = 4.0 + Math.random() * 4.0;
-          } else if (r < 0.7) {
+          } else if (r < 0.8) {
+            // Mode Belok Ringan
             wanderStateRef.current = "relaxed_turn";
-            targetWanderSpeedRef.current = 2.0 + Math.random() * 2.0;
+            targetWanderSpeedRef.current = 1.5 + Math.random() * 1.0; 
             wanderStateTimeRef.current = 3.0 + Math.random() * 3.0;
           } else {
-            wanderStateRef.current = "aggressive_turn";
-            targetWanderSpeedRef.current = 3.0 + Math.random() * 2.5; // Naga terbang cepat keluar layar
-            wanderStateTimeRef.current = 2.0 + Math.random() * 3.0;
+            // Mode Agresif Estetik (Bermanuver Cepat Tapi Mulus)
+            wanderStateRef.current = "agile_dash";
+            targetWanderSpeedRef.current = 2.4 + Math.random() * 1.2; 
+            wanderStateTimeRef.current = 1.8 + Math.random() * 2.0;
           }
         }
 
-        wanderSpeedRef.current += (targetWanderSpeedRef.current - wanderSpeedRef.current) * 0.02;
+        // Transisi Kecepatan Bertahap (Mencegah Gerakan Patah)
+        wanderSpeedRef.current += (targetWanderSpeedRef.current - wanderSpeedRef.current) * 0.025;
 
+        // Perubahan Sudut Rotasi Sesuai Mode
         let rotationChange = 0;
-        if (wanderStateRef.current === "cruising") rotationChange = (Math.random() - 0.5) * 0.01;
-        else if (wanderStateRef.current === "relaxed_turn") rotationChange = (Math.random() - 0.4) * 0.04;
-        else rotationChange = (Math.random() - 0.3) * 0.12;
+        if (wanderStateRef.current === "cruising") {
+          rotationChange = (Math.random() - 0.5) * 0.012;
+        } else if (wanderStateRef.current === "relaxed_turn") {
+          rotationChange = (Math.random() - 0.48) * 0.035;
+        } else {
+          rotationChange = (Math.random() - 0.45) * 0.065; 
+        }
 
-        const maxRotationPerFrame = 0.07;
+        // Kunci Batas Belok Per Frame (Mencegah Gerakan Ugal-ugalan)
+        const maxRotationPerFrame = 0.045;
         const cappedRotation = Math.max(-maxRotationPerFrame, Math.min(maxRotationPerFrame, rotationChange));
         wanderAngleRef.current += cappedRotation;
 
-        // DI GAME MODE: Batas Layar diperluas jauh (Margin -400px s/d +400px dari layar)
-        // Naga diperbolehkan pergi keluar layar jauh, lalu perlahan kembali dari sudut lain
-        const offscreenMargin = 400;
-        if (targetRef.current.x < -offscreenMargin) wanderAngleRef.current = 0;
-        if (targetRef.current.x > width + offscreenMargin) wanderAngleRef.current = Math.PI;
-        if (targetRef.current.y < -offscreenMargin) wanderAngleRef.current = Math.PI * 0.5;
-        if (targetRef.current.y > height + offscreenMargin) wanderAngleRef.current = -Math.PI * 0.5;
+        // Batas Layar Lembut (Smooth Bounce - membelok bertahap saat mendekati pinggir)
+        const padding = 120;
+        let edgeInfluence = 0;
+        if (targetRef.current.x < padding) edgeInfluence = (padding - targetRef.current.x) / padding * 0.04;
+        else if (targetRef.current.x > width - padding) edgeInfluence = -(targetRef.current.x - (width - padding)) / padding * 0.04;
+        if (targetRef.current.y < padding) edgeInfluence += (padding - targetRef.current.y) / padding * 0.04;
+        else if (targetRef.current.y > height - padding) edgeInfluence -= (targetRef.current.y - (height - padding)) / padding * 0.04;
+        wanderAngleRef.current += edgeInfluence;
 
         targetRef.current.x += Math.cos(wanderAngleRef.current) * wanderSpeedRef.current;
         targetRef.current.y += Math.sin(wanderAngleRef.current) * wanderSpeedRef.current;
       } 
-      // JIKA GAME STOP (KEMBALI KE POINTER MOUSE / TOUCH)
       else {
+        // --- KURSUS AKTIF: NAGA MENGIKUTI POINTER MOUSE ---
         targetRef.current.x = mouseRef.current.x;
         targetRef.current.y = mouseRef.current.y;
+        
+        // Menyelaraskan Sudut AI Terbang Dengan Gerakan Terakhir Mouse
+        wanderAngleRef.current = lastMoveAngle;
       }
 
-      // PERHITUNGAN KELURUSAN KEPALA DAN SMOOTH LANDING
+      // --- FISIKA PERGERAKAN KEPALA ---
       const dx = targetRef.current.x - headRef.current.x;
       const dy = targetRef.current.y - headRef.current.y;
       const dist = Math.hypot(dx, dy);
 
-      let accelFactor = isGamePlayingRef.current ? 0.002 : 0.0035;
-      let damping = 0.92;
+      let accelFactor = shouldWander ? 0.0022 : 0.0038;
+      let damping = 0.91;
 
-      // Pendaratan Halus di Pointer (Saat Stop Game)
-      if (!isGamePlayingRef.current && dist < 140) {
-        const slowRatio = dist / 140;
-        damping = 0.78 + slowRatio * 0.14; // Rem lembut bertahap
+      // Pendaratan Halus Saat Mendekati Pointer
+      if (!shouldWander && dist < 150) {
+        const slowRatio = dist / 150;
+        damping = 0.80 + slowRatio * 0.11;
       }
 
       velocityRef.current.x = (velocityRef.current.x + dx * accelFactor) * damping;
@@ -392,7 +431,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
 
       const currentSpeed = Math.hypot(velocityRef.current.x, velocityRef.current.y);
 
-      if (currentSpeed > 0.12) {
+      if (currentSpeed > 0.1) {
         lastMoveAngle = Math.atan2(velocityRef.current.y, velocityRef.current.x);
       }
 
@@ -408,13 +447,32 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
 
     const handleScroll = () => checkScrollVisibility();
 
+    // Deteksi Aktivitas Mouse / Touch dengan Timer Idle
     const activatePointer = (x, y) => {
       mouseRef.current.x = x;
       mouseRef.current.y = y;
+
+      // Saat mouse bergerak -> Matikan mode wandering
+      isMouseIdleRef.current = false;
+
+      if (mouseIdleTimeoutRef.current) {
+        clearTimeout(mouseIdleTimeoutRef.current);
+      }
+
+      // Setelah 1.8 detik mouse diam -> Naga kembali jalan-jalan acak
+      mouseIdleTimeoutRef.current = setTimeout(() => {
+        isMouseIdleRef.current = true;
+      }, 1800);
     };
 
-    const handleMouseMove = (e) => activatePointer(e.clientX, e.clientY);
+    const handleMouseMove = (e) => {
+      // Ignore mouse events on mobile (touch-only devices)
+      if (isMobileRef.current) return;
+      activatePointer(e.clientX, e.clientY);
+    };
     const handleTouchMove = (e) => {
+      // Ignore touch events on mobile (always wandering)
+      if (isMobileRef.current) return;
       if (e.touches[0]) activatePointer(e.touches[0].clientX, e.touches[0].clientY);
     };
 
@@ -426,7 +484,7 @@ const DragonCanvas = ({ isGamePlaying = false }) => {
 
     return () => {
       cancelAnimationFrame(animationFrameRef.current);
-      clearTimeout(mouseTimeoutRef.current);
+      if (mouseIdleTimeoutRef.current) clearTimeout(mouseIdleTimeoutRef.current);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("touchmove", handleTouchMove);
