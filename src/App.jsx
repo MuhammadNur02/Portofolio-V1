@@ -66,7 +66,7 @@ function App() {
     <HelmetProvider>
       <div>
   <AnimatedBackground />
-  <TentacleCanvas />
+  <TentacleCanvas showWelcome={showWelcome} />
 </div>
       <BrowserRouter>
         <Routes>
