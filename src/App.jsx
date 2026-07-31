@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import AnimatedBackground from "./components/Background";
-import TentacleCanvas from "./components/TentacleCanvas";
+import TentacleCanvas from "./components/DragonCanvas";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 
@@ -21,7 +21,7 @@ const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
 const SeedCertificates = lazy(() => import("./Pages/SeedCertificates"));
 
-const LandingPage = ({ showWelcome, setShowWelcome }) => {
+const LandingPage = ({ showWelcome, setShowWelcome, isPlaying, setIsPlaying }) => {
   return (
     <>
       <AnimatePresence mode="wait">
@@ -36,7 +36,7 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
         <>
           <Navbar />
       
-          <Home />
+          <Home isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
           <About />
           <Suspense fallback={<div className="h-20" />}>
             <Portofolio />
@@ -60,13 +60,14 @@ const ProjectPageLayout = () => (
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   return (
     
     <HelmetProvider>
       <div>
   <AnimatedBackground />
-  <TentacleCanvas showWelcome={showWelcome} />
+  <TentacleCanvas showWelcome={showWelcome} isGamePlaying={isPlaying} />
 </div>
       <BrowserRouter>
         <Routes>
@@ -77,6 +78,8 @@ function App() {
               <LandingPage
                 showWelcome={showWelcome}
                 setShowWelcome={setShowWelcome}
+                isPlaying={isPlaying}
+                setIsPlaying={setIsPlaying}
               />
             }
           />

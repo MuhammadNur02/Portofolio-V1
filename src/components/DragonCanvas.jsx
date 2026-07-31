@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
+const DragonCanvas = ({ isGamePlaying = false, showWelcome = false , onUpdateBody}) => {
   const canvasRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const targetRef = useRef({ x: 0, y: 0 });
@@ -19,20 +19,66 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
   const isMobileRef = useRef(window.innerWidth < 768);
   const sizeScaleRef = useRef(isMobileRef.current ? 0.5 : 1.0);
   const segmentDistRef = useRef(9.5 * sizeScaleRef.current);
+  const visibilityObserverRef = useRef(null);
 
   // --- ANTI-RESIZE-RESET: Track previous dimensions to detect address-bar toggling vs real resize ---
   const lastWidthRef = useRef(window.innerWidth);
   const lastHeightRef = useRef(window.innerHeight);
   const resizeTimeoutRef = useRef(null);
 
-  useEffect(() => {
+  // --- GAME FLEE/RETURN LOGIC ---
+  const isFleeingRef = useRef(false);
+  const fleeTargetRef = useRef({ x: 0, y: 0 });
+  const prevGamePlayingRef = useRef(isGamePlaying);
+  const hasEscapedRef = useRef(false);
+  const widthRef = useRef(window.innerWidth);
+  const heightRef = useRef(window.innerHeight);
+
+useEffect(() => {
+    const prev = prevGamePlayingRef.current;
+    prevGamePlayingRef.current = isGamePlaying;
     isGamePlayingRef.current = isGamePlaying;
+
+    if (isGamePlaying && !prev) {
+      // Game started: dragon flies off-screen quickly
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.max(widthRef.current, heightRef.current) * 1.5;
+      const cx = widthRef.current / 2;
+      const cy = heightRef.current / 2;
+      fleeTargetRef.current = {
+        x: cx + Math.cos(angle) * dist,
+        y: cy + Math.sin(angle) * dist,
+      };
+      isFleeingRef.current = true;
+      hasEscapedRef.current = false;
+      targetOpacityRef.current = 0;
+    } else if (!isGamePlaying && prev) {
+      // Game ended: dragon returns to pointer
+      isFleeingRef.current = false;
+      hasEscapedRef.current = false;
+      targetOpacityRef.current = showWelcomeRef.current ? 0 : 1;
+      // Redirect dragon back toward mouse/center
+      targetRef.current.x = mouseRef.current.x;
+      targetRef.current.y = mouseRef.current.y;
+    }
   }, [isGamePlaying]);
 
   useEffect(() => {
     showWelcomeRef.current = showWelcome;
     if (showWelcome) {
       targetOpacityRef.current = 0;
+    } else {
+      // Welcome selesai → tampilkan naga + pasang scroll observer untuk Portofolio
+      targetOpacityRef.current = 1;
+      requestAnimationFrame(() => {
+        const observer = visibilityObserverRef.current;
+        if (observer) {
+          const portfolioSection = document.querySelector("#Portofolio");
+          if (portfolioSection) {
+            observer.observe(portfolioSection);
+          }
+        }
+      });
     }
   }, [showWelcome]);
 
@@ -84,6 +130,8 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
       // Store for next comparison
       lastWidthRef.current = width;
       lastHeightRef.current = height;
+      widthRef.current = width;
+      heightRef.current = height;
 
       // ONLY reset dragon position + body on REAL resizes (orientation change, window drag, etc.)
       // SKIP reset for address-bar toggling to prevent glitch/jump
@@ -135,9 +183,9 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
     const visibilityObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          // isIntersecting = section terlihat → naga tetap muncul
-          // tidak intersecting = section tersembunyi → fade out naga
-          targetOpacityRef.current = entry.isIntersecting ? 1 : 0;
+          // isIntersecting = section terlihat → naga fade out (pergi)
+          // tidak intersecting = section tersembunyi → naga muncul lagi
+          targetOpacityRef.current = entry.isIntersecting ? 0 : 1;
         }
       },
       {
@@ -146,13 +194,8 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
         threshold: 0,
       }
     );
-
-    const checkScrollVisibility = () => {
-      const portfolioSection = document.querySelector("#Portofolio");
-      if (portfolioSection) {
-        visibilityObserver.observe(portfolioSection);
-      }
-    };
+    // Simpan observer ke ref agar bisa diakses dari useEffect showWelcome
+    visibilityObserverRef.current = visibilityObserver;
 
     // ---- RENDER VISUAL NAGA (DENGAN SIZE SCALE) ----
     const draw = (moveAngle) => {
@@ -383,7 +426,33 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
       const isMobile = isMobileRef.current;
       const shouldWander = isMobile || isGamePlayingRef.current || isMouseIdleRef.current;
 
-      if (shouldWander) {
+      // --- FLEE LOGIC: Dragon flies off-screen when game starts ---
+      if (isFleeingRef.current) {
+        // Force dragon to fly toward flee target (off-screen)
+        const fleeDx = fleeTargetRef.current.x - headRef.current.x;
+        const fleeDy = fleeTargetRef.current.y - headRef.current.y;
+        const fleeDist = Math.hypot(fleeDx, fleeDy);
+
+        if (fleeDist > 50) {
+          // High speed flee - use physics to rush off-screen
+          const fleeAngle = Math.atan2(fleeDy, fleeDx);
+          lastMoveAngle = fleeAngle;
+          wanderAngleRef.current = fleeAngle;
+          
+          // Override velocity to rush toward flee target
+          velocityRef.current.x += Math.cos(fleeAngle) * 0.8;
+          velocityRef.current.y += Math.sin(fleeAngle) * 0.8;
+          
+          // Cap velocity for smooth but fast flee
+          const speed = Math.hypot(velocityRef.current.x, velocityRef.current.y);
+          if (speed > 18) {
+            velocityRef.current.x = (velocityRef.current.x / speed) * 18;
+            velocityRef.current.y = (velocityRef.current.y / speed) * 18;
+          }
+        } else {
+          hasEscapedRef.current = true;
+        }
+      } else if (shouldWander) {
         // --- LOGIKA AI WANDERING (HALUS & ELEGAN) ---
         wanderStateTimeRef.current -= 0.016;
 
@@ -473,6 +542,9 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
       }
 
       updateDragon(headRef.current.x, headRef.current.y);
+      if (onUpdateBody) {
+        onUpdateBody(bodyRef.current);
+      }
       draw(lastMoveAngle);
 
       animationFrameRef.current = requestAnimationFrame(update);
@@ -480,7 +552,6 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
 
     resize();
     update();
-    checkScrollVisibility();
 
     // Deteksi Aktivitas Mouse / Touch dengan Timer Idle
     const activatePointer = (x, y) => {
@@ -537,7 +608,7 @@ const DragonCanvas = ({ isGamePlaying = false, showWelcome = false }) => {
         width: "100%",
         height: "100%",
         pointerEvents: "none",
-        zIndex: 1,
+        zIndex: 10,
       }}
     />
   );
