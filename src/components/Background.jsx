@@ -27,7 +27,7 @@ const AnimatedBackground = () => {
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    };
+    }; 
     
     const createStars = () => {
       stars = [];

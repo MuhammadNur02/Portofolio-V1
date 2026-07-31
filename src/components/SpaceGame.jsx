@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from "react";
+import DragonCanvas from './DragonCanvas';
 
 const GAME_CONFIG = {
   planeSize: 28,
@@ -27,12 +28,23 @@ const SpaceGame = ({ onClose }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const shakeRef = useRef({ x: 0, y: 0, intensity: 0 });
+  const planeImageRef = useRef(null);
+  const meteorImageRef = useRef(null);
   const gameStateRef = useRef({
     plane: { x: 0, y: 0, targetX: 0, targetY: 0, angle: 0, roll: 0 },
     bullets: [], meteors: [], particles: [], explosions: [],
     keys: {}, gameOver: false, lastShot: 0, lastSpawn: 0,
     score: 0, animId: null, time: 0, dimensions: { w: 400, h: 500 },
   });
+  useEffect(() => {
+    const planeImg = new Image();
+    planeImg.src = "/Pesawat.png";
+    planeImg.onload = () => { planeImageRef.current = planeImg; };
+
+    const meteorImg = new Image();
+    meteorImg.src = "/Meteor.png"; 
+    meteorImg.onload = () => { meteorImageRef.current = meteorImg; };
+  }, []);
   const [gameOver, setGameOver] = useState(false);
   const scoreRef = useRef(0);
 
@@ -57,32 +69,46 @@ const SpaceGame = ({ onClose }) => {
     ctx.scale(dpr, dpr);
     const gs = gameStateRef.current;
     gs.dimensions = { w, h };
-    gs.plane.x = w * 0.35;
-    gs.plane.y = h * 0.65;
+    gs.plane.x = w * 0.5;
+    gs.plane.y = h * 0.85;
     gs.plane.targetX = gs.plane.x;
     gs.plane.targetY = gs.plane.y;
   }, []);
 
   const spawnMeteor = useCallback(() => {
-    const gs = gameStateRef.current;
-    if (gs.meteors.length >= GAME_CONFIG.maxMeteors) return;
-    const { w, h } = gs.dimensions;
-    const fromTop = randInt(0, 1);
-    let x = fromTop ? rand(0, w * 0.7) : -GAME_CONFIG.meteorSize;
-    let y = fromTop ? -GAME_CONFIG.meteorSize : rand(0, h * 0.5);
-    const vx = rand(0.8, 1.8);
-    const vy = rand(1.2, 2.5);
-    gs.meteors.push({ x, y, vx, vy, size: rand(GAME_CONFIG.meteorSize * 0.8, GAME_CONFIG.meteorSize * 1.2), hp: GAME_CONFIG.meteorHP, maxHp: GAME_CONFIG.meteorHP, rotation: rand(0, Math.PI * 2), rotSpeed: rand(-0.03, 0.03), spawnTime: gs.time, flicker: rand(0, Math.PI * 2) });
-  }, []);
+  const gs = gameStateRef.current;
+  if (gs.meteors.length >= GAME_CONFIG.maxMeteors) return;
+  const { w } = gs.dimensions;
+  
+  // Muncul secara acak di sepanjang sumbu X di atas layar (y di luar batas atas)
+  let x = rand(GAME_CONFIG.meteorSize, w - GAME_CONFIG.meteorSize);
+  let y = -GAME_CONFIG.meteorSize * 2;
+  
+  // Bergerak lurus ke bawah dengan sedikit variasi horizontal
+  const vx = rand(-0.5, 0.5);
+  const vy = rand(1.5, 3.0); // Kecepatan jatuh ke bawah
+  
+  gs.meteors.push({ 
+    x, y, vx, vy, 
+    size: rand(GAME_CONFIG.meteorSize * 0.8, GAME_CONFIG.meteorSize * 1.2), 
+    hp: GAME_CONFIG.meteorHP, 
+    maxHp: GAME_CONFIG.meteorHP, 
+    rotation: rand(0, Math.PI * 2), 
+    rotSpeed: rand(-0.03, 0.03), 
+    spawnTime: gs.time, 
+    flicker: rand(0, Math.PI * 2) 
+  });
+}, []);
 
   const fireBullet = useCallback(() => {
-    const gs = gameStateRef.current;
-    const { plane } = gs;
-    const angle = -Math.PI*(2 / 3);
-    const bx = plane.x + Math.cos(angle) * GAME_CONFIG.planeSize * 0.8;
-    const by = plane.y + Math.sin(angle) * GAME_CONFIG.planeSize * 0.8;
-    gs.bullets.push({ x: bx, y: by, vx: Math.cos(angle) * GAME_CONFIG.bulletSpeed, vy: Math.sin(angle) * GAME_CONFIG.bulletSpeed, life: 0, maxLife: 60, size: 3 });
-  }, []);
+  const gs = gameStateRef.current;
+  const { plane } = gs;
+  // Ubah ke arah atas (jam 12)
+  const angle = -Math.PI / 2; 
+  const bx = plane.x + Math.cos(angle) * GAME_CONFIG.planeSize * 0.8;
+  const by = plane.y + Math.sin(angle) * GAME_CONFIG.planeSize * 0.8;
+  gs.bullets.push({ x: bx, y: by, vx: Math.cos(angle) * GAME_CONFIG.bulletSpeed, vy: Math.sin(angle) * GAME_CONFIG.bulletSpeed, life: 0, maxLife: 60, size: 3 });
+}, []);
 
   const spawnExplosion = useCallback((x, y, color) => {
     if (!color) color = "#ffaa00";
@@ -115,10 +141,8 @@ const SpaceGame = ({ onClose }) => {
     plane.y += (plane.targetY - plane.y) * 0.12;
     plane.x = Math.max(20, Math.min(w - 20, plane.x));
     plane.y = Math.max(20, Math.min(h - 20, plane.y));
-    const baseAngle = -Math.PI * (2 / 3);
-    const rollTarget = Math.atan2(plane.targetY - plane.y, plane.targetX - plane.x) * 0.3;
-    plane.roll += (rollTarget - plane.roll) * 0.1;
-    plane.angle = baseAngle + plane.roll;
+    plane.angle = -Math.PI / 2;
+    plane.roll = 0; 
     const now = Date.now();
     if (now - gs.lastShot > GAME_CONFIG.bulletFireRate) { fireBullet(); gs.lastShot = now; }
     if (gs.time - gs.lastSpawn > GAME_CONFIG.meteorSpawnInterval / 16.67) { spawnMeteor(); gs.lastSpawn = gs.time; if (gs.time > 600) { GAME_CONFIG.meteorSpawnInterval = Math.max(400, 1200 - Math.min(600, Math.floor(gs.time / 600) * 80)); } }
@@ -144,6 +168,33 @@ const SpaceGame = ({ onClose }) => {
       }
       if (hit) gs.bullets.splice(i, 1);
     }
+
+    for (let i = gs.meteors.length - 1; i >= 0; i--) {
+      const m = gs.meteors[i];
+      
+      // Sesuaikan variabel penampung posisi naga Anda (misal: gs.dragonSegments atau variabel naga lain)
+      if (gs.dragonSegments && gs.dragonSegments.length > 0) {
+        let destroyedByDragon = false;
+        for (const seg of gs.dragonSegments) {
+          if (dist(seg.x, seg.y, m.x, m.y) < m.size + 35) { // 35 adalah radius sentuhan tubuh naga
+            m.hp -= 2; // Damage tambahan dari naga
+            spawnExplosion(m.x, m.y, "#00ffff"); // Efek ledakan kebiruan ala naga
+            
+            if (m.hp <= 0) {
+              triggerShake();
+              spawnExplosion(m.x, m.y, "#ff6600");
+              gs.score += 15; // Bonus poin
+              scoreRef.current = gs.score;
+              gs.meteors.splice(i, 1);
+              destroyedByDragon = true;
+            }
+            break;
+          }
+        }
+        if (destroyedByDragon) continue;
+      }
+    }
+
     for (let i = gs.particles.length - 1; i >= 0; i--) {
       const p = gs.particles[i];
       p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life++;
@@ -181,42 +232,77 @@ const SpaceGame = ({ onClose }) => {
     for (const m of gs.meteors) {
       ctx.save();
       ctx.translate(m.x, m.y);
+
+      // --- 1. EKOR API PANJANG MENJULUR KE ATAS ---
+      const tailLen = m.size * 3.8; // Ekor dibuat jauh lebih panjang
+      const tailGrad = ctx.createLinearGradient(0, 0, 0, -tailLen);
+      tailGrad.addColorStop(0, "rgba(255, 150, 0, 0.85)");  // Terang di dekat batu
+      tailGrad.addColorStop(0.3, "rgba(255, 60, 0, 0.6)");   // Merah menyala di tengah
+      tailGrad.addColorStop(0.7, "rgba(200, 20, 0, 0.25)");  // Meredup
+      tailGrad.addColorStop(1, "rgba(100, 0, 0, 0)");        // Memudar total di ujung atas
+
+      ctx.fillStyle = tailGrad;
+      ctx.beginPath();
+      // Bentuk kerucut ekor panjang dan ramping ke arah atas
+      ctx.moveTo(-m.size * 0.8, 0);
+      ctx.lineTo(0, -tailLen);
+      ctx.lineTo(m.size * 0.8, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // --- 2. JEJAK PERCIKAN API (SPARK TRAILS) ---
+      for (let i = 0; i < 6; i++) {
+        // Posisi percikan api disebar secara dinamis menggunakan fungsi waktu (gs.time)
+        const sparkOffset = Math.sin(gs.time * 0.5 + i * 12) * (m.size * 0.6);
+        const sparkY = -rand(m.size * 0.5, tailLen * 0.9);
+        
+        ctx.fillStyle = i % 2 === 0 ? "#ffff33" : "#ff5500"; // Kuning dan oranye menyala
+        ctx.shadowColor = "#ff3300";
+        ctx.shadowBlur = 8;
+        
+        ctx.beginPath();
+        ctx.arc(sparkOffset, sparkY, rand(1.5, 3.5), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // --- 3. RADIASI API RAPAT DI SEKELILING BATU ---
+      const fireGlow = ctx.createRadialGradient(0, 0, m.size * 0.3, 0, 0, m.size * 1.3);
+      fireGlow.addColorStop(0, "rgba(255, 200, 50, 0.9)");
+      fireGlow.addColorStop(0.6, "rgba(255, 60, 0, 0.7)");
+      fireGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      ctx.fillStyle = fireGlow;
+      ctx.shadowColor = "#ff3300";
+      ctx.shadowBlur = 15;
+      
+      ctx.beginPath();
+      ctx.arc(0, 0, m.size * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // --- 4. GAMBAR METEOR.PNG DI TENGAH ---
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "#ff4500";
       ctx.rotate(m.rotation);
-      const gradGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, m.size * 1.5);
-      gradGlow.addColorStop(0, "rgba(255,100,0,0.3)");
-      gradGlow.addColorStop(0.5, "rgba(255,60,0,0.1)");
-      gradGlow.addColorStop(1, "rgba(255,0,0,0)");
-      ctx.fillStyle = gradGlow;
-      ctx.beginPath();
-      ctx.arc(0, 0, m.size * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      const flicker = Math.sin(m.flicker) * 0.15 + 0.85;
-      const fireGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, m.size);
-      fireGrad.addColorStop(0, "rgba(255," + Math.floor(200 * flicker) + ",0,0.9)");
-      fireGrad.addColorStop(0.4, "rgba(255,100,0," + (0.7 * flicker) + ")");
-      fireGrad.addColorStop(0.7, "rgba(150,40,0," + (0.5 * flicker) + ")");
-      fireGrad.addColorStop(1, "rgba(80,20,0,0)");
-      ctx.fillStyle = fireGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, m.size, 0, Math.PI * 2);
-      ctx.fill();
-      const coreSize = m.size * 0.55;
-      const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreSize);
-      coreGrad.addColorStop(0, "#333");
-      coreGrad.addColorStop(0.5, "#222");
-      coreGrad.addColorStop(1, "#111");
-      ctx.fillStyle = coreGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
-      ctx.fill();
+      
+      if (meteorImageRef.current) {
+        const drawSize = m.size * 2.6;
+        ctx.drawImage(
+          meteorImageRef.current,
+          -drawSize / 2,
+          -drawSize / 2,
+          drawSize,
+          drawSize
+        );
+      }
       ctx.restore();
+
+      // --- 5. BAR HP METEOR DI BAWAH ---
       const hp = m.hp / m.maxHp;
       const bw = m.size * 1.5;
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
-      ctx.fillRect(m.x - bw / 2, m.y - m.size - 10, bw, 4);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(m.x - bw / 2, m.y + m.size + 8, bw, 5);
       ctx.fillStyle = hp > 0.5 ? "#44ff44" : hp > 0.25 ? "#ffaa00" : "#ff4444";
-      ctx.fillRect(m.x - bw / 2, m.y - m.size - 10, bw * hp, 4);
-      ctx.shadowBlur = 0;
+      ctx.fillRect(m.x - bw / 2, m.y + m.size + 8, bw * hp, 5);
     }
     for (const b of gs.bullets) {
       ctx.beginPath();
@@ -232,52 +318,27 @@ const SpaceGame = ({ onClose }) => {
       ctx.fill();
     }
     ctx.shadowBlur = 0;
-    const pl = gs.plane;
+const pl = gs.plane;
     ctx.save();
     ctx.translate(pl.x, pl.y);
-    ctx.rotate(pl.angle);
-    const ps = GAME_CONFIG.planeSize;
-    const flameLen = ps * 0.9 + Math.sin(gs.time * 0.3) * 5;
-    const flameGrad = ctx.createRadialGradient(-ps * 0.5, 0, 0, -ps * 0.5, 0, flameLen);
-    flameGrad.addColorStop(0, "rgba(100,200,255,0.9)");
-    flameGrad.addColorStop(0.3, "rgba(0,150,255,0.6)");
-    flameGrad.addColorStop(0.6, "rgba(0,80,200,0.3)");
-    flameGrad.addColorStop(1, "rgba(0,50,150,0)");
-    ctx.fillStyle = flameGrad;
-    ctx.shadowColor = "#0088ff";
-    ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.moveTo(-ps * 0.3, -6);
-    ctx.lineTo(-ps * 0.3 - flameLen, 0);
-    ctx.lineTo(-ps * 0.3, 6);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowColor = "#00ccff";
-    ctx.shadowBlur = 15;
-    const bodyGrad = ctx.createLinearGradient(0, -ps, 0, ps);
-    bodyGrad.addColorStop(0, "rgba(0,180,255,0.8)");
-    bodyGrad.addColorStop(0.5, "rgba(59,130,246,0.9)");
-    bodyGrad.addColorStop(1, "rgba(100,100,255,0.7)");
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.moveTo(ps * 0.8, 0);
-    ctx.lineTo(-ps * 0.2, -ps * 0.35);
-    ctx.lineTo(-ps * 0.1, -ps * 0.12);
-    ctx.lineTo(-ps * 0.4, -ps * 0.1);
-    ctx.lineTo(-ps * 0.4, ps * 0.1);
-    ctx.lineTo(-ps * 0.1, ps * 0.12);
-    ctx.lineTo(-ps * 0.2, ps * 0.35);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(ps * 0.5, -ps * 0.1);
-    ctx.lineTo(-ps * 0.1, 0);
-    ctx.lineTo(ps * 0.5, ps * 0.1);
-    ctx.stroke();
+    
+    // Sesuaikan rotasi jika gambar pesawat aslinya perlu diputar 
+    // (misal ditambah Math.PI / 2 jika menghadap ke atas)
+    ctx.rotate(pl.angle + Math.PI / 2); 
+
+    if (planeImageRef.current) {
+      const ps = GAME_CONFIG.planeSize * 2; // Sesuaikan ukuran gambar pesawat
+      ctx.drawImage(
+        planeImageRef.current,
+        -ps / 2,
+        -ps / 2,
+        ps,
+        ps
+      );
+    }
     ctx.restore();
+
+    // Render teks skor tetap berada di bawahnya
     ctx.shadowBlur = 0;
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.font = "14px Poppins, system-ui, sans-serif";
@@ -300,7 +361,76 @@ const SpaceGame = ({ onClose }) => {
     gs.animId = requestAnimationFrame(gameLoop);
     return () => { if (gs.animId) cancelAnimationFrame(gs.animId); };
   }, [resizeCanvas, gameLoop]);
+useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const handleMouseMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      const gs = gameStateRef.current;
+      if (gs.gameOver) return; // Jangan gerakkan pesawat jika sudah game over
+      gs.plane.targetX = e.clientX - rect.left;
+      gs.plane.targetY = e.clientY - rect.top;
+    };
+    
+    const handleTouchMove = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = container.getBoundingClientRect();
+      const gs = gameStateRef.current;
+      if (gs.gameOver) return;
+      gs.plane.targetX = touch.clientX - rect.left;
+      gs.plane.targetY = touch.clientY - rect.top;
+    };
 
+    const handleTouchStart = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = container.getBoundingClientRect();
+      const gs = gameStateRef.current;
+      if (gs.gameOver) return;
+      gs.plane.targetX = touch.clientX - rect.left;
+      gs.plane.targetY = touch.clientY - rect.top;
+    };
+
+    // 👇 TAMBAHKAN: Fungsi untuk memicu Game Over secara manual
+    const triggerManualGameOver = () => {
+      const gs = gameStateRef.current;
+      if (!gs.gameOver) {
+        gs.gameOver = true;
+        setGameOver(true);
+      }
+    };
+
+    // 👇 TAMBAHKAN: Handler untuk tombol Keyboard (Spasi)
+    const handleKeyDown = (e) => {
+      if (e.code === "Space") {
+        e.preventDefault(); // Mencegah halaman ikut scroll ke bawah
+        triggerManualGameOver();
+      }
+    };
+
+    // 👇 TAMBAHKAN: Handler untuk Klik Mouse di area game
+    const handleClick = () => {
+      triggerManualGameOver();
+    };
+
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("touchmove", handleTouchMove, { passive: true });
+    container.addEventListener("touchstart", handleTouchStart, { passive: true });
+    
+    // Daftarkan event listener baru untuk Spasi dan Klik Mouse
+    window.addEventListener("keydown", handleKeyDown);
+    container.addEventListener("click", handleClick);
+
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("keydown", handleKeyDown);
+      container.removeEventListener("click", handleClick);
+    };
+  }, []);
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -360,11 +490,14 @@ const SpaceGame = ({ onClose }) => {
     gs.animId = requestAnimationFrame(gameLoop);
   };
 
-  return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden" style={{ cursor: "none" }}>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+return (
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden" style={{ cursor: gameOver ? "default" : "none" }}>
+      {/* 👇 Tambahkan pointer-events-none di sini */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+      
       {gameOver ? (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+        /* 👇 Tambahkan pointer-events-auto di sini agar tombol Play Again & Close bisa diklik */
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-auto">
           <div className="text-center space-y-4">
             <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">Game Over</h3>
             <p className="text-white/70 text-sm">Score: <span className="text-cyan-400 font-bold text-lg">{scoreRef.current}</span></p>
@@ -372,7 +505,7 @@ const SpaceGame = ({ onClose }) => {
               <button onClick={handlePlayAgain} className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium text-sm transition-all hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/30">Play Again</button>
               <button onClick={onClose} className="px-5 py-2.5 rounded-lg border border-white/20 text-white/80 font-medium text-sm transition-all hover:bg-white/10 hover:border-white/40">Close</button>
             </div>
-            </div>
+          </div>
         </div>
       ) : null}
     </div>
