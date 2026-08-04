@@ -1,141 +1,9 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef } from "react";
 
 const AnimatedBackground = () => {
-  const blobRefs = useRef([]);
-  const canvasRef = useRef(null);
-  const initialPositions = [
-    { x: -4, y: 0 },
-    { x: -4, y: 0 },
-    { x: 20, y: -8 },
-    { x: 20, y: -8 },
-  ];
+  const spaceRef = useRef(null);
 
-  // Galaxy stars effect
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext("2d");
-    let animationFrameId;
-    let stars = [];
-    
-    // --- ANTI-RESIZE-RESET: Track previous dimensions for detecting address-bar toggle ---
-    let lastBgWidth = window.innerWidth;
-    let lastBgHeight = window.innerHeight;
-    let resizeBgTimeout = null;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }; 
-    
-    const createStars = () => {
-      stars = [];
-      const count = Math.floor((window.innerWidth * window.innerHeight) / 4000);
-      for (let i = 0; i < count; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 2.5 + 0.5,
-          alpha: Math.random() * 0.8 + 0.2,
-          baseAlpha: Math.random() * 0.8 + 0.2,
-          twinkleSpeed: Math.random() * 0.02 + 0.005,
-          twinklePhase: Math.random() * Math.PI * 2,
-         });
-      }
-    };
-
-    resize();
-    createStars();
-    
-    let time = 0;
-    
-    const draw = () => {
-      time++;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw subtle center galaxy ambient glow
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      const gradient = ctx.createRadialGradient(
-        cx, cy, 0,
-        cx, cy, Math.max(canvas.width, canvas.height) * 0.6
-      );
-      gradient.addColorStop(0, "rgba(6, 182, 212, 0.03)");
-      gradient.addColorStop(0.3, "rgba(59, 130, 246, 0.015)");
-      gradient.addColorStop(0.6, "rgba(0, 0, 0, 0)");
-      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw and update stars
-      stars.forEach((star) => {
-        const twinkle = Math.sin(time * star.twinkleSpeed + star.twinklePhase);
-        star.alpha = star.baseAlpha + twinkle * 0.3;
-
-        // Gentle floating motion (no suction)
-        star.x += Math.sin(time * 0.001 + star.twinklePhase) * 0.08;
-        star.y += Math.cos(time * 0.001 + star.twinklePhase * 1.3) * 0.08;
-
-        // Wrap around edges
-        if (star.x < 0) star.x = canvas.width;
-        if (star.x > canvas.width) star.x = 0;
-        if (star.y < 0) star.y = canvas.height;
-        if (star.y > canvas.height) star.y = 0;
-
-        // Draw star with glow
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        
-        // Star color - white with slight blue tint
-        ctx.fillStyle = `rgba(220, 230, 255, ${star.alpha})`;
-        ctx.fill();
-
-        // Glow for larger/bright stars
-        if (star.size > 1.5 && star.alpha > 0.5) {
-          ctx.beginPath();
-          ctx.arc(star.x, star.y, star.size * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(6, 182, 212, ${star.alpha * 0.15})`;
-          ctx.fill();
-        }
-      });
-
-      animationFrameId = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    const handleResize = () => {
-      const newW = window.innerWidth;
-      const newH = window.innerHeight;
-      const wDelta = Math.abs(newW - lastBgWidth);
-      const hDelta = Math.abs(newH - lastBgHeight);
-      
-      // Only recreate stars on real resize, skip address-bar toggle
-      const isAddressBarToggleBg = wDelta <= 2 && hDelta > 0 && hDelta < 100;
-      
-      lastBgWidth = newW;
-      lastBgHeight = newH;
-      
-      resize();
-      
-      if (!isAddressBarToggleBg) {
-        // Debounce to avoid rapid recreations
-        if (resizeBgTimeout) clearTimeout(resizeBgTimeout);
-        resizeBgTimeout = setTimeout(() => {
-          createStars();
-        }, 200);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
+  // Parallax scroll effect for background image
   useEffect(() => {
     let currentScroll = 0;
     let ticking = false;
@@ -146,18 +14,17 @@ const AnimatedBackground = () => {
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          blobRefs.current.forEach((blob, index) => {
-            const initialPos = initialPositions[index];
+          // Gentle parallax drift for the background image on scroll
+          if (spaceRef.current) {
+            const maxScroll = Math.max(
+              document.documentElement.scrollHeight - window.innerHeight,
+              1
+            );
+            const progress = Math.min(currentScroll / maxScroll, 1);
+            const translateY = progress * 20;
+            spaceRef.current.style.transform = `translate3d(0, ${translateY}px, 0) scale(1)`;
+          }
 
-            const xOffset = Math.sin(currentScroll / 100 + index * 0.5) * 340;
-            const yOffset = Math.cos(currentScroll / 100 + index * 0.5) * 40;
-
-            const x = initialPos.x + xOffset;
-            const y = initialPos.y + yOffset;
-
-            blob.style.transform = `translate(${x}px, ${y}px)`;
-            blob.style.transition = "transform 1.4s ease-out";
-          });
           ticking = false;
         });
         ticking = true;
@@ -172,36 +39,26 @@ const AnimatedBackground = () => {
 
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {/* Galaxy Stars Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ pointerEvents: "none", zIndex: 0 }}
+      {/* Background Image (bottom layer) with parallax float */}
+      <img
+        ref={spaceRef}
+        src="/Black.jpg"
+        alt="Background"
+        draggable={false}
+        className="absolute inset-0 w-full h-full object-cover object-center select-none will-change-transform"
+        style={{
+          transform: "translate3d(0, 0, 0) scale(1)",
+          zIndex: -1,
+        }}
       />
-      
-      {/* Blob effects */}
-      <div className="absolute inset-0">
-        <div
-          ref={(ref) => (blobRefs.current[0] = ref)}
-          className="absolute top-0 -left-4 md:w-96 md:h-96 w-72 h-72 bg-cyan-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 md:opacity-15"
-        ></div>
-        <div
-          ref={(ref) => (blobRefs.current[1] = ref)}
-          className="absolute top-0 -right-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 md:opacity-15 hidden sm:block"
-        ></div>
-        <div
-          ref={(ref) => (blobRefs.current[2] = ref)}
-          className="absolute -bottom-8 left-[-40%] md:left-20 w-96 h-96 bg-sky-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 md:opacity-15"
-        ></div>
-        <div
-          ref={(ref) => (blobRefs.current[3] = ref)}
-          className="absolute -bottom-10 right-20 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-15 md:opacity-8 hidden sm:block"
-        ></div>
-      </div>
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f10_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f10_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+      {/* Dark overlay for readability */}
+      <div
+        className="absolute inset-0 bg-[#030014]/55 pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
     </div>
   );
 };
 
 export default AnimatedBackground;
-
