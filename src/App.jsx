@@ -64,12 +64,11 @@ function App() {
 
   return (
     
-    <HelmetProvider>
+<HelmetProvider>
       <div>
   <AnimatedBackground />
-  <TentacleCanvas showWelcome={showWelcome} isGamePlaying={isPlaying} />
-</div>
       <BrowserRouter>
+        <TentacleCanvas showWelcome={showWelcome} isGamePlaying={isPlaying} />
         <Routes>
           {/* PUBLIC */}
           <Route
@@ -118,8 +117,9 @@ function App() {
               </Suspense>
             }
           />
-        </Routes>
+</Routes>
       </BrowserRouter>
+      </div>
     </HelmetProvider>
   );
 }
