@@ -92,6 +92,109 @@ body {
 	will-change: transform, opacity !important;
   }
 
+  /* ===== Game-dev HUD utilities ===== */
+
+  .font-display {
+	font-family: "Chakra Petch", "Poppins", system-ui, sans-serif;
+	letter-spacing: 0.02em;
+  }
+
+  .eyebrow-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: "Chakra Petch", monospace;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: #67e8f9;
+  }
+
+  .eyebrow-tag::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 2px;
+	background: linear-gradient(135deg, #00d2ff, #3b82f6);
+	box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+  }
+
+  /* Corner-bracket HUD frame, add to any relative-positioned container */
+  .hud-frame {
+	position: relative;
+  }
+
+  .hud-frame::before,
+  .hud-frame::after,
+  .hud-frame .hud-corner-br,
+  .hud-frame .hud-corner-bl {
+	content: "";
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	border-color: rgba(6, 182, 212, 0.6);
+	opacity: 0;
+	transition: opacity 0.3s ease, border-color 0.3s ease;
+	pointer-events: none;
+  }
+
+  .hud-frame::before {
+	top: 8px;
+	left: 8px;
+	border-top: 2px solid;
+	border-left: 2px solid;
+  }
+
+  .hud-frame::after {
+	top: 8px;
+	right: 8px;
+	border-top: 2px solid;
+	border-right: 2px solid;
+  }
+
+  .hud-frame .hud-corner-bl {
+	bottom: 8px;
+	left: 8px;
+	border-bottom: 2px solid;
+	border-left: 2px solid;
+  }
+
+  .hud-frame .hud-corner-br {
+	bottom: 8px;
+	right: 8px;
+	border-bottom: 2px solid;
+	border-right: 2px solid;
+  }
+
+  .hud-frame:hover::before,
+  .hud-frame:hover::after,
+  .hud-frame:hover .hud-corner-bl,
+  .hud-frame:hover .hud-corner-br,
+  .hud-frame.hud-frame-active::before,
+  .hud-frame.hud-frame-active::after,
+  .hud-frame.hud-frame-active .hud-corner-bl,
+  .hud-frame.hud-frame-active .hud-corner-br {
+	opacity: 1;
+  }
+
+  /* Reduced motion: honor user preference across every custom animation */
+  @media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+	  animation-duration: 0.001ms !important;
+	  animation-iteration-count: 1 !important;
+	  transition-duration: 0.001ms !important;
+	  scroll-behavior: auto !important;
+	}
+
+	html,
+	body {
+	  scroll-behavior: auto !important;
+	}
+  }
+
 
 
  @keyframes shine {

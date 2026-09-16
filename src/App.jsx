@@ -7,6 +7,7 @@ import Home from "./Pages/Home";
 import About from "./Pages/About";
 import AnimatedBackground from "./components/Background";
 import TentacleCanvas from "./components/DragonCanvas";
+import ScrollProgress from "./components/ScrollProgress";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 
@@ -66,6 +67,7 @@ function App() {
     
 <HelmetProvider>
       <div>
+  <ScrollProgress />
   <AnimatedBackground />
       <BrowserRouter>
         <TentacleCanvas showWelcome={showWelcome} isGamePlaying={isPlaying} />

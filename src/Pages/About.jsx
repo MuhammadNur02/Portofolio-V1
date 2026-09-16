@@ -1,14 +1,56 @@
-import React, { useEffect, useState, memo, useMemo } from "react"
+import React, { useEffect, useState, useRef, memo, useMemo } from "react"
 import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+
+const IN_VIEW_OPTS = { threshold: 0.4 };
+
+const useCountOnView = (ref, target) => {
+  const [inView, setInView] = useState(false);
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (!ref.current || inView) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+        observer.disconnect();
+      }
+    }, IN_VIEW_OPTS);
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref, inView]);
+
+  useEffect(() => {
+    if (!inView) return;
+    const numericTarget = Number(target) || 0;
+    if (numericTarget === 0) {
+      setDisplayValue(0);
+      return;
+    }
+    const duration = 900;
+    const start = performance.now();
+    let frameId;
+    const tick = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.round(eased * numericTarget));
+      if (progress < 1) frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [inView, target]);
+
+  return displayValue;
+};
 
 // Memoized Components
 const Header = memo(() => (
   <div className="text-center lg:mb-8 mb-2 px-[5%]">
     <div className="inline-block relative group">
-      <h2 
-        className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]" 
+      <span className="eyebrow-tag justify-center mb-3 flex">// 02 ABOUT</span>
+      <h2
+        className="font-display text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]"
         data-aos="zoom-in-up"
         data-aos-duration="600"
       >
@@ -69,22 +111,23 @@ const ProfileImage = memo(() => (
   </div>
 ));
 
-const StatCard = memo(({ icon: Icon, color, value, label, description, animation }) => (
-  <div data-aos={animation} data-aos-duration={1300} className="relative group">
+const StatCard = memo(({ icon: Icon, color, value, label, description, animation }) => {
+  const cardRef = useRef(null);
+  const displayValue = useCountOnView(cardRef, value);
+
+  return (
+  <div ref={cardRef} data-aos={animation} data-aos-duration={1300} className="relative group hud-frame">
     <div className="relative z-10 bg-gray-900/50 backdrop-blur-lg rounded-2xl p-6 border border-white/10 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl h-full flex flex-col justify-between">
       <div className={`absolute -z-10 inset-0 bg-gradient-to-br ${color} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
-      
+
       <div className="flex items-center justify-between mb-4">
         <div className="w-16 h-16 rounded-full flex items-center justify-center bg-white/10 transition-transform group-hover:rotate-6">
           <Icon className="w-8 h-8 text-white" />
         </div>
-        <span 
-          className="text-4xl font-bold text-white"
-          data-aos="fade-up-left"
-          data-aos-duration="1500"
-          data-aos-anchor-placement="top-bottom"
+        <span
+          className="font-display text-4xl font-bold text-white tabular-nums"
         >
-          {value}
+          {displayValue}
         </span>
       </div>
 
@@ -110,8 +153,11 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
         </div>
       </div>
     </div>
+    <span className="hud-corner-bl"></span>
+    <span className="hud-corner-br"></span>
   </div>
-));
+  );
+});
 
 const AboutPage = () => {
   // Memoized calculations
@@ -215,8 +261,8 @@ const AboutPage = () => {
       <div className="w-full mx-auto pt-8 sm:pt-12 relative">
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="space-y-6 text-center lg:text-left">
-            <h2 
-              className="text-3xl sm:text-4xl lg:text-5xl font-bold"
+            <h2
+              className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold"
               data-aos="fade-right"
               data-aos-duration="1000"
             >
