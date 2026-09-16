@@ -111,10 +111,11 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
   return (
     <div className="px-[5%] sm:px-[5%] lg:px-[10%] " >
       <div className="text-center lg:mt-[5%] mt-10 mb-2 sm:px-0 px-[5%]">
+        <span className="eyebrow-tag justify-center mb-3 flex">// 04 CONTACT</span>
         <h2
           data-aos="fade-down"
           data-aos-duration="1000"
-          className="inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]"
+          className="font-display inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]"
         >
           <span
             style={{
@@ -149,7 +150,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
           >
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
+                <h2 className="font-display text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
                   Hubungi
                 </h2>
                 <p className="text-gray-400">

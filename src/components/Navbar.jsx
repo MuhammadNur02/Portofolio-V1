@@ -82,9 +82,13 @@ const Navbar = () => {
                         <a
                             href="#Home"
                             onClick={(e) => scrollToSection(e, "#Home")}
-                            className="text-xl font-bold bg-gradient-to-r from-[#3b82f6] to-[#00d2ff] bg-clip-text text-transparent"
+                            className="font-display text-xl font-bold tracking-wide flex items-center gap-0.5"
                         >
-                            Julian
+                            <span className="text-[#00d2ff]">[</span>
+                            <span className="bg-gradient-to-r from-[#3b82f6] to-[#00d2ff] bg-clip-text text-transparent">
+                                Julian
+                            </span>
+                            <span className="text-[#00d2ff]">]</span>
                         </a>
                     </div>
         
@@ -96,7 +100,7 @@ const Navbar = () => {
                                     key={item.label}
                                     href={item.href}
                                     onClick={(e) => scrollToSection(e, item.href)}
-                                    className="group relative px-1 py-2 text-sm font-medium"
+                                    className="group relative px-1 py-2 text-sm font-medium font-display uppercase tracking-wide"
                                 >
                                     <span
                                         className={`relative z-10 transition-colors duration-300 ${
@@ -151,7 +155,7 @@ const Navbar = () => {
                             key={item.label}
                             href={item.href}
                             onClick={(e) => scrollToSection(e, item.href)}
-                            className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
+                            className={`block px-4 py-3 text-lg font-medium font-display uppercase tracking-wide transition-all duration-300 ease ${
                                 activeSection === item.href.substring(1)
                                     ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] bg-clip-text text-transparent font-semibold"
                                     : "text-[#e2d3fd] hover:text-white"

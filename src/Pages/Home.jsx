@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { Helmet } from "react-helmet-async"
 import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles, Gamepad2 } from "lucide-react"
+import { motion, useScroll, useTransform } from "framer-motion"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import SpaceGame from "../components/SpaceGame"
@@ -10,7 +11,7 @@ const StatusBadge = memo(() => (
     <div className="relative group">
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-full blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
       <div className="relative px-3 sm:px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10">
-        <span className="bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-transparent bg-clip-text sm:text-sm text-[0.7rem] font-medium flex items-center">
+        <span className="font-display bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-transparent bg-clip-text sm:text-sm text-[0.7rem] font-semibold tracking-wide uppercase flex items-center">
           <Sparkles className="sm:w-4 sm:h-4 w-3 h-3 mr-2 text-cyan-400" />
           Ready to Innovate
         </span>
@@ -21,7 +22,7 @@ const StatusBadge = memo(() => (
 
 const MainTitle = memo(() => (
   <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
-    <h1 className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
+    <h1 className="font-display text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
       <span className="relative inline-block">
         <span className="absolute -inset-2 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] blur-2xl opacity-20"></span>
         <span className="relative bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent">
@@ -109,6 +110,15 @@ const Home = ({ isPlaying, setIsPlaying }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
 
+  // Scroll-linked parallax for the hero visual as the visitor scrolls past it
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  })
+  const visualY = useTransform(scrollYProgress, [0, 1], [0, 140])
+  const visualOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0])
+
   useEffect(() => {
     const initAOS = () => {
       AOS.init({
@@ -181,7 +191,7 @@ const Home = ({ isPlaying, setIsPlaying }) => {
         `}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#030014] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
+      <div ref={heroRef} className="min-h-screen bg-[#030014] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
         <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
           <div className="container mx-auto min-h-screen">
             <div className="flex flex-col lg:flex-row items-center justify-center h-screen md:justify-between gap-0 sm:gap-12 lg:gap-20">
@@ -251,7 +261,9 @@ const Home = ({ isPlaying, setIsPlaying }) => {
 </div>
 
 {/* Right Column - Toggles between GIF illustration and SpaceGame */}
-<div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0">
+<motion.div
+  style={{ y: visualY, opacity: visualOpacity }}
+  className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0">
   
   {/* GIF Illustration */}
   <div
@@ -291,7 +303,7 @@ const Home = ({ isPlaying, setIsPlaying }) => {
       </div>
     </div>
   </div>
-</div>
+</motion.div>
             </div>
           </div>
         </div>

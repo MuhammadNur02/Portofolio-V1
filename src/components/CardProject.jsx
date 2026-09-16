@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, ArrowRight } from "lucide-react";
 import { toSlug } from "../utils/slug";
 
+const TILT_MAX_DEG = 6;
+
 const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
+  const cardRef = useRef(null);
+
   const handleLiveDemo = (e) => {
     if (!ProjectLink) {
       e.preventDefault();
@@ -18,8 +22,29 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
     }
   };
 
+  const handleMouseMove = (e) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    card.style.transform = `perspective(800px) rotateX(${(-py * TILT_MAX_DEG).toFixed(2)}deg) rotateY(${(px * TILT_MAX_DEG).toFixed(2)}deg) translateZ(0)`;
+  };
+
+  const handleMouseLeave = () => {
+    const card = cardRef.current;
+    if (!card) return;
+    card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+  };
+
   return (
-    <div className="group relative w-full">
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative w-full hud-frame transition-transform duration-300 ease-out will-change-transform"
+      style={{ transformStyle: "preserve-3d" }}
+    >
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-indigo-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
 
@@ -33,7 +58,7 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
           </div>
 
           <div className="mt-4 space-y-3">
-            <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-200 via-cyan-200 to-white bg-clip-text text-transparent">
+            <h3 className="font-display text-xl font-semibold bg-gradient-to-r from-blue-200 via-cyan-200 to-white bg-clip-text text-transparent">
               {Title}
             </h3>
 
@@ -79,6 +104,8 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
           <div className="absolute inset-0 border border-white/0 group-hover:border-cyan-500/50 rounded-xl transition-colors duration-300 -z-50"></div>
         </div>
       </div>
+      <span className="hud-corner-bl"></span>
+      <span className="hud-corner-br"></span>
     </div>
   );
 };
