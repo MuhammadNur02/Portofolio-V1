@@ -4,6 +4,7 @@ import daunUrl from "../assets/daun.webp";
 
 // Lives in /public (not bundled) so it's referenced by URL, not imported.
 const KUIL_URL = "/Kuil-jepang.webp";
+const TESTIMONI_URL = "/BackgroundTestimoni.webp";
 
 const PALETTE = {
   fog: 0x0b1620,
@@ -58,11 +59,29 @@ function loadPlainTexture(url) {
   });
 }
 
-function makeBackdrop(texture, aspect) {
+function makeBackdrop(texture, aspect, { transparent = false, opacity = 1, renderOrder = 0 } = {}) {
   const geometry = new THREE.PlaneGeometry(aspect, 1);
-  const material = new THREE.MeshBasicMaterial({ map: texture, fog: true });
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    fog: true,
+    transparent,
+    opacity,
+    depthWrite: !transparent,
+  });
   const mesh = new THREE.Mesh(geometry, material);
+  mesh.renderOrder = renderOrder;
   return { mesh, geometry, material, aspect };
+}
+
+// Blend factor (0..1) for how deep the scroll is inside [start, end], ramping over `margin` at each edge.
+function rangeBlend(p, start, end, margin) {
+  if (end <= start) return 0;
+  const m = Math.max(0.005, Math.min(margin, (end - start) / 2));
+  if (p < start - m) return 0;
+  if (p < start) return (p - (start - m)) / m;
+  if (p <= end) return 1;
+  if (p < end + m) return 1 - (p - end) / m;
+  return 0;
 }
 
 // Scales the backdrop plane to cover the camera frustum at a given distance (CSS "background-size: cover").
@@ -167,6 +186,27 @@ const SceneBackground = () => {
 
     let disposed = false;
     let backdrop = null;
+    let testimoniBackdrop = null;
+
+    // Where the Testimonials section falls in the page's 0..1 scroll range — null while the section isn't mounted yet.
+    let testimonialRange = null;
+    const updateTestimonialRange = () => {
+      const el = document.getElementById("Testimonials");
+      const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      if (!el) {
+        testimonialRange = null;
+        return;
+      }
+      // getBoundingClientRect + current scroll, so this is correct regardless of any positioned ancestor.
+      const rect = el.getBoundingClientRect();
+      const top = rect.top + window.pageYOffset;
+      // `p` tracks the viewport's top edge, so the section is on screen while
+      // p is between "viewport-height above the section's bottom" and "the section's bottom".
+      testimonialRange = {
+        start: (top - window.innerHeight) / maxScroll,
+        end: (top + rect.height) / maxScroll,
+      };
+    };
 
     const resize = () => {
       const { innerWidth: w, innerHeight: h } = window;
@@ -174,6 +214,8 @@ const SceneBackground = () => {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       if (backdrop) fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z);
+      if (testimoniBackdrop) fitBackdropCover(testimoniBackdrop, camera, CAM_START_Z - BACKDROP_Z);
+      updateTestimonialRange();
     };
     resize();
 
@@ -186,6 +228,18 @@ const SceneBackground = () => {
       backdrop.mesh.position.z = BACKDROP_Z;
       fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z);
       scene.add(backdrop.mesh);
+    });
+
+    // Crossfades in over the Testimonials section only, replacing the temple backdrop for that stretch of scroll.
+    loadPlainTexture(TESTIMONI_URL).then(({ texture, aspect }) => {
+      if (disposed) {
+        texture.dispose();
+        return;
+      }
+      testimoniBackdrop = makeBackdrop(texture, aspect, { transparent: true, opacity: 0, renderOrder: 1 });
+      testimoniBackdrop.mesh.position.z = BACKDROP_Z;
+      fitBackdropCover(testimoniBackdrop, camera, CAM_START_Z - BACKDROP_Z);
+      scene.add(testimoniBackdrop.mesh);
     });
 
     // Falling leaves — built once the real leaf photo finishes loading.
@@ -211,11 +265,16 @@ const SceneBackground = () => {
     const handleScroll = () => {
       const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
       targetProgress = Math.min(Math.max(window.pageYOffset / maxScroll, 0), 1);
+      updateTestimonialRange();
     };
     if (!reduceMotion) {
       window.addEventListener("scroll", handleScroll, { passive: true });
       handleScroll();
+    } else {
+      updateTestimonialRange();
     }
+    // Testimonials loads its data asynchronously and may mount well after first paint — recheck a few times.
+    const rangeRetries = [300, 1000, 2500].map((delay) => setTimeout(updateTestimonialRange, delay));
 
     let raf;
     let lastT = performance.now();
@@ -240,6 +299,14 @@ const SceneBackground = () => {
 
       fallingLeaves.group.position.x = -p * 4;
 
+      if (backdrop && testimoniBackdrop) {
+        const testimonialT = testimonialRange
+          ? rangeBlend(p, testimonialRange.start, testimonialRange.end, 0.05)
+          : 0;
+        backdrop.material.opacity = 1 - testimonialT;
+        testimoniBackdrop.material.opacity = testimonialT;
+      }
+
       const fogT = Math.max(0, (p - 0.55) / 0.45);
       scene.fog.color.set(PALETTE.fog).lerp(new THREE.Color(PALETTE.fogDeep), fogT * 0.35);
 
@@ -255,11 +322,18 @@ const SceneBackground = () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", handleScroll);
+      rangeRetries.forEach(clearTimeout);
 
       if (backdrop) {
         backdrop.geometry.dispose();
         backdrop.material.map?.dispose?.();
         backdrop.material.dispose();
+      }
+
+      if (testimoniBackdrop) {
+        testimoniBackdrop.geometry.dispose();
+        testimoniBackdrop.material.map?.dispose?.();
+        testimoniBackdrop.material.dispose();
       }
 
       fallingLeaves.geometry?.dispose?.();
