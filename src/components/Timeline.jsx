@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
 import { GraduationCap, Briefcase, Award } from "lucide-react";
 import { supabase } from "../supabase";
+import { useLanguage } from "../context/LanguageContext";
 
 const TYPE_ICON = {
   education: GraduationCap,
@@ -56,6 +57,7 @@ const TimelineItem = memo(({ item, index, isLast }) => {
 });
 
 const Timeline = () => {
+  const { t } = useLanguage();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,10 +90,10 @@ const Timeline = () => {
     <div className="mt-16 sm:mt-20" data-aos="fade-up">
       <div className="text-center mb-10">
         <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
-          Experience & Education
+          {t.about.timelineTitle}
         </h2>
         <p className="mt-2 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
-          Perjalanan pendidikan, organisasi, dan pengalaman kerja saya sejauh ini.
+          {t.about.timelineSubtitle}
         </p>
       </div>
 

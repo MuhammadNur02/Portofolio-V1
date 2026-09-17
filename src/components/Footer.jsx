@@ -1,4 +1,7 @@
+import { useLanguage } from "../context/LanguageContext";
+
 const Footer = () => {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -10,7 +13,7 @@ const Footer = () => {
           <a href="https://portofolio-v1-one-gamma.vercel.app/" className="hover:underline">
             Muhammad Nurrahman Juliansyah
           </a>
-          . All Rights Reserved.
+          . {t.footer.rights}
         </span>
       </center>
     </footer>

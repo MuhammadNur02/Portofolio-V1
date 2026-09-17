@@ -48,6 +48,7 @@ import {
 } from "react-icons/si";
 import Swal from "sweetalert2";
 import { toSlug } from "../utils/slug";
+import { useLanguage } from "../context/LanguageContext";
 
 const TECH_ICONS = {
   react: { icon: SiReact, color: "#61DAFB" },
@@ -126,6 +127,7 @@ const FeatureItem = ({ feature }) => {
 };
 
 const ProjectStats = ({ project }) => {
+  const { t } = useLanguage();
   const techStackCount = project?.TechStack?.length || 0;
   const featuresCount = project?.Features?.length || 0;
 
@@ -144,7 +146,7 @@ const ProjectStats = ({ project }) => {
             {techStackCount}
           </div>
           <div className="text-[10px] md:text-xs text-gray-400">
-            Total Teknologi
+            {t.projectDetail.totalTech}
           </div>
         </div>
       </div>
@@ -161,7 +163,7 @@ const ProjectStats = ({ project }) => {
             {featuresCount}
           </div>
           <div className="text-[10px] md:text-xs text-gray-400">
-            Fitur Utama
+            {t.projectDetail.totalFeatures}
           </div>
         </div>
       </div>
@@ -169,13 +171,13 @@ const ProjectStats = ({ project }) => {
   );
 };
 
-const handleGithubClick = (githubLink) => {
+const handleGithubClick = (githubLink, t) => {
   if (githubLink === "Private") {
     Swal.fire({
       icon: "info",
-      title: "Source Code Private",
-      text: "Maaf, source code untuk proyek ini bersifat privat.",
-      confirmButtonText: "Mengerti",
+      title: t.projectDetail.privateTitle,
+      text: t.projectDetail.privateText,
+      confirmButtonText: t.projectDetail.privateConfirm,
       confirmButtonColor: "#00d2ff",
       background: "#030014",
       color: "#ffffff",
@@ -186,6 +188,7 @@ const handleGithubClick = (githubLink) => {
 };
 
 const ProjectDetails = () => {
+  const { t } = useLanguage();
   const { slug } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
@@ -216,7 +219,7 @@ const ProjectDetails = () => {
         <div className="text-center space-y-6 animate-fadeIn">
           <div className="w-16 h-16 md:w-24 md:h-24 mx-auto border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
           <h2 className="text-xl md:text-3xl font-bold text-white">
-            Loading Project...
+            {t.projectDetail.loading}
           </h2>
         </div>
       </div>
@@ -284,10 +287,10 @@ const ProjectDetails = () => {
                 className="group inline-flex items-center space-x-1.5 md:space-x-2 px-3 md:px-5 py-2 md:py-2.5 bg-white/5 backdrop-blur-xl rounded-xl text-white/90 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-sm md:text-base"
               >
                 <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
-                <span>Back</span>
+                <span>{t.projectDetail.back}</span>
               </button>
               <div className="flex items-center space-x-1 md:space-x-2 text-sm md:text-base text-white/50">
-                <span>Projects</span>
+                <span>{t.projectDetail.projects}</span>
                 <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="text-white/90 truncate">{project.Title}</span>
               </div>
@@ -307,7 +310,7 @@ const ProjectDetails = () => {
 
                 <div className="space-y-2 md:space-y-3">
                   <h2 className="text-sm md:text-base font-semibold text-cyan-400/90 uppercase tracking-wider">
-                    Project Overview
+                    {t.projectDetail.overview}
                   </h2>
                   <div className="prose prose-invert max-w-none">
                     <p className="text-base md:text-lg text-gray-300/90 leading-relaxed">
@@ -327,7 +330,7 @@ const ProjectDetails = () => {
                   >
                     <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-cyan-600/10 to-blue-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
                     <ExternalLink className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
-                    <span className="relative font-medium">Live Demo</span>
+                    <span className="relative font-medium">{t.projectDetail.liveDemo}</span>
                   </a>
 
                   <a
@@ -336,19 +339,19 @@ const ProjectDetails = () => {
                     rel="noopener noreferrer"
                     className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 text-blue-300 rounded-xl transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
                     onClick={(e) =>
-                      !handleGithubClick(project.Github) && e.preventDefault()
+                      !handleGithubClick(project.Github, t) && e.preventDefault()
                     }
                   >
                     <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-blue-600/10 to-cyan-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
                     <Github className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
-                    <span className="relative font-medium">Github</span>
+                    <span className="relative font-medium">{t.projectDetail.github}</span>
                   </a>
                 </div>
 
                 <div className="space-y-4 md:space-y-6">
                   <h3 className="text-lg md:text-xl font-semibold text-white/90 mt-[3rem] md:mt-0 flex items-center gap-2 md:gap-3">
                     <Code2 className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
-                    Technologies Used
+                    {t.projectDetail.technologiesUsed}
                   </h3>
                   {project.TechStack.length > 0 ? (
                     <div className="flex flex-wrap gap-2 md:gap-3">
@@ -358,7 +361,7 @@ const ProjectDetails = () => {
                     </div>
                   ) : (
                     <p className="text-sm md:text-base text-gray-400 opacity-50">
-                      No technologies added.
+                      {t.projectDetail.noTech}
                     </p>
                   )}
                 </div>
@@ -379,7 +382,7 @@ const ProjectDetails = () => {
                 <div className="bg-white/[0.02] backdrop-blur-xl rounded-2xl p-8 border border-white/10 space-y-6 hover:border-white/20 transition-colors duration-300 group">
                   <h3 className="text-xl font-semibold text-white/90 flex items-center gap-3">
                     <Star className="w-5 h-5 text-yellow-400 group-hover:rotate-[20deg] transition-transform duration-300" />
-                    Key Features
+                    {t.projectDetail.keyFeatures}
                   </h3>
                   {project.Features.length > 0 ? (
                     <ul className="list-none space-y-2">
@@ -389,7 +392,7 @@ const ProjectDetails = () => {
                     </ul>
                   ) : (
                     <p className="text-gray-400 opacity-50">
-                      No features added.
+                      {t.projectDetail.noFeatures}
                     </p>
                   )}
                 </div>

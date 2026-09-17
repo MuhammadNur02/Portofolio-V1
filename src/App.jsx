@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useState, lazy, Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
+import { LanguageProvider } from "./context/LanguageContext";
 import "./index.css";
 import Navbar from "./components/Navbar";
 import Home from "./Pages/Home";
@@ -67,6 +68,7 @@ function App() {
   return (
     
 <HelmetProvider>
+    <LanguageProvider>
       <div>
   <AnimatedBackground />
   <Analytics />
@@ -121,6 +123,7 @@ function App() {
 </Routes>
       </BrowserRouter>
       </div>
+    </LanguageProvider>
     </HelmetProvider>
   );
 }

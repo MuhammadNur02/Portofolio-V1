@@ -2,8 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, ArrowRight } from "lucide-react";
 import { toSlug } from "../utils/slug";
+import { useLanguage } from "../context/LanguageContext";
 
 const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
+  const { t } = useLanguage();
+
   const handleLiveDemo = (e) => {
     if (!ProjectLink) {
       e.preventDefault();
@@ -50,12 +53,12 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
                   onClick={handleLiveDemo}
                   className="inline-flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
                 >
-                  <span className="text-sm font-medium">Live Demo</span>
+                  <span className="text-sm font-medium">{t.card.liveDemo}</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
               ) : (
                 <span className="text-gray-500 text-sm">
-                  Demo Not Available
+                  {t.card.demoUnavailable}
                 </span>
               )}
 
@@ -65,12 +68,12 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
                   onClick={handleDetails}
                   className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/90 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 >
-                  <span className="text-sm font-medium">Details</span>
+                  <span className="text-sm font-medium">{t.card.details}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : (
                 <span className="text-gray-500 text-sm">
-                  Details Not Available
+                  {t.card.detailsUnavailable}
                 </span>
               )}
             </div>

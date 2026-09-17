@@ -3,6 +3,7 @@ import { Quote, Sparkles } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { supabase } from "../supabase";
+import { useLanguage } from "../context/LanguageContext";
 
 const TestimonialSkeleton = () => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto animate-pulse">
@@ -61,6 +62,7 @@ const TestimonialCard = memo(({ item, index }) => (
 ));
 
 const Testimonials = () => {
+  const { t } = useLanguage();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,13 +103,13 @@ const Testimonials = () => {
       <div className="text-center mb-12">
         <p className="inline-flex items-center gap-2 text-cyan-300/80 text-xs sm:text-sm font-medium mb-2">
           <Sparkles className="w-4 h-4" />
-          What People Say
+          {t.testimonials.badge}
         </p>
         <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
-          Testimonials
+          {t.testimonials.title}
         </h2>
         <p className="mt-2 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
-          Sedikit cerita dari orang-orang yang pernah bekerja sama dengan saya.
+          {t.testimonials.subtitle}
         </p>
       </div>
 
