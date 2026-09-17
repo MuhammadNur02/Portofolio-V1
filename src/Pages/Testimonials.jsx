@@ -113,7 +113,7 @@ const Testimonials = () => {
 
   return (
     <div
-      className="relative z-10 bg-[#030014] px-[5%] lg:px-[10%] py-16 sm:py-20"
+      className="relative z-10 px-[5%] lg:px-[10%] py-16 sm:py-20"
       id="Testimonials"
     >
       <div className="text-center mb-12">

@@ -7,7 +7,7 @@ const KUIL_URL = "/Kuil-jepang.webp";
 
 const PALETTE = {
   fog: 0x0b1620,
-  fogDeep: 0x010204,
+  fogDeep: 0x090a10,
 };
 
 // Tint variants applied on top of the real leaf photo for a little color variety.
@@ -240,7 +240,8 @@ const SceneBackground = () => {
 
       fallingLeaves.group.position.x = -p * 4;
 
-      scene.fog.color.set(PALETTE.fog).lerp(new THREE.Color(PALETTE.fogDeep), p * 0.5);
+      const fogT = Math.max(0, (p - 0.55) / 0.45);
+      scene.fog.color.set(PALETTE.fog).lerp(new THREE.Color(PALETTE.fogDeep), fogT * 0.35);
 
       updateLeaves(fallingLeaves.leaves, dt, elapsed, LEAF_BOUNDS, driftScale, 1 + p * 0.6);
 
