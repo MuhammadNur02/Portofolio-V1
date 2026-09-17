@@ -6,7 +6,7 @@ import { supabase } from "../supabase";
 import { useLanguage } from "../context/LanguageContext";
 
 const TestimonialSkeleton = () => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto animate-pulse">
+  <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto animate-pulse">
     {Array.from({ length: 3 }).map((_, i) => (
       <div
         key={i}
@@ -113,10 +113,19 @@ const Testimonials = () => {
 
   return (
     <div
-      className="relative z-10 px-[5%] lg:px-[10%] py-16 sm:py-20"
+      className="relative z-10 overflow-hidden px-[5%] lg:px-[10%] py-16 sm:py-20"
       id="Testimonials"
     >
-      <div className="text-center mb-12">
+      <img
+        src="/Kane.jpg"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className="absolute inset-0 z-0 w-full h-full object-cover select-none"
+      />
+      <div className="absolute inset-0 z-0 bg-[#030014]/65" />
+
+      <div className="relative z-10 text-center mb-12">
         <p className="inline-flex items-center gap-2 text-orange-300/80 text-xs sm:text-sm font-medium mb-2">
           <Sparkles className="w-4 h-4" />
           {t.testimonials.badge}
@@ -132,7 +141,7 @@ const Testimonials = () => {
       {loading ? (
         <TestimonialSkeleton />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {items.map((item, index) => (
             <TestimonialCard key={item.id} item={item} index={index} />
           ))}
