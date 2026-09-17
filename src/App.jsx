@@ -8,7 +8,6 @@ import Navbar from "./components/Navbar";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
 import AnimatedBackground from "./components/Background";
-import TentacleCanvas from "./components/DragonCanvas";
 import CursorTrail from "./components/CursorTrail";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
@@ -17,6 +16,7 @@ import Login from "./Pages/Login";
 import Dashboard from "./Pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+const SceneBackground = lazy(() => import("./components/SceneBackground"));
 const Portofolio = lazy(() => import("./Pages/Portofolio"));
 const Testimonials = lazy(() => import("./Pages/Testimonials"));
 const ContactPage = lazy(() => import("./Pages/Contact"));
@@ -75,7 +75,9 @@ function App() {
   <Analytics />
   <CursorTrail />
       <BrowserRouter>
-        <TentacleCanvas />
+        <Suspense fallback={null}>
+          <SceneBackground />
+        </Suspense>
         <Routes>
           {/* PUBLIC */}
           <Route
