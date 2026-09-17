@@ -85,6 +85,7 @@ export const translations = {
       rights: "Seluruh Hak Cipta Dilindungi.",
     },
     card: {
+      featured: "Unggulan",
       liveDemo: "Demo Langsung",
       demoUnavailable: "Demo Tidak Tersedia",
       details: "Detail",
@@ -194,6 +195,7 @@ export const translations = {
       rights: "All Rights Reserved.",
     },
     card: {
+      featured: "Featured",
       liveDemo: "Live Demo",
       demoUnavailable: "Demo Not Available",
       details: "Details",

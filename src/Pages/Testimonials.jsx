@@ -34,32 +34,48 @@ const Avatar = memo(({ item }) => {
   );
 });
 
-const TestimonialCard = memo(({ item, index }) => (
-  <div
-    className="relative group h-full"
-    data-aos="fade-up"
-    data-aos-delay={index * 150}
-  >
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-2xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-500" />
-    <div className="relative h-full flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-500/30 transition-colors duration-300">
-      <Quote className="w-7 h-7 text-cyan-400/40 mb-3" />
-      <p className="text-gray-300/90 text-sm sm:text-base leading-relaxed flex-1">
-        "{item.quote}"
-      </p>
-      <div className="mt-5 pt-4 border-t border-white/10 flex items-center gap-3">
-        <Avatar item={item} />
-        <div className="min-w-0">
-          <p className="text-white font-medium text-sm sm:text-base truncate">
-            {item.name}
-          </p>
-          <p className="text-gray-500 text-xs sm:text-sm truncate">
-            {item.role}
-          </p>
+const TestimonialCard = memo(({ item, index }) => {
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--x", `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty("--y", `${e.clientY - rect.top}px`);
+  };
+
+  return (
+    <div
+      className="relative group h-full"
+      data-aos="fade-up"
+      data-aos-delay={index * 150}
+      onMouseMove={handleMouseMove}
+    >
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4] rounded-2xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-500" />
+      <div className="relative h-full flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-500/30 transition-colors duration-300 overflow-hidden">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background:
+              "radial-gradient(220px circle at var(--x, 50%) var(--y, 50%), rgba(139,92,246,0.15), transparent 70%)",
+          }}
+        />
+        <Quote className="relative w-7 h-7 text-amber-400/70 mb-3" />
+        <p className="relative text-gray-300/90 text-sm sm:text-base leading-relaxed flex-1">
+          "{item.quote}"
+        </p>
+        <div className="relative mt-5 pt-4 border-t border-white/10 flex items-center gap-3">
+          <Avatar item={item} />
+          <div className="min-w-0">
+            <p className="text-white font-medium text-sm sm:text-base truncate">
+              {item.name}
+            </p>
+            <p className="text-gray-500 text-xs sm:text-sm truncate">
+              {item.role}
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-));
+  );
+});
 
 const Testimonials = () => {
   const { t } = useLanguage();
@@ -105,7 +121,7 @@ const Testimonials = () => {
           <Sparkles className="w-4 h-4" />
           {t.testimonials.badge}
         </p>
-        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
+        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4]">
           {t.testimonials.title}
         </h2>
         <p className="mt-2 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
