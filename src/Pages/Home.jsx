@@ -122,6 +122,7 @@ const Home = () => {
   const [charIndex, setCharIndex] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [parallax, setParallax] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     setText("")
@@ -254,7 +255,16 @@ const Home = () => {
 </div>
 
 {/* Right Column - GIF illustration */}
-<div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0">
+<div
+  className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0"
+  onMouseMove={(e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relX = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+    const relY = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+    setParallax({ x: relX * 12, y: relY * 12 });
+  }}
+  onMouseLeave={() => setParallax({ x: 0, y: 0 })}
+>
 
   {/* GIF Illustration */}
   <div
@@ -262,7 +272,13 @@ const Home = () => {
     onMouseLeave={() => setIsHovering(false)}
     className="absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out opacity-100 translate-x-0 scale-100"
   >
-    <div className="relative w-full opacity-90">
+    <div
+      className="relative w-full opacity-90"
+      style={{
+        transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)`,
+        transition: "transform 0.3s ease-out",
+      }}
+    >
       <div className={`absolute inset-0 bg-gradient-to-r from-[#00d2ff]/10 to-[#3b82f6]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
         isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
       }`}></div>

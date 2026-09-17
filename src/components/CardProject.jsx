@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ExternalLink, ArrowRight } from "lucide-react";
+import { ExternalLink, ArrowRight, Sparkles } from "lucide-react";
 import { toSlug } from "../utils/slug";
 import { useLanguage } from "../context/LanguageContext";
 
-const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
+const CardProject = ({ Img, Title, Description, Link: ProjectLink, id, featured = false }) => {
   const { t } = useLanguage();
 
   const handleLiveDemo = (e) => {
@@ -21,30 +21,56 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
     }
   };
 
-  return (
-    <div className="group relative w-full">
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-indigo-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--x", `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty("--y", `${e.clientY - rect.top}px`);
+  };
 
-        <div className="relative p-5 z-10">
+  return (
+    <div className="group relative w-full h-full" onMouseMove={handleMouseMove}>
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-cyan-500/20 h-full">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-indigo-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
+          style={{
+            background:
+              "radial-gradient(280px circle at var(--x, 50%) var(--y, 50%), rgba(6,182,212,0.12), transparent 70%)",
+          }}
+        />
+
+        {featured && (
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-xs font-medium backdrop-blur-sm">
+            <Sparkles className="w-3 h-3" />
+            {t.card.featured}
+          </div>
+        )}
+
+        <div className="relative p-5 z-10 flex flex-col h-full">
           <div className="relative overflow-hidden rounded-lg">
             <img
               src={Img}
               alt={Title}
-              className="w-full h-full object-cover aspect-[16/8] transform group-hover:scale-105 transition-transform duration-500"
+              className={`w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ${
+                featured ? "aspect-[16/9]" : "aspect-[16/8]"
+              }`}
             />
           </div>
 
-          <div className="mt-4 space-y-3">
-            <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-200 via-cyan-200 to-white bg-clip-text text-transparent">
+          <div className="mt-4 space-y-3 flex-1 flex flex-col">
+            <h3
+              className={`font-semibold bg-gradient-to-r from-blue-200 via-cyan-200 to-white bg-clip-text text-transparent ${
+                featured ? "text-2xl" : "text-xl"
+              }`}
+            >
               {Title}
             </h3>
 
-            <p className="text-gray-300/80 text-sm leading-relaxed line-clamp-2">
+            <p className={`text-gray-300/80 text-sm leading-relaxed ${featured ? "line-clamp-3" : "line-clamp-2"}`}>
               {Description}
             </p>
 
-            <div className="pt-4 flex items-center justify-between">
+            <div className="pt-4 mt-auto flex items-center justify-between">
               {ProjectLink ? (
                 <a
                   href={ProjectLink || "#"}

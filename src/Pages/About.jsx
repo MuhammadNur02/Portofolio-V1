@@ -1,9 +1,24 @@
-import React, { useEffect, useState, memo, useMemo } from "react"
+import React, { useEffect, useState, useRef, memo, useMemo } from "react"
 import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from "lucide-react"
+import { useInView, animate } from "framer-motion"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Timeline from "../components/Timeline"
 import { useLanguage } from "../context/LanguageContext"
+
+const useCountUp = (target, isInView) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!isInView) return;
+    const controls = animate(0, target, {
+      duration: 1.4,
+      ease: "easeOut",
+      onUpdate: (v) => setCount(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [isInView, target]);
+  return count;
+};
 
 // Memoized Components
 const Header = memo(() => {
@@ -12,7 +27,7 @@ const Header = memo(() => {
     <div className="text-center lg:mb-8 mb-2 px-[5%]">
       <div className="inline-block relative group">
         <h2
-          className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]"
+          className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4]"
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
@@ -74,22 +89,24 @@ const ProfileImage = memo(() => (
   </div>
 ));
 
-const StatCard = memo(({ icon: Icon, color, value, label, description, animation }) => (
-  <div data-aos={animation} data-aos-duration={1300} className="relative group">
+const StatCard = memo(({ icon: Icon, color, value, label, description, animation }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const count = useCountUp(value, isInView);
+
+  return (
+  <div ref={ref} data-aos={animation} data-aos-duration={1300} className="relative group">
     <div className="relative z-10 bg-gray-900/50 backdrop-blur-lg rounded-2xl p-6 border border-white/10 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl h-full flex flex-col justify-between">
       <div className={`absolute -z-10 inset-0 bg-gradient-to-br ${color} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
-      
+
       <div className="flex items-center justify-between mb-4">
         <div className="w-16 h-16 rounded-full flex items-center justify-center bg-white/10 transition-transform group-hover:rotate-6">
           <Icon className="w-8 h-8 text-white" />
         </div>
-        <span 
+        <span
           className="text-4xl font-bold text-white"
-          data-aos="fade-up-left"
-          data-aos-duration="1500"
-          data-aos-anchor-placement="top-bottom"
         >
-          {value}
+          {count}
         </span>
       </div>
 
@@ -116,7 +133,8 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
       </div>
     </div>
   </div>
-));
+  );
+});
 
 const AboutPage = () => {
   const { t } = useLanguage();
@@ -185,7 +203,7 @@ const AboutPage = () => {
   const statsData = useMemo(() => [
     {
       icon: Code,
-      color: "from-[#00d2ff] to-[#3b82f6]",
+      color: "from-[#8b5cf6] to-[#06b6d4]",
       value: totalProjects,
       label: t.about.statTotalProjects,
       description: t.about.statTotalProjectsDesc,
@@ -193,7 +211,7 @@ const AboutPage = () => {
     },
     {
       icon: Award,
-      color: "from-[#3b82f6] to-[#00d2ff]",
+      color: "from-[#06b6d4] to-[#8b5cf6]",
       value: totalCertificates,
       label: t.about.statCertificates,
       description: t.about.statCertificatesDesc,
@@ -201,7 +219,7 @@ const AboutPage = () => {
     },
     {
       icon: Globe,
-      color: "from-[#00d2ff] to-[#3b82f6]",
+      color: "from-[#8b5cf6] to-[#06b6d4]",
       value: YearExperience,
       label: t.about.statYearsExperience,
       description: t.about.statYearsExperienceDesc,
@@ -226,7 +244,7 @@ const AboutPage = () => {
               data-aos="fade-right"
               data-aos-duration="1000"
             >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4]">
                 {t.about.greeting}
               </span>
               <span 
@@ -252,16 +270,16 @@ const AboutPage = () => {
 
             {/* Quote Section */}
             <div 
-              className="relative bg-gradient-to-br from-[#00d2ff]/5 via-transparent to-[#3b82f6]/5 border border-gradient-to-r border-[#00d2ff]/30 rounded-2xl p-4 my-6 backdrop-blur-md shadow-2xl overflow-hidden"
+              className="relative bg-gradient-to-br from-[#8b5cf6]/5 via-transparent to-[#06b6d4]/5 border border-gradient-to-r border-[#8b5cf6]/30 rounded-2xl p-4 my-6 backdrop-blur-md shadow-2xl overflow-hidden"
               data-aos="fade-up"
               data-aos-duration="1700"
             >
               {/* Floating orbs background */}
-              <div className="absolute top-2 right-4 w-16 h-16 bg-gradient-to-r from-[#00d2ff]/20 to-[#3b82f6]/20 rounded-full blur-xl"></div>
-              <div className="absolute -bottom-4 -left-2 w-12 h-12 bg-gradient-to-r from-[#3b82f6]/20 to-[#00d2ff]/20 rounded-full blur-lg"></div>
+              <div className="absolute top-2 right-4 w-16 h-16 bg-gradient-to-r from-[#8b5cf6]/20 to-[#06b6d4]/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-4 -left-2 w-12 h-12 bg-gradient-to-r from-[#06b6d4]/20 to-[#8b5cf6]/20 rounded-full blur-lg"></div>
               
               {/* Quote icon */}
-              <div className="absolute top-3 left-4 text-[#00d2ff] opacity-30">
+              <div className="absolute top-3 left-4 text-[#8b5cf6] opacity-30">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
                 </svg>
@@ -277,7 +295,7 @@ const AboutPage = () => {
                 <button 
                   data-aos="fade-up"
                   data-aos-duration="800"
-                  className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl "
+                  className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl "
                 >
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.downloadCV}
                 </button>

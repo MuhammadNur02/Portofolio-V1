@@ -28,11 +28,11 @@ const TimelineItem = memo(({ item, index, isLast }) => {
       data-aos-delay={index * 150}
     >
       {!isLast && (
-        <span className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-[#00d2ff]/50 via-white/10 to-transparent" />
+        <span className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-[#8b5cf6]/50 via-white/10 to-transparent" />
       )}
 
       <div className="absolute left-0 top-0 -translate-x-1/2 flex items-center justify-center">
-        <div className="absolute -inset-2 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-full blur opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
+        <div className="absolute -inset-2 bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4] rounded-full blur opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
         <div className="relative w-9 h-9 rounded-full bg-[#0a0a1a] border border-white/15 flex items-center justify-center">
           <Icon className="w-4 h-4 text-cyan-300" />
         </div>
@@ -89,7 +89,7 @@ const Timeline = () => {
   return (
     <div className="mt-16 sm:mt-20" data-aos="fade-up">
       <div className="text-center mb-10">
-        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
+        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4]">
           {t.about.timelineTitle}
         </h2>
         <p className="mt-2 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
