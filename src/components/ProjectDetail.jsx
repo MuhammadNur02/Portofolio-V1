@@ -98,13 +98,13 @@ const normalizeTech = (tech) => tech.trim().toLowerCase();
 const TechBadge = ({ tech }) => {
   const match = TECH_ICONS[normalizeTech(tech)];
   const Icon = match?.icon || Package;
-  const color = match?.color || "#22d3ee";
+  const color = match?.color || "#fb923c";
   return (
-    <div className="group relative overflow-hidden px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-cyan-600/10 to-blue-600/10 rounded-xl border border-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 cursor-default">
-      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-blue-500/0 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500" />
+    <div className="group relative overflow-hidden px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-orange-600/10 to-amber-600/10 rounded-xl border border-orange-500/10 hover:border-orange-500/30 transition-all duration-300 cursor-default">
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 to-amber-500/0 group-hover:from-orange-500/10 group-hover:to-amber-500/10 transition-all duration-500" />
       <div className="relative flex items-center gap-1.5 md:gap-2">
         <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 transition-colors" style={{ color }} />
-        <span className="text-xs md:text-sm font-medium text-cyan-300/90 group-hover:text-cyan-200 transition-colors">
+        <span className="text-xs md:text-sm font-medium text-orange-300/90 group-hover:text-orange-200 transition-colors">
           {tech}
         </span>
       </div>
@@ -116,8 +116,8 @@ const FeatureItem = ({ feature }) => {
   return (
     <li className="group flex items-start space-x-3 p-2.5 md:p-3.5 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
       <div className="relative mt-2">
-        <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 rounded-full blur group-hover:opacity-100 opacity-0 transition-opacity duration-300" />
-        <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-400 group-hover:scale-125 transition-transform duration-300" />
+        <div className="absolute -inset-1 bg-gradient-to-r from-orange-600/20 to-amber-600/20 rounded-full blur group-hover:opacity-100 opacity-0 transition-opacity duration-300" />
+        <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 group-hover:scale-125 transition-transform duration-300" />
       </div>
       <span className="text-sm md:text-base text-gray-300 group-hover:text-white transition-colors">
         {feature}
@@ -133,16 +133,16 @@ const ProjectStats = ({ project }) => {
 
   return (
     <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 bg-[#0a0a1a] rounded-xl overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 opacity-50 blur-2xl z-0" />
-      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-cyan-500/20 transition-all duration-300 hover:scale-105 hover:border-cyan-500/50 hover:shadow-lg">
-        <div className="bg-cyan-500/20 p-1.5 md:p-2 rounded-full">
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-900/20 to-amber-900/20 opacity-50 blur-2xl z-0" />
+      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-orange-500/20 transition-all duration-300 hover:scale-105 hover:border-orange-500/50 hover:shadow-lg">
+        <div className="bg-orange-500/20 p-1.5 md:p-2 rounded-full">
           <Code2
-            className="text-cyan-300 w-4 h-4 md:w-6 md:h-6"
+            className="text-orange-300 w-4 h-4 md:w-6 md:h-6"
             strokeWidth={1.5}
           />
         </div>
         <div className="flex-grow">
-          <div className="text-lg md:text-xl font-semibold text-cyan-200">
+          <div className="text-lg md:text-xl font-semibold text-orange-200">
             {techStackCount}
           </div>
           <div className="text-[10px] md:text-xs text-gray-400">
@@ -151,15 +151,15 @@ const ProjectStats = ({ project }) => {
         </div>
       </div>
 
-      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-blue-500/20 transition-all duration-300 hover:scale-105 hover:border-blue-500/50 hover:shadow-lg">
-        <div className="bg-blue-500/20 p-1.5 md:p-2 rounded-full">
+      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-amber-500/20 transition-all duration-300 hover:scale-105 hover:border-amber-500/50 hover:shadow-lg">
+        <div className="bg-amber-500/20 p-1.5 md:p-2 rounded-full">
           <Layers
-            className="text-blue-300 w-4 h-4 md:w-6 md:h-6"
+            className="text-amber-300 w-4 h-4 md:w-6 md:h-6"
             strokeWidth={1.5}
           />
         </div>
         <div className="flex-grow">
-          <div className="text-lg md:text-xl font-semibold text-blue-200">
+          <div className="text-lg md:text-xl font-semibold text-amber-200">
             {featuresCount}
           </div>
           <div className="text-[10px] md:text-xs text-gray-400">
@@ -178,7 +178,7 @@ const handleGithubClick = (githubLink, t) => {
       title: t.projectDetail.privateTitle,
       text: t.projectDetail.privateText,
       confirmButtonText: t.projectDetail.privateConfirm,
-      confirmButtonColor: "#00d2ff",
+      confirmButtonColor: "#fbbf24",
       background: "#030014",
       color: "#ffffff",
     });
@@ -217,7 +217,7 @@ const ProjectDetails = () => {
     return (
       <div className="min-h-screen bg-[#030014] flex items-center justify-center">
         <div className="text-center space-y-6 animate-fadeIn">
-          <div className="w-16 h-16 md:w-24 md:h-24 mx-auto border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+          <div className="w-16 h-16 md:w-24 md:h-24 mx-auto border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
           <h2 className="text-xl md:text-3xl font-bold text-white">
             {t.projectDetail.loading}
           </h2>
@@ -272,9 +272,9 @@ const ProjectDetails = () => {
       <div className="min-h-screen bg-[#030014] px-[2%] sm:px-0 relative overflow-hidden">
         <div className="fixed inset-0">
           <div className="absolute -inset-[10px] opacity-20">
-            <div className="absolute top-0 -left-4 w-72 md:w-96 h-72 md:h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-            <div className="absolute top-0 -right-4 w-72 md:w-96 h-72 md:h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-8 left-20 w-72 md:w-96 h-72 md:h-96 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
+            <div className="absolute top-0 -left-4 w-72 md:w-96 h-72 md:h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
+            <div className="absolute top-0 -right-4 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
+            <div className="absolute -bottom-8 left-20 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
           </div>
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02]" />
         </div>
@@ -299,17 +299,17 @@ const ProjectDetails = () => {
             <div className="grid lg:grid-cols-2 gap-8 md:gap-16">
               <div className="space-y-6 md:space-y-10 animate-slideInLeft">
                 <div className="space-y-4 md:space-y-6">
-                  <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-blue-200 via-cyan-200 to-white bg-clip-text text-transparent leading-tight">
+                  <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-amber-200 via-orange-200 to-white bg-clip-text text-transparent leading-tight">
                     {project.Title}
                   </h1>
                   <div className="relative h-1 w-16 md:w-24">
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full animate-pulse" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full blur-sm" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full blur-sm" />
                   </div>
                 </div>
 
                 <div className="space-y-2 md:space-y-3">
-                  <h2 className="text-sm md:text-base font-semibold text-cyan-400/90 uppercase tracking-wider">
+                  <h2 className="text-sm md:text-base font-semibold text-orange-400/90 uppercase tracking-wider">
                     {t.projectDetail.overview}
                   </h2>
                   <div className="prose prose-invert max-w-none">
@@ -326,9 +326,9 @@ const ProjectDetails = () => {
                     href={project.Link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-cyan-600/10 to-blue-600/10 hover:from-cyan-600/20 hover:to-blue-600/20 text-cyan-300 rounded-xl transition-all duration-300 border border-cyan-500/20 hover:border-cyan-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
+                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-orange-600/10 to-amber-600/10 hover:from-orange-600/20 hover:to-amber-600/20 text-orange-300 rounded-xl transition-all duration-300 border border-orange-500/20 hover:border-orange-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
                   >
-                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-cyan-600/10 to-blue-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
+                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-orange-600/10 to-amber-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
                     <ExternalLink className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
                     <span className="relative font-medium">{t.projectDetail.liveDemo}</span>
                   </a>
@@ -337,12 +337,12 @@ const ProjectDetails = () => {
                     href={project.Github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 text-blue-300 rounded-xl transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
+                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-amber-600/10 to-orange-600/10 hover:from-amber-600/20 hover:to-orange-600/20 text-amber-300 rounded-xl transition-all duration-300 border border-amber-500/20 hover:border-amber-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
                     onClick={(e) =>
                       !handleGithubClick(project.Github, t) && e.preventDefault()
                     }
                   >
-                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-blue-600/10 to-cyan-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
+                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-amber-600/10 to-orange-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
                     <Github className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
                     <span className="relative font-medium">{t.projectDetail.github}</span>
                   </a>
@@ -350,7 +350,7 @@ const ProjectDetails = () => {
 
                 <div className="space-y-4 md:space-y-6">
                   <h3 className="text-lg md:text-xl font-semibold text-white/90 mt-[3rem] md:mt-0 flex items-center gap-2 md:gap-3">
-                    <Code2 className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
+                    <Code2 className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
                     {t.projectDetail.technologiesUsed}
                   </h3>
                   {project.TechStack.length > 0 ? (

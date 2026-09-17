@@ -42,12 +42,12 @@ export default function SeedCertificates() {
     <div className="min-h-screen bg-[#030014] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="relative">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-2xl blur opacity-20" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-20" />
           <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl p-8">
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                <Award className="w-7 h-7 text-indigo-400" />
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-red-500/20 border border-white/10 flex items-center justify-center mx-auto mb-4">
+                <Award className="w-7 h-7 text-amber-400" />
               </div>
               <h1 className="text-xl font-bold text-white mb-1">
                 Seed Certificates
@@ -64,7 +64,7 @@ export default function SeedCertificates() {
                   key={i}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 border border-white/8"
                 >
-                  <div className="w-8 h-8 rounded-md bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-8 h-8 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center overflow-hidden shrink-0">
                     <img
                       src={cert.Img}
                       alt=""
@@ -87,12 +87,12 @@ export default function SeedCertificates() {
               disabled={seeding}
               className="relative group w-full"
             >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4f52c9] to-[#8644c5] rounded-xl opacity-60 blur group-hover:opacity-100 transition duration-300" />
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-60 blur group-hover:opacity-100 transition duration-300" />
               <div className="relative flex items-center justify-center gap-2 w-full py-2.5 bg-[#030014] rounded-xl border border-white/10">
                 {seeding ? (
-                  <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
                 ) : (
-                  <Award className="w-4 h-4 text-indigo-400" />
+                  <Award className="w-4 h-4 text-amber-400" />
                 )}
                 <span className="text-sm text-gray-200">
                   {seeding ? "Seeding..." : "Seed 3 Certificates"}

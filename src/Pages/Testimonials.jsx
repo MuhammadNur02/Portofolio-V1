@@ -28,7 +28,7 @@ const Avatar = memo(({ item }) => {
   }
   const initial = (item.name || "?").trim().charAt(0).toUpperCase();
   return (
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center text-cyan-200 font-semibold shrink-0">
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-white/10 flex items-center justify-center text-orange-200 font-semibold shrink-0">
       {initial}
     </div>
   );
@@ -48,8 +48,8 @@ const TestimonialCard = memo(({ item, index }) => {
       data-aos-delay={index * 150}
       onMouseMove={handleMouseMove}
     >
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4] rounded-2xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-500" />
-      <div className="relative h-full flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-cyan-500/30 transition-colors duration-300 overflow-hidden">
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#e0231c] rounded-2xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-500" />
+      <div className="relative h-full flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-orange-500/30 transition-colors duration-300 overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{
@@ -117,11 +117,11 @@ const Testimonials = () => {
       id="Testimonials"
     >
       <div className="text-center mb-12">
-        <p className="inline-flex items-center gap-2 text-cyan-300/80 text-xs sm:text-sm font-medium mb-2">
+        <p className="inline-flex items-center gap-2 text-orange-300/80 text-xs sm:text-sm font-medium mb-2">
           <Sparkles className="w-4 h-4" />
           {t.testimonials.badge}
         </p>
-        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4]">
+        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#f59e0b] to-[#e0231c]">
           {t.testimonials.title}
         </h2>
         <p className="mt-2 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
