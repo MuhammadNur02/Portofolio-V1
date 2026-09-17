@@ -22,31 +22,38 @@ const SkeletonCard = () => (
 
 const CertCard = ({ cert, onDelete }) => {
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   return (
     <div className="relative group">
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-500" />
       <div className="relative bg-white/5 border border-white/12 rounded-2xl overflow-hidden">
-        {/* Skeleton shown until image loads */}
-        {!imgLoaded && (
+        {/* Skeleton shown until image loads or fails */}
+        {!imgLoaded && !imgError && (
           <div className="w-full aspect-[16/11.5] bg-white/5 animate-pulse" />
         )}
-        <img
-          src={cert.Img}
-          alt="Certificate"
-          onLoad={() => setImgLoaded(true)}
-          className={`w-full aspect-[16/11.5] object-cover group-hover:scale-105 transition-transform duration-500 ${imgLoaded ? 'block' : 'hidden'}`}
-        />
-        {imgLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-            <button
-              onClick={() => onDelete(cert.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs w-full justify-center hover:bg-red-500/30 transition-colors"
-            >
-              <Trash2 className="w-3 h-3" /> Delete
-            </button>
+        {imgError ? (
+          <div className="w-full aspect-[16/11.5] bg-white/5 flex flex-col items-center justify-center gap-2 text-gray-600">
+            <ImageIcon className="w-6 h-6" />
+            <span className="text-[10px]">Failed to load</span>
           </div>
+        ) : (
+          <img
+            src={cert.Img}
+            alt="Certificate"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+            className={`w-full aspect-[16/11.5] object-cover group-hover:scale-105 transition-transform duration-500 ${imgLoaded ? 'block' : 'hidden'}`}
+          />
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+          <button
+            onClick={() => onDelete(cert.id)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs w-full justify-center hover:bg-red-500/30 transition-colors"
+          >
+            <Trash2 className="w-3 h-3" /> Delete
+          </button>
+        </div>
       </div>
     </div>
   )
