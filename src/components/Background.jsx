@@ -54,7 +54,7 @@ const AnimatedBackground = () => {
 
       {/* Dark overlay for readability */}
       <div
-        className="absolute inset-0 bg-[#030014]/55 pointer-events-none"
+        className="absolute inset-0 bg-[#0a0705]/55 pointer-events-none"
         style={{ zIndex: 0 }}
       />
     </div>

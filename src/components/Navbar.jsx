@@ -102,9 +102,9 @@ const Navbar = () => {
         <nav
             className={`fixed w-full top-0 z-50 transition-all duration-500 ${
                 isOpen
-                    ? "bg-[#030014]"
+                    ? "bg-[#0a0705]"
                     : scrolled
-                    ? "bg-[#030014]/50 backdrop-blur-xl"
+                    ? "bg-[#0a0705]/50 backdrop-blur-xl"
                     : "bg-transparent"
             }`}
         >

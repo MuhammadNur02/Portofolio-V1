@@ -49,12 +49,12 @@ const TestimonialCard = memo(({ item, index }) => {
       onMouseMove={handleMouseMove}
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#e0231c] rounded-2xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-500" />
-      <div className="relative h-full flex flex-col bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-orange-500/30 transition-colors duration-300 overflow-hidden">
+      <div className="relative h-full flex flex-col bg-[#120c07]/55 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-orange-500/30 transition-colors duration-300 overflow-hidden">
         <div
           className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{
             background:
-              "radial-gradient(220px circle at var(--x, 50%) var(--y, 50%), rgba(139,92,246,0.15), transparent 70%)",
+              "radial-gradient(220px circle at var(--x, 50%) var(--y, 50%), rgba(245, 158, 11,0.15), transparent 70%)",
           }}
         />
         <Quote className="relative w-7 h-7 text-amber-400/70 mb-3" />
@@ -123,7 +123,7 @@ const Testimonials = () => {
         draggable={false}
         className="absolute inset-0 z-0 w-full h-full object-cover select-none"
       />
-      <div className="absolute inset-0 z-0 bg-[#030014]/65" />
+      <div className="absolute inset-0 z-0 bg-[#0a0705]/65" />
 
       <div className="relative z-10 text-center mb-12">
         <p className="inline-flex items-center gap-2 text-orange-300/80 text-xs sm:text-sm font-medium mb-2">

@@ -134,7 +134,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
         <p
           data-aos="fade-up"
           data-aos-duration="1100"
-          className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
+          className="text-stone-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
         >
           {t.contact.subtitle}
         </p>
@@ -147,7 +147,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
         <div className="container px-[1%] grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-[45%_55%] 2xl:grid-cols-[35%_65%] gap-12" >
           <div
         
-            className="bg-white/5 backdrop-blur-xl rounded-3xl shadow-2xl p-5 py-10 sm:p-10 transform transition-all duration-500 hover:shadow-[#fbbf24]/10"
+            className="bg-[#120c07]/55 backdrop-blur-xl rounded-3xl shadow-2xl p-5 py-10 sm:p-10 transform transition-all duration-500 hover:shadow-[#fbbf24]/10"
           >
             <div className="flex justify-between items-start mb-8">
               <div>
@@ -232,7 +232,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
             </div>
           </div>
 
-          <div className="  bg-white/5 backdrop-blur-xl rounded-3xl p-3 py-3 md:p-10 md:py-8 shadow-2xl transform transition-all duration-500 hover:shadow-[#fbbf24]/10">
+          <div className="  bg-[#120c07]/55 backdrop-blur-xl rounded-3xl p-3 py-3 md:p-10 md:py-8 shadow-2xl transform transition-all duration-500 hover:shadow-[#fbbf24]/10">
             <Komentar />
           </div>
         </div>

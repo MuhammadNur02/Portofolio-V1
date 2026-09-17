@@ -24,7 +24,7 @@ const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }) =>
     onClick={onClick}
     className="
       px-3 py-1.5
-      text-slate-300 
+      text-stone-300 
       hover:text-white 
       text-sm 
       font-medium 
@@ -61,7 +61,7 @@ const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }) =>
         className={`
           transition-transform 
           duration-300 
-          ${isShowingMore ? "group-hover:-translate-y-0.5" : "group-hover:translate-y-0.5"}
+          ${isShowingMore ? "group-hover:-transtone-y-0.5" : "group-hover:transtone-y-0.5"}
         `}
       >
         <polyline points={isShowingMore ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}></polyline>
@@ -199,7 +199,7 @@ export default function FullWidthTabs() {
 
   // Sisa dari komponen (return statement) tidak ada perubahan
   return (
-    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
+    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#0a0705] overflow-hidden" id="Portofolio">
       {/* Header section - unchanged */}
       <div className="text-center pb-10" data-aos="fade-up" data-aos-duration="1000">
         <h2 className="inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#fbbf24] to-[#dc2626]">
@@ -213,7 +213,7 @@ export default function FullWidthTabs() {
             {t.portfolio.title}
           </span>
         </h2>
-        <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2">
+        <p className="text-stone-400 max-w-2xl mx-auto text-sm md:text-base mt-2">
           {t.portfolio.subtitle}
         </p>
       </div>
@@ -236,7 +236,7 @@ export default function FullWidthTabs() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: "linear-gradient(180deg, rgba(6, 182, 212, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%)",
+              background: "linear-gradient(180deg, rgba(224, 35, 28, 0.03) 0%, rgba(220, 38, 38, 0.03) 100%)",
               backdropFilter: "blur(10px)",
               zIndex: 0,
             },
@@ -264,7 +264,7 @@ export default function FullWidthTabs() {
                 borderRadius: "12px",
                 "&:hover": {
                   color: "#ffffff",
-                  backgroundColor: "rgba(6, 182, 212, 0.1)",
+                  backgroundColor: "rgba(224, 35, 28, 0.1)",
                   transform: "translateY(-2px)",
                   "& .lucide": {
                     transform: "scale(1.1) rotate(5deg)",
@@ -272,8 +272,8 @@ export default function FullWidthTabs() {
                 },
                 "&.Mui-selected": {
                   color: "#fff",
-                  background: "linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2))",
-                  boxShadow: "0 4px 15px -3px rgba(6, 182, 212, 0.2)",
+                  background: "linear-gradient(135deg, rgba(224, 35, 28, 0.2), rgba(220, 38, 38, 0.2))",
+                  boxShadow: "0 4px 15px -3px rgba(224, 35, 28, 0.2)",
                   "& .lucide": {
                     color: "#fb923c",
                   },
