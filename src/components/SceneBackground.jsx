@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import daunUrl from "../assets/daun.webp";
 
-// Warm night-temple palette — kept in sync with CursorTrail's ember colors.
+// Warm night-temple palette.
 const PALETTE = {
   sky: 0x03050a,
   fog: 0x0b1620,
   fogDeep: 0x010204,
   moon: 0xdb5b45,
   moonGlow: 0xff6a4a,
-  embers: [0xf59e0b, 0xfb923c, 0xfbbf24, 0xe0231c],
   torii: 0x7c2a1f,
   toriiDark: 0x5c1e16,
   templeBody: 0x10151d,
@@ -36,6 +36,11 @@ const LANTERN_POSITIONS = [
   { x: 3.6, z: 2.2 },
   { x: 6.6, z: -4 },
 ];
+
+// Tint variants applied on top of the real leaf photo for a little color variety.
+const LEAF_TINTS = [0xffffff, 0xffcf9e, 0xffb37a, 0xff9a6a];
+
+const LEAF_BOUNDS = { width: 90, height: 76, depth: 65, depthOffset: 22 };
 
 const ridgeHeight = (t, amplitude) =>
   (Math.sin(t * 6.1 + 1.3) * 0.5 +
@@ -354,56 +359,95 @@ function makeGrassPlane(parts, grassTexture) {
   return mesh;
 }
 
-function makeEmbers(count, dotTexture) {
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  const phases = new Float32Array(count);
-  const speeds = new Float32Array(count);
-  const palette = PALETTE.embers.map((c) => new THREE.Color(c));
+function loadLeafCutoutTexture(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
 
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 120;
-    positions[i * 3 + 1] = Math.random() * 50 - 10;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 100 - 20;
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        if (brightness > 235) {
+          data[i + 3] = 0;
+        } else if (brightness > 195) {
+          data[i + 3] = Math.round(data[i + 3] * (1 - (brightness - 195) / 40));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
 
-    const c = palette[i % palette.length];
-    colors[i * 3] = c.r;
-    colors[i * 3 + 1] = c.g;
-    colors[i * 3 + 2] = c.b;
-
-    phases[i] = Math.random() * Math.PI * 2;
-    speeds[i] = 0.4 + Math.random() * 0.8;
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-
-  const material = new THREE.PointsMaterial({
-    size: 1.4,
-    map: dotTexture,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.85,
-    sizeAttenuation: true,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
+      resolve({ texture: new THREE.CanvasTexture(canvas), aspect: canvas.width / canvas.height });
+    };
+    img.onerror = reject;
+    img.src = url;
   });
-
-  const points = new THREE.Points(geometry, material);
-  return { points, geometry, material, positions, phases, speeds };
 }
 
-function updateEmbers(positions, phases, speeds, dt, t, driftScale) {
-  for (let i = 0; i < phases.length; i++) {
-    const idx = i * 3;
-    positions[idx + 1] += speeds[i] * dt * driftScale;
-    positions[idx] += Math.sin(t * 0.5 + phases[i]) * 0.01 * driftScale;
+function makeLeaves(count, bounds, texture, aspect) {
+  const baseHeight = 1.1;
+  const geometry = new THREE.PlaneGeometry(baseHeight * aspect, baseHeight);
+  const materials = LEAF_TINTS.map(
+    (tint) =>
+      new THREE.MeshBasicMaterial({
+        map: texture,
+        color: tint,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        fog: false,
+      })
+  );
 
-    if (positions[idx + 1] > 40) {
-      positions[idx + 1] = -10;
-      positions[idx] = (Math.random() - 0.5) * 120;
-      positions[idx + 2] = (Math.random() - 0.5) * 100 - 20;
+  const group = new THREE.Group();
+  const leaves = [];
+
+  for (let i = 0; i < count; i++) {
+    const material = materials[Math.floor(Math.random() * materials.length)];
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.setScalar(0.4 + Math.random() * 0.75);
+    mesh.position.set(
+      (Math.random() - 0.5) * bounds.width,
+      Math.random() * bounds.height - bounds.height * 0.3,
+      bounds.depthOffset - Math.random() * bounds.depth
+    );
+    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    group.add(mesh);
+
+    leaves.push({
+      mesh,
+      fallSpeed: 1.1 + Math.random() * 1.6,
+      swayFreq: 0.4 + Math.random() * 0.6,
+      swayAmp: 1.2 + Math.random() * 2,
+      swayPhase: Math.random() * Math.PI * 2,
+      spin: {
+        x: (Math.random() - 0.5) * 1.4,
+        y: (Math.random() - 0.5) * 1.4,
+        z: (Math.random() - 0.5) * 1.4,
+      },
+    });
+  }
+
+  return { group, geometry, materials, leaves };
+}
+
+function updateLeaves(leaves, dt, t, bounds, driftScale, windStrength) {
+  for (const leaf of leaves) {
+    const { mesh } = leaf;
+    mesh.position.y -= leaf.fallSpeed * dt * driftScale;
+    mesh.position.x += Math.sin(t * leaf.swayFreq + leaf.swayPhase) * dt * leaf.swayAmp * windStrength * driftScale;
+    mesh.rotation.x += leaf.spin.x * dt * driftScale;
+    mesh.rotation.y += leaf.spin.y * dt * driftScale;
+    mesh.rotation.z += leaf.spin.z * dt * driftScale;
+
+    if (mesh.position.y < -bounds.height * 0.4) {
+      mesh.position.y = bounds.height * 0.7;
+      mesh.position.x = (Math.random() - 0.5) * bounds.width;
+      mesh.position.z = bounds.depthOffset - Math.random() * bounds.depth;
     }
   }
 }
@@ -500,10 +544,23 @@ const SceneBackground = () => {
     const grass = makeGrassPlane(parts, grassTexture);
     scene.add(grass);
 
-    // Embers
-    const emberCount = window.innerWidth < 640 ? 90 : 200;
-    const embers = makeEmbers(emberCount, dotTexture);
-    scene.add(embers.points);
+    // Falling leaves — built once the real leaf photo finishes loading.
+    let disposed = false;
+    const leafCount = window.innerWidth < 640 ? 55 : 110;
+    const fallingLeaves = { group: new THREE.Group(), geometry: null, materials: [], leaves: [] };
+    scene.add(fallingLeaves.group);
+
+    loadLeafCutoutTexture(daunUrl).then(({ texture, aspect }) => {
+      if (disposed) {
+        texture.dispose();
+        return;
+      }
+      const built = makeLeaves(leafCount, LEAF_BOUNDS, texture, aspect);
+      fallingLeaves.geometry = built.geometry;
+      fallingLeaves.materials = built.materials;
+      fallingLeaves.leaves = built.leaves;
+      built.leaves.forEach((leaf) => fallingLeaves.group.add(leaf.mesh));
+    });
 
     // Scroll progress — smoothed toward target each frame, no external dependency.
     let targetProgress = 0;
@@ -542,6 +599,7 @@ const SceneBackground = () => {
       trees.forEach((t) => {
         t.group.position.x = t.baseX - p * t.parallax * 6;
       });
+      fallingLeaves.group.position.x = -p * 4;
 
       scene.fog.color.set(PALETTE.fog).lerp(new THREE.Color(PALETTE.fogDeep), p * 0.4);
       scene.fog.density = 0.017 + p * 0.012;
@@ -552,8 +610,7 @@ const SceneBackground = () => {
         lantern.children[2].material.opacity = flicker;
       });
 
-      updateEmbers(embers.positions, embers.phases, embers.speeds, dt, elapsed, driftScale);
-      embers.geometry.attributes.position.needsUpdate = true;
+      updateLeaves(fallingLeaves.leaves, dt, elapsed, LEAF_BOUNDS, driftScale, 1 + p * 0.6);
 
       renderer.render(scene, camera);
     };
@@ -561,6 +618,7 @@ const SceneBackground = () => {
 
     window.addEventListener("resize", resize);
     return () => {
+      disposed = true;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", handleScroll);
@@ -574,8 +632,11 @@ const SceneBackground = () => {
       hill.material.dispose();
       dotTexture.dispose();
       grassTexture.dispose();
-      embers.geometry.dispose();
-      embers.material.dispose();
+      fallingLeaves.geometry?.dispose?.();
+      fallingLeaves.materials.forEach((m, i) => {
+        if (i === 0) m.map?.dispose?.();
+        m.dispose();
+      });
 
       parts.forEach(({ geometry, material }) => {
         geometry?.dispose?.();
