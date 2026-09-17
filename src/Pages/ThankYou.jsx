@@ -7,9 +7,9 @@ const ThankYouPage = () => {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center">
         <div className="flex justify-center mb-6">
-          <CheckCircle className="w-16 h-16 text-[#6366f1]" />
+          <CheckCircle className="w-16 h-16 text-[#f59e0b]" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#f59e0b] to-[#dc2626]">
           Thank You!
         </h1>
         <p className="text-gray-400 text-lg mb-8">
@@ -17,7 +17,7 @@ const ThankYouPage = () => {
         </p>
         <Link
           to="/"
-          className="inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98]"
+          className="inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] text-white rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#f59e0b]/20 active:scale-[0.98]"
         >
           Back to Home
         </Link>

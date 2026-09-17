@@ -13,8 +13,8 @@ const LanguageToggle = ({ className = "" }) => {
             <span
                 className={`px-2 py-1 rounded-full transition-all duration-300 ${
                     lang === "id"
-                        ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white"
-                        : "text-[#e2d3fd]"
+                        ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] text-white"
+                        : "text-[#fde8c8]"
                 }`}
             >
                 ID
@@ -22,8 +22,8 @@ const LanguageToggle = ({ className = "" }) => {
             <span
                 className={`px-2 py-1 rounded-full transition-all duration-300 ${
                     lang === "en"
-                        ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white"
-                        : "text-[#e2d3fd]"
+                        ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] text-white"
+                        : "text-[#fde8c8]"
                 }`}
             >
                 EN
@@ -115,7 +115,7 @@ const Navbar = () => {
                         <a
                             href="#Home"
                             onClick={(e) => scrollToSection(e, "#Home")}
-                            className="text-xl font-bold bg-gradient-to-r from-[#3b82f6] to-[#00d2ff] bg-clip-text text-transparent"
+                            className="text-xl font-bold bg-gradient-to-r from-[#dc2626] to-[#fbbf24] bg-clip-text text-transparent"
                         >
                             Julian
                         </a>
@@ -134,14 +134,14 @@ const Navbar = () => {
                                     <span
                                         className={`relative z-10 transition-colors duration-300 ${
                                             activeSection === item.href.substring(1)
-                                                ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] bg-clip-text text-transparent font-semibold"
-                                                : "text-[#e2d3fd] group-hover:text-white"
+                                                ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] bg-clip-text text-transparent font-semibold"
+                                                : "text-[#fde8c8] group-hover:text-white"
                                         }`}
                                     >
                                         {item.label}
                                     </span>
                                     <span
-                                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] transform origin-left transition-transform duration-300 ${
+                                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] transform origin-left transition-transform duration-300 ${
                                             activeSection === item.href.substring(1)
                                                 ? "scale-x-100"
                                                 : "scale-x-0 group-hover:scale-x-100"
@@ -158,7 +158,7 @@ const Navbar = () => {
                         <LanguageToggle />
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className={`relative p-2 text-[#e2d3fd] hover:text-white transition-transform duration-300 ease-in-out transform ${
+                            className={`relative p-2 text-[#fde8c8] hover:text-white transition-transform duration-300 ease-in-out transform ${
                                 isOpen ? "rotate-90 scale-125" : "rotate-0 scale-100"
                             }`}
                         >
@@ -188,8 +188,8 @@ const Navbar = () => {
                             onClick={(e) => scrollToSection(e, item.href)}
                             className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
                                 activeSection === item.href.substring(1)
-                                    ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] bg-clip-text text-transparent font-semibold"
-                                    : "text-[#e2d3fd] hover:text-white"
+                                    ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] bg-clip-text text-transparent font-semibold"
+                                    : "text-[#fde8c8] hover:text-white"
                             }`}
                             style={{
                                 transitionDelay: `${index * 100}ms`,

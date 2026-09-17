@@ -79,11 +79,11 @@ export default function PresenceWidget() {
         glow: "shadow-green-500/20"
       },
       coding: {
-        bg: "from-blue-500/15 to-indigo-500/10",
-        border: "border-blue-500/30",
-        text: "text-blue-400",
-        badge: "bg-blue-500/20 border-blue-400/40",
-        glow: "shadow-blue-500/20"
+        bg: "from-amber-500/15 to-amber-500/10",
+        border: "border-amber-500/30",
+        text: "text-amber-400",
+        badge: "bg-amber-500/20 border-amber-400/40",
+        glow: "shadow-amber-500/20"
       },
       gaming: {
         bg: "from-red-500/15 to-pink-500/10",
@@ -93,11 +93,11 @@ export default function PresenceWidget() {
         glow: "shadow-red-500/20"
       },
       default: {
-        bg: "from-cyan-500/15 to-blue-500/10",
-        border: "border-cyan-500/30",
-        text: "text-cyan-400",
-        badge: "bg-cyan-500/20 border-cyan-400/40",
-        glow: "shadow-cyan-500/20"
+        bg: "from-orange-500/15 to-amber-500/10",
+        border: "border-orange-500/30",
+        text: "text-orange-400",
+        badge: "bg-orange-500/20 border-orange-400/40",
+        glow: "shadow-orange-500/20"
       }
     };
     return colors[type] || colors.default;

@@ -16,7 +16,7 @@ const PAGE_SIZE = 10;
 
 const Card = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 pointer-events-none" />
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 pointer-events-none" />
     <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
       {children}
     </div>
@@ -100,9 +100,9 @@ export default function Comments() {
       <div className="flex items-start sm:items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-xl blur opacity-50 pointer-events-none" />
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-xl blur opacity-50 pointer-events-none" />
             <div className="relative w-9 h-9 bg-[#030014] rounded-xl border border-white/15 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-indigo-400" />
+              <MessageSquare className="w-4 h-4 text-amber-400" />
             </div>
           </div>
           <div>
@@ -126,7 +126,7 @@ export default function Comments() {
               onClick={() => setFilter(tab.value)}
               className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
                 filter === tab.value
-                  ? "bg-gradient-to-r from-indigo-500/25 to-purple-500/20 border border-indigo-500/35 text-white font-medium"
+                  ? "bg-gradient-to-r from-amber-500/25 to-red-500/20 border border-amber-500/35 text-white font-medium"
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
@@ -134,7 +134,7 @@ export default function Comments() {
               <span
                 className={`px-1.5 py-0.5 rounded-full text-xs ${
                   filter === tab.value
-                    ? "bg-indigo-500/25 text-indigo-300"
+                    ? "bg-amber-500/25 text-amber-300"
                     : "bg-white/8 text-gray-500"
                 }`}
               >
@@ -148,12 +148,12 @@ export default function Comments() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total", value: comments.length, color: "text-indigo-400" },
-          { label: "Pinned", value: pinnedCount, color: "text-purple-400" },
+          { label: "Total", value: comments.length, color: "text-amber-400" },
+          { label: "Pinned", value: pinnedCount, color: "text-red-400" },
           {
             label: "Unpinned",
             value: comments.length - pinnedCount,
-            color: "text-blue-400",
+            color: "text-amber-400",
           },
         ].map((stat) => (
           <Card key={stat.label}>
@@ -175,7 +175,7 @@ export default function Comments() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or message..."
-          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all"
         />
         {search && (
           <button
@@ -198,7 +198,7 @@ export default function Comments() {
       {/* Comments List */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-7 h-7 border-2 border-white/10 border-t-indigo-500 rounded-full animate-spin" />
+          <div className="w-7 h-7 border-2 border-white/10 border-t-amber-500 rounded-full animate-spin" />
         </div>
       ) : paginated.length === 0 ? (
         <Card>
@@ -218,18 +218,18 @@ export default function Comments() {
           {paginated.map((comment) => (
             <div key={comment.id} className="relative group">
               {comment.is_pinned && (
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-2xl blur opacity-15 pointer-events-none" />
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-15 pointer-events-none" />
               )}
               <div
                 className={`relative bg-white/5 backdrop-blur-xl border rounded-2xl px-4 py-4 sm:px-5 transition-all duration-200 ${
                   comment.is_pinned
-                    ? "border-indigo-500/30"
+                    ? "border-amber-500/30"
                     : "border-white/10 hover:border-white/18"
                 }`}
               >
                 <div className="flex items-start gap-3 sm:gap-4">
                   {/* Avatar */}
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-red-500/20 border border-white/10 flex items-center justify-center shrink-0">
                     <img
                       src={comment.profile_image || "/default-avatar.jpg"}
                       alt="Avatar"
@@ -247,7 +247,7 @@ export default function Comments() {
                         )}
                       </span>
                       {comment.is_pinned && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 text-xs">
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25 text-amber-300 text-xs">
                           <Pin className="w-2.5 h-2.5" /> Pinned
                         </span>
                       )}
@@ -269,8 +269,8 @@ export default function Comments() {
                       title={comment.is_pinned ? "Unpin" : "Pin"}
                       className={`p-2 rounded-lg border transition-all duration-200 ${
                         comment.is_pinned
-                          ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20"
-                          : "border-white/10 text-gray-500 hover:text-indigo-400 hover:border-indigo-500/25"
+                          ? "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
+                          : "border-white/10 text-gray-500 hover:text-amber-400 hover:border-amber-500/25"
                       }`}
                     >
                       {comment.is_pinned ? (
@@ -333,7 +333,7 @@ export default function Comments() {
                     onClick={() => setPage(p)}
                     className={`min-w-[32px] h-8 px-2 rounded-lg text-xs border transition-all duration-200 ${
                       page === p
-                        ? "bg-indigo-500/20 border-indigo-500/40 text-indigo-300 font-medium"
+                        ? "bg-amber-500/20 border-amber-500/40 text-amber-300 font-medium"
                         : "border-white/10 text-gray-400 hover:text-white hover:border-white/20"
                     }`}
                   >
@@ -366,7 +366,7 @@ function highlightMatch(text, query) {
   const parts = text.split(regex);
   return parts.map((part, i) =>
     regex.test(part) ? (
-      <mark key={i} className="bg-indigo-500/30 text-indigo-200 rounded px-0.5">
+      <mark key={i} className="bg-amber-500/30 text-amber-200 rounded px-0.5">
         {part}
       </mark>
     ) : (
