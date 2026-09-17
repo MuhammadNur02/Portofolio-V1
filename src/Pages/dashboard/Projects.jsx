@@ -73,21 +73,30 @@ const SkeletonCard = () => (
 
 const ProjectCard = ({ project, onDelete, onEdit }) => {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <Card>
       <div className="p-4 flex flex-col h-full">
         {project.Img && (
-          <div className="w-full aspect-[16/8] rounded-xl mb-4 border border-white/8 overflow-hidden bg-white/5">
-            {!imgLoaded && (
-              <div className="w-full h-full animate-pulse bg-white/5" />
+          <div className="relative w-full aspect-[16/8] rounded-xl mb-4 border border-white/8 overflow-hidden bg-white/5">
+            {!imgLoaded && !imgError && (
+              <div className="absolute inset-0 animate-pulse bg-white/5" />
             )}
-            <img
-              src={project.Img}
-              alt={project.Title}
-              onLoad={() => setImgLoaded(true)}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0 absolute"}`}
-            />
+            {imgError ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-600">
+                <ImageIcon className="w-5 h-5" />
+                <span className="text-[10px]">Failed to load</span>
+              </div>
+            ) : (
+              <img
+                src={project.Img}
+                alt={project.Title}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+              />
+            )}
           </div>
         )}
         <h3 className="font-semibold text-white text-sm mb-1">
