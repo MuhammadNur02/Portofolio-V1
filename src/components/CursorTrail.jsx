@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
+import daunUrl from "../assets/daun.webp";
 
 /**
- * CursorTrail — warm ember/spark trail that follows the pointer.
+ * CursorTrail — small falling-leaf sprites that trail behind the pointer.
  *
  * Emits by distance travelled rather than by timer, so spacing along the
  * path stays constant whether the hand crawls or flicks. A timer-based
@@ -9,12 +10,41 @@ import React, { useEffect, useRef } from "react";
  * scattered dots and piling a resting hand's motes on one spot.
  */
 
-const STEP = 9; // px between spawns
-const MAX_SPAWNS_PER_FRAME = 14;
-const RING_SIZE = 220;
-const COLORS = ["#f59e0b", "#fb923c", "#fbbf24", "#fda4af"];
+const STEP = 14; // px between spawns
+const MAX_SPAWNS_PER_FRAME = 10;
+const RING_SIZE = 140;
 
 const damp = (a, b, lambda, dt) => b + (a - b) * Math.exp(-lambda * dt);
+
+// Strips the near-white background of the leaf photo into a transparent cutout.
+function loadLeafCutout(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        if (brightness > 235) {
+          data[i + 3] = 0;
+        } else if (brightness > 195) {
+          data[i + 3] = Math.round(data[i + 3] * (1 - (brightness - 195) / 40));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      resolve({ canvas, aspect: canvas.width / canvas.height });
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
 
 const CursorTrail = () => {
   const canvasRef = useRef(null);
@@ -50,6 +80,10 @@ const CursorTrail = () => {
 
     const motes = Array.from({ length: RING_SIZE }, () => ({ life: 0 }));
     let ringIndex = 0;
+    let leafImg = null;
+    loadLeafCutout(daunUrl).then((img) => {
+      leafImg = img;
+    });
 
     const emitter = { x: w / 2, y: h / 2, acc: 0 };
     const pointer = { x: w / 2, y: h / 2, active: false, lastMoveAt: 0 };
@@ -71,8 +105,9 @@ const CursorTrail = () => {
           Math.sin(angle) * rand(6, 22) -
           rand(4, 10),
         phase: Math.random() * Math.PI * 2,
-        color: COLORS[(Math.random() * COLORS.length) | 0],
-        size: rand(1.4, 3.2),
+        rotation: Math.random() * Math.PI * 2,
+        spin: rand(-3, 3),
+        size: rand(9, 17),
         life: 1,
         maxLife: rand(0.9, 1.8),
       };
@@ -138,31 +173,37 @@ const CursorTrail = () => {
       }
 
       ctx.clearRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "lighter";
-      for (const m of motes) {
-        if (m.life <= 0) continue;
-        m.life -= dt / m.maxLife;
-        if (m.life <= 0) continue;
+      if (leafImg) {
+        for (const m of motes) {
+          if (m.life <= 0) continue;
+          m.life -= dt / m.maxLife;
+          if (m.life <= 0) continue;
 
-        m.vx *= 1 - 0.9 * dt;
-        m.vy *= 1 - 0.9 * dt;
-        m.vy += 14 * dt; // slight buoyancy-then-settle
-        m.x += m.vx * dt + Math.sin(now / 400 + m.phase) * 6 * dt;
-        m.y += m.vy * dt;
+          m.vx *= 1 - 0.9 * dt;
+          m.vy *= 1 - 0.9 * dt;
+          m.vy += 14 * dt; // slight buoyancy-then-settle
+          m.x += m.vx * dt + Math.sin(now / 400 + m.phase) * 6 * dt;
+          m.y += m.vy * dt;
+          m.rotation += m.spin * dt;
 
-        const u = 1 - m.life;
-        const alpha =
-          u < 0.12 ? u / 0.12 : Math.max(0, 1 - (u - 0.22) / 0.78);
-        const size = m.size * (1 + 0.5 * u);
+          const u = 1 - m.life;
+          const alpha =
+            u < 0.12 ? u / 0.12 : Math.max(0, 1 - (u - 0.22) / 0.78);
+          const size = m.size * (1 + 0.5 * u);
+          const dw = size * 2;
+          const dh = dw / leafImg.aspect;
+          const squish = Math.cos(now / 260 + m.phase);
 
-        ctx.globalAlpha = Math.max(0, alpha) * 0.9;
-        ctx.fillStyle = m.color;
-        ctx.beginPath();
-        ctx.arc(m.x, m.y, size, 0, Math.PI * 2);
-        ctx.fill();
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, alpha) * 0.95;
+          ctx.translate(m.x, m.y);
+          ctx.rotate(m.rotation);
+          ctx.scale(squish, 1);
+          ctx.drawImage(leafImg.canvas, -dw / 2, -dh / 2, dw, dh);
+          ctx.restore();
+        }
       }
       ctx.globalAlpha = 1;
-      ctx.globalCompositeOperation = "source-over";
     };
 
     const handleVisibility = () => {
