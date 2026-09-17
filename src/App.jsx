@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React, { useState, lazy, Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
+import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 import Navbar from "./components/Navbar";
 import Home from "./Pages/Home";
@@ -15,13 +16,14 @@ import Dashboard from "./Pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const Portofolio = lazy(() => import("./Pages/Portofolio"));
+const Testimonials = lazy(() => import("./Pages/Testimonials"));
 const ContactPage = lazy(() => import("./Pages/Contact"));
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
 const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
 const SeedCertificates = lazy(() => import("./Pages/SeedCertificates"));
 
-const LandingPage = ({ showWelcome, setShowWelcome, isPlaying, setIsPlaying }) => {
+const LandingPage = ({ showWelcome, setShowWelcome }) => {
   return (
     <>
       <AnimatePresence mode="wait">
@@ -36,10 +38,11 @@ const LandingPage = ({ showWelcome, setShowWelcome, isPlaying, setIsPlaying }) =
         <>
           <Navbar />
       
-          <Home isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
+          <Home />
           <About />
           <Suspense fallback={<div className="h-20" />}>
             <Portofolio />
+            <Testimonials />
             <ContactPage />
           </Suspense>
           <Footer />
@@ -60,15 +63,15 @@ const ProjectPageLayout = () => (
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   return (
     
 <HelmetProvider>
       <div>
   <AnimatedBackground />
+  <Analytics />
       <BrowserRouter>
-        <TentacleCanvas showWelcome={showWelcome} isGamePlaying={isPlaying} />
+        <TentacleCanvas showWelcome={showWelcome} />
         <Routes>
           {/* PUBLIC */}
           <Route
@@ -77,8 +80,6 @@ function App() {
               <LandingPage
                 showWelcome={showWelcome}
                 setShowWelcome={setShowWelcome}
-                isPlaying={isPlaying}
-                setIsPlaying={setIsPlaying}
               />
             }
           />
