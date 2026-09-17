@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { Helmet } from "react-helmet-async"
-import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles } from "lucide-react"
+import { Mail, ExternalLink, Sparkles } from "lucide-react"
+import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa6"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -77,13 +78,16 @@ const CTAButton = memo(({ href, text, icon: Icon }) => (
   </a>
 ));
 
-const SocialLink = memo(({ icon: Icon, link, label }) => (
+const SocialLink = memo(({ icon: Icon, link, label, color }) => (
   <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label}>
     <button className="group relative p-3"
       aria-label={label}>
       <div className="absolute inset-0 bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
       <div className="relative rounded-xl bg-black/50 backdrop-blur-xl p-2 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-all duration-300">
-        <Icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+        <Icon
+          className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+          style={{ color }}
+        />
       </div>
     </button>
   </a>
@@ -95,9 +99,9 @@ const PAUSE_DURATION = 2000;
 const WORDS = ["AI-Assisted Fullstack Developer", "Fullstack Web Developer"];
 const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
 const SOCIAL_LINKS = [
-  { icon: Github, link: "https://github.com/MuhammadNur02", label: "GitHub Profile" },
-  { icon: Linkedin, link: "https://www.linkedin.com/in/MuchammadNur/", label: "LinkedIn Profile" },
-  { icon: Instagram, link: "https://www.instagram.com/rianz_yan/", label: "Instagram Profile" }
+  { icon: FaGithub, link: "https://github.com/MuhammadNur02", label: "GitHub Profile", color: "#ffffff" },
+  { icon: FaLinkedin, link: "https://www.linkedin.com/in/MuchammadNur/", label: "LinkedIn Profile", color: "#0A66C2" },
+  { icon: FaInstagram, link: "https://www.instagram.com/rianz_yan/", label: "Instagram Profile", color: "#E4405F" }
 ];
 
 const Home = () => {
