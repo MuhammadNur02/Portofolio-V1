@@ -1,17 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
+
+const LanguageToggle = ({ className = "" }) => {
+    const { lang, toggleLang } = useLanguage();
+    return (
+        <button
+            onClick={toggleLang}
+            aria-label="Toggle language"
+            className={`relative flex items-center gap-1 px-1 py-1 rounded-full border border-white/15 bg-white/5 text-xs font-semibold ${className}`}
+        >
+            <span
+                className={`px-2 py-1 rounded-full transition-all duration-300 ${
+                    lang === "id"
+                        ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white"
+                        : "text-[#e2d3fd]"
+                }`}
+            >
+                ID
+            </span>
+            <span
+                className={`px-2 py-1 rounded-full transition-all duration-300 ${
+                    lang === "en"
+                        ? "bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white"
+                        : "text-[#e2d3fd]"
+                }`}
+            >
+                EN
+            </span>
+        </button>
+    );
+};
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("Home");
-    
+    const { t } = useLanguage();
+
     const navItems = [
-        { href: "#Home", label: "Home" },
-        { href: "#About", label: "About" },
-        { href: "#Portofolio", label: "Portofolio" },
-        { href: "#Testimonials", label: "Testimonials" },
-        { href: "#Contact", label: "Contact" },
+        { href: "#Home", label: t.nav.home },
+        { href: "#About", label: t.nav.about },
+        { href: "#Portofolio", label: t.nav.portfolio },
+        { href: "#Testimonials", label: t.nav.testimonials },
+        { href: "#Contact", label: t.nav.contact },
     ];
 
     useEffect(() => {
@@ -90,8 +122,8 @@ const Navbar = () => {
                     </div>
         
                     {/* Desktop Navigation */}
-                    <div className="hidden md:block">
-                        <div className="ml-8 flex items-center space-x-8">
+                    <div className="hidden md:flex items-center gap-8">
+                        <div className="flex items-center space-x-8">
                             {navItems.map((item) => (
                                 <a
                                     key={item.label}
@@ -118,10 +150,12 @@ const Navbar = () => {
                                 </a>
                             ))}
                         </div>
+                        <LanguageToggle />
                     </div>
-        
+
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden">
+                    <div className="md:hidden flex items-center gap-3">
+                        <LanguageToggle />
                         <button
                             onClick={() => setIsOpen(!isOpen)}
                             className={`relative p-2 text-[#e2d3fd] hover:text-white transition-transform duration-300 ease-in-out transform ${

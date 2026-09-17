@@ -3,30 +3,34 @@ import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from 
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Timeline from "../components/Timeline"
+import { useLanguage } from "../context/LanguageContext"
 
 // Memoized Components
-const Header = memo(() => (
-  <div className="text-center lg:mb-8 mb-2 px-[5%]">
-    <div className="inline-block relative group">
-      <h2 
-        className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]" 
+const Header = memo(() => {
+  const { t } = useLanguage();
+  return (
+    <div className="text-center lg:mb-8 mb-2 px-[5%]">
+      <div className="inline-block relative group">
+        <h2
+          className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]"
+          data-aos="zoom-in-up"
+          data-aos-duration="600"
+        >
+          {t.about.title}
+        </h2>
+      </div>
+      <p
+        className="mt-2 text-gray-400 max-w-2xl mx-auto text-base sm:text-lg flex items-center justify-center gap-2"
         data-aos="zoom-in-up"
-        data-aos-duration="600"
+        data-aos-duration="800"
       >
-        About Me
-      </h2>
+        <Sparkles className="w-5 h-5 text-cyan-400" />
+        {t.about.subtitle}
+        <Sparkles className="w-5 h-5 text-cyan-400" />
+      </p>
     </div>
-    <p 
-      className="mt-2 text-gray-400 max-w-2xl mx-auto text-base sm:text-lg flex items-center justify-center gap-2"
-      data-aos="zoom-in-up"
-      data-aos-duration="800"
-    >
-      <Sparkles className="w-5 h-5 text-cyan-400" />
-      Crafting seamless UI and intelligent full-stack experiences.
-      <Sparkles className="w-5 h-5 text-cyan-400" />
-    </p>
-  </div>
-));
+  );
+});
 
 const ProfileImage = memo(() => (
   <div className="flex justify-end items-center sm:p-12 sm:py-0 sm:pb-0 p-0 py-2 pb-2">
@@ -115,6 +119,7 @@ const StatCard = memo(({ icon: Icon, color, value, label, description, animation
 ));
 
 const AboutPage = () => {
+  const { t } = useLanguage();
   // Memoized calculations
   const [stats, setStats] = useState({
     totalProjects: 0,
@@ -182,27 +187,27 @@ const AboutPage = () => {
       icon: Code,
       color: "from-[#00d2ff] to-[#3b82f6]",
       value: totalProjects,
-      label: "Total Projects",
-      description: "Innovative web solutions crafted",
+      label: t.about.statTotalProjects,
+      description: t.about.statTotalProjectsDesc,
       animation: "fade-right",
     },
     {
       icon: Award,
       color: "from-[#3b82f6] to-[#00d2ff]",
       value: totalCertificates,
-      label: "Certificates",
-      description: "Professional skills validated",
+      label: t.about.statCertificates,
+      description: t.about.statCertificatesDesc,
       animation: "fade-up",
     },
     {
       icon: Globe,
       color: "from-[#00d2ff] to-[#3b82f6]",
       value: YearExperience,
-      label: "Years of Experience",
-      description: "Continuous learning journey",
+      label: t.about.statYearsExperience,
+      description: t.about.statYearsExperienceDesc,
       animation: "fade-left",
     },
-  ], [totalProjects, totalCertificates, YearExperience]);
+  ], [totalProjects, totalCertificates, YearExperience, t]);
 
   return (
     <div
@@ -222,7 +227,7 @@ const AboutPage = () => {
               data-aos-duration="1000"
             >
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
-                Hello, I'm
+                {t.about.greeting}
               </span>
               <span 
                 className="block mt-2 text-gray-200"
@@ -241,7 +246,7 @@ const AboutPage = () => {
   data-aos-duration="1500"
 >
   <p className="text-gray-300 text-sm sm:text-base leading-relaxed text-center lg:text-left">
-    I am an AI-Assisted Fullstack Developer and Web Designer dedicated to building intuitive, high-performance web applications from front to back. Passionate about leveraging AI tools to accelerate development, I transform complex ideas into seamless, production-ready digital experiences.
+    {t.about.bio}
   </p>
 </div>
 
@@ -263,7 +268,7 @@ const AboutPage = () => {
               </div>
               
               <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-sm relative z-10 pl-6">
-                "Building intelligent full-stack experiences, one line of code at a time."
+                "{t.about.quote}"
               </blockquote>
             </div>
 
@@ -274,16 +279,16 @@ const AboutPage = () => {
                   data-aos-duration="800"
                   className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl "
                 >
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> Download CV
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.downloadCV}
                 </button>
               </a>
               <a href="#Portofolio" className="w-full lg:w-auto">
-                <button 
+                <button
                   data-aos="fade-up"
                   data-aos-duration="1000"
                   className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg border border-[#06b6d4]/50 text-[#06b6d4] font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 hover:bg-[#06b6d4]/10 "
                 >
-                  <Code className="w-4 h-4 sm:w-5 sm:h-5" /> View Projects
+                  <Code className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.viewProjects}
                 </button>
               </a>
             </div>

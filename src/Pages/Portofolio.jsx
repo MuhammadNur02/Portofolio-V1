@@ -16,9 +16,10 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
 import { Code, Award, Boxes } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 
-const ToggleButton = ({ onClick, isShowingMore }) => (
+const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }) => (
   <button
     onClick={onClick}
     className="
@@ -46,7 +47,7 @@ const ToggleButton = ({ onClick, isShowingMore }) => (
     "
   >
     <span className="relative z-10 flex items-center gap-2">
-      {isShowingMore ? "See Less" : "See More"}
+      {isShowingMore ? seeLessLabel : seeMoreLabel}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -119,6 +120,7 @@ const techStacks = [
 ];
 
 export default function FullWidthTabs() {
+  const { t } = useLanguage();
   const theme = useTheme();
   const [value, setValue] = useState(0);
   const [projects, setProjects] = useState([]);
@@ -208,12 +210,11 @@ export default function FullWidthTabs() {
             backgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Portfolio Showcase
+            {t.portfolio.title}
           </span>
         </h2>
         <p className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2">
-          Explore my journey through projects, certifications, and technical expertise. 
-          Each section represents a milestone in my continuous learning path.
+          {t.portfolio.subtitle}
         </p>
       </div>
 
@@ -288,17 +289,17 @@ export default function FullWidthTabs() {
           >
             <Tab
               icon={<Code className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label="Projects"
+              label={t.portfolio.tabProjects}
               {...a11yProps(0)}
             />
             <Tab
               icon={<Award className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label="Certificates"
+              label={t.portfolio.tabCertificates}
               {...a11yProps(1)}
             />
             <Tab
               icon={<Boxes className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label="Tech Stack"
+              label={t.portfolio.tabTechStack}
               {...a11yProps(2)}
             />
           </Tabs>
@@ -334,6 +335,8 @@ export default function FullWidthTabs() {
                 <ToggleButton
                   onClick={() => toggleShowMore('projects')}
                   isShowingMore={showAllProjects}
+                  seeMoreLabel={t.portfolio.seeMore}
+                  seeLessLabel={t.portfolio.seeLess}
                 />
               </div>
             )}
@@ -358,6 +361,8 @@ export default function FullWidthTabs() {
                 <ToggleButton
                   onClick={() => toggleShowMore('certificates')}
                   isShowingMore={showAllCertificates}
+                  seeMoreLabel={t.portfolio.seeMore}
+                  seeLessLabel={t.portfolio.seeLess}
                 />
               </div>
             )}

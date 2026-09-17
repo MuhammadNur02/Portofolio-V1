@@ -7,8 +7,10 @@ import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
+import { useLanguage } from "../context/LanguageContext";
 
 const ContactPage = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,8 +37,8 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     Swal.fire({
-      title: 'Mengirim Pesan...',
-      html: 'Harap tunggu selagi kami mengirim pesan Anda',
+      title: t.contact.sendingTitle,
+      html: t.contact.sendingText,
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -64,8 +66,8 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
 
      
       Swal.fire({
-        title: 'Berhasil!',
-        text: 'Pesan Anda telah berhasil terkirim!',
+        title: t.contact.successTitle,
+        text: t.contact.successText,
         icon: 'success',
         confirmButtonColor: '#00d2ff',
         timer: 2000,
@@ -82,8 +84,8 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
       // FormSubmit returns a redirect (status 0 / network error) on success, so we check if it's a CORS/redirect-based success
       if (error.message === 'Network Error' || (error.request && error.request.status === 0)) {
         Swal.fire({
-          title: 'Berhasil!',
-          text: 'Pesan Anda telah berhasil terkirim!',
+          title: t.contact.successTitle,
+          text: t.contact.successText,
           icon: 'success',
           confirmButtonColor: '#00d2ff',
           timer: 2000,
@@ -97,8 +99,8 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
         });
       } else {
         Swal.fire({
-          title: 'Gagal!',
-          text: 'Terjadi kesalahan. Silakan coba lagi nanti.',
+          title: t.contact.errorTitle,
+          text: t.contact.errorText,
           icon: 'error',
           confirmButtonColor: '#00d2ff'
         });
@@ -126,7 +128,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
               WebkitTextFillColor: "transparent",
             }}
           >
-            Hubungi Saya
+            {t.contact.title}
           </span>
         </h2>
         <p
@@ -134,7 +136,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
           data-aos-duration="1100"
           className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base mt-2"
         >
-          Punya pertanyaan? Kirimi saya pesan, dan saya akan segera membalasnya.
+          {t.contact.subtitle}
         </p>
       </div>
 
@@ -150,10 +152,10 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h2 className="text-4xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#00d2ff] to-[#3b82f6]">
-                  Hubungi
+                  {t.contact.formTitle}
                 </h2>
                 <p className="text-gray-400">
-                  Ada yang ingin didiskusikan? Kirim saya pesan dan mari kita bicara.
+                  {t.contact.formSubtitle}
                 </p>
               </div>
               <Share2 className="w-10 h-10 text-[#00d2ff] opacity-50" />
@@ -172,7 +174,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
                 <input
                   type="text"
                   name="name"
-                  placeholder="Nama Anda"
+                  placeholder={t.contact.namePlaceholder}
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -189,7 +191,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
                 <input
                   type="email"
                   name="email"
-                  placeholder="Email Anda"
+                  placeholder={t.contact.emailPlaceholder}
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -205,7 +207,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
                 <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#00d2ff] transition-colors" />
                 <textarea
                   name="message"
-                  placeholder="Pesan Anda"
+                  placeholder={t.contact.messagePlaceholder}
                   value={formData.message}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -221,7 +223,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
                 className="w-full bg-gradient-to-r from-[#00d2ff] to-[#3b82f6] text-white py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00d2ff]/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-5 h-5" />
-                {isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
+                {isSubmitting ? t.contact.sending : t.contact.send}
               </button>
             </form>
 
