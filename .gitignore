@@ -15,6 +15,9 @@ dist/
 
 .PresenceWidget.jsx
 
+# Temp assets for manual upload via dashboard, not part of the build
+new-project-screenshots/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

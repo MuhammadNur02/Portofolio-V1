@@ -2,6 +2,7 @@ import React, { useEffect, useState, memo, useMemo } from "react"
 import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import Timeline from "../components/Timeline"
 
 // Memoized Components
 const Header = memo(() => (
@@ -21,7 +22,7 @@ const Header = memo(() => (
       data-aos-duration="800"
     >
       <Sparkles className="w-5 h-5 text-cyan-400" />
-      Crafting seamless UI and immersive game experiences.
+      Crafting seamless UI and intelligent full-stack experiences.
       <Sparkles className="w-5 h-5 text-cyan-400" />
     </p>
   </div>
@@ -240,7 +241,7 @@ const AboutPage = () => {
   data-aos-duration="1500"
 >
   <p className="text-gray-300 text-sm sm:text-base leading-relaxed text-center lg:text-left">
-    I am a Game UI Developer and Web Designer dedicated to crafting intuitive, visually immersive user interfaces for players. Passionate about blending aesthetics with functional interactive design, I transform complex game systems into seamless player experiences.
+    I am an AI-Assisted Fullstack Developer and Web Designer dedicated to building intuitive, high-performance web applications from front to back. Passionate about leveraging AI tools to accelerate development, I transform complex ideas into seamless, production-ready digital experiences.
   </p>
 </div>
 
@@ -262,7 +263,7 @@ const AboutPage = () => {
               </div>
               
               <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-sm relative z-10 pl-6">
-                "Designing intuitive interfaces for players to explore."
+                "Building intelligent full-stack experiences, one line of code at a time."
               </blockquote>
             </div>
 
@@ -298,6 +299,8 @@ const AboutPage = () => {
             ))}
           </div>
         </a>
+
+        <Timeline />
       </div>
 
       <style jsx>{`

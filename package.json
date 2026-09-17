@@ -22,6 +22,7 @@
     "@splinetool/react-spline": "^4.0.0",
     "@splinetool/runtime": "^1.9.37",
     "@supabase/supabase-js": "^2.49.9",
+    "@vercel/analytics": "^2.0.1",
     "aos": "^2.3.4",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",

@@ -167,7 +167,7 @@ const ProjectDetails = () => {
           content={
             project.Description
               ? project.Description.slice(0, 155)
-            : `Project ${project.Title} oleh Muhammad Nurrahman Juliansyah — Game UI Developer.`
+            : `Project ${project.Title} oleh Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer.`
           }
         />
         <meta name="robots" content="index, follow" />
@@ -238,10 +238,15 @@ const ProjectDetails = () => {
                   </div>
                 </div>
 
-                <div className="prose prose-invert max-w-none">
-                  <p className="text-base md:text-lg text-gray-300/90 leading-relaxed">
-                    {project.Description}
-                  </p>
+                <div className="space-y-2 md:space-y-3">
+                  <h2 className="text-sm md:text-base font-semibold text-cyan-400/90 uppercase tracking-wider">
+                    Project Overview
+                  </h2>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-base md:text-lg text-gray-300/90 leading-relaxed">
+                      {project.Description}
+                    </p>
+                  </div>
                 </div>
 
                 <ProjectStats project={project} />
