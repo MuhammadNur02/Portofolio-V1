@@ -1,11 +1,6 @@
 import { useEffect } from "react";
-import {
-  Linkedin,
-  Github,
-  Instagram,
-  Youtube,
-  ExternalLink,
-} from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { FaLinkedin, FaGithub, FaInstagram, FaYoutube } from "react-icons/fa6";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import PresenceWidget from "./PresenceWidget";
@@ -15,7 +10,7 @@ const socialLinks = [
     name: "LinkedIn",
     displayName: "Let's Connect",
     subText: "on LinkedIn",
-    icon: Linkedin,
+    icon: FaLinkedin,
     url: "https://www.linkedin.com/in/MuchammadNur/",
     color: "#0A66C2",
     gradient: "from-[#0A66C2] to-[#0077B5]",
@@ -25,7 +20,7 @@ const socialLinks = [
     name: "Instagram",
     displayName: "Instagram",
     subText: "@rianz_yan",
-    icon: Instagram,
+    icon: FaInstagram,
     url: "https://www.instagram.com/rianz_yan/",
     color: "#E4405F",
     gradient: "from-[#833AB4] via-[#E4405F] to-[#FCAF45]",
@@ -34,7 +29,7 @@ const socialLinks = [
     name: "YouTube",
     displayName: "Youtube",
     subText: "@Julian.Alvarez02",
-    icon: Youtube,
+    icon: FaYoutube,
     url: "https://www.youtube.com/@Julian.Alvarez02",
     color: "#FF0000",
     gradient: "from-[#FF0000] to-[#CC0000]",
@@ -43,7 +38,7 @@ const socialLinks = [
     name: "GitHub",
     displayName: "Github",
     subText: "@MuhammadNur02",
-    icon: Github,
+    icon: FaGithub,
     url: "https://github.com/MuhammadNur02",
     color: "#ffffff",
     gradient: "from-[#333] to-[#24292e]",

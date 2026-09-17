@@ -9,33 +9,100 @@ import {
   Star,
   ChevronRight,
   Layers,
-  Layout,
-  Globe,
   Package,
-  Cpu,
-  Code,
 } from "lucide-react";
+import {
+  SiReact,
+  SiNextdotjs,
+  SiVuedotjs,
+  SiAngular,
+  SiSvelte,
+  SiTailwindcss,
+  SiBootstrap,
+  SiNodedotjs,
+  SiExpress,
+  SiPython,
+  SiDjango,
+  SiFlask,
+  SiJavascript,
+  SiTypescript,
+  SiHtml5,
+  SiCss,
+  SiSass,
+  SiPhp,
+  SiLaravel,
+  SiSupabase,
+  SiFirebase,
+  SiMongodb,
+  SiPostgresql,
+  SiMysql,
+  SiVite,
+  SiVercel,
+  SiMui,
+  SiRedux,
+  SiGraphql,
+  SiDocker,
+  SiFigma,
+  SiFlutter,
+  SiGit,
+} from "react-icons/si";
 import Swal from "sweetalert2";
 import { toSlug } from "../utils/slug";
 
 const TECH_ICONS = {
-  React: Globe,
-  Tailwind: Layout,
-  Express: Cpu,
-  Python: Code,
-  Javascript: Code,
-  HTML: Code,
-  CSS: Code,
-  default: Package,
+  react: { icon: SiReact, color: "#61DAFB" },
+  "next.js": { icon: SiNextdotjs, color: "#ffffff" },
+  nextjs: { icon: SiNextdotjs, color: "#ffffff" },
+  "vue.js": { icon: SiVuedotjs, color: "#4FC08D" },
+  vue: { icon: SiVuedotjs, color: "#4FC08D" },
+  angular: { icon: SiAngular, color: "#DD0031" },
+  svelte: { icon: SiSvelte, color: "#FF3E00" },
+  tailwind: { icon: SiTailwindcss, color: "#38BDF8" },
+  "tailwind css": { icon: SiTailwindcss, color: "#38BDF8" },
+  bootstrap: { icon: SiBootstrap, color: "#7952B3" },
+  "node.js": { icon: SiNodedotjs, color: "#5FA04E" },
+  nodejs: { icon: SiNodedotjs, color: "#5FA04E" },
+  express: { icon: SiExpress, color: "#ffffff" },
+  python: { icon: SiPython, color: "#3776AB" },
+  django: { icon: SiDjango, color: "#0C4B33" },
+  flask: { icon: SiFlask, color: "#ffffff" },
+  javascript: { icon: SiJavascript, color: "#F7DF1E" },
+  typescript: { icon: SiTypescript, color: "#3178C6" },
+  html: { icon: SiHtml5, color: "#E34F26" },
+  html5: { icon: SiHtml5, color: "#E34F26" },
+  css: { icon: SiCss, color: "#663399" },
+  css3: { icon: SiCss, color: "#663399" },
+  sass: { icon: SiSass, color: "#CC6699" },
+  php: { icon: SiPhp, color: "#777BB4" },
+  laravel: { icon: SiLaravel, color: "#FF2D20" },
+  supabase: { icon: SiSupabase, color: "#3ECF8E" },
+  firebase: { icon: SiFirebase, color: "#FFCA28" },
+  mongodb: { icon: SiMongodb, color: "#47A248" },
+  postgresql: { icon: SiPostgresql, color: "#4169E1" },
+  mysql: { icon: SiMysql, color: "#4479A1" },
+  vite: { icon: SiVite, color: "#646CFF" },
+  vercel: { icon: SiVercel, color: "#ffffff" },
+  "material ui": { icon: SiMui, color: "#007FFF" },
+  mui: { icon: SiMui, color: "#007FFF" },
+  redux: { icon: SiRedux, color: "#764ABC" },
+  graphql: { icon: SiGraphql, color: "#E10098" },
+  docker: { icon: SiDocker, color: "#2496ED" },
+  figma: { icon: SiFigma, color: "#F24E1E" },
+  flutter: { icon: SiFlutter, color: "#02569B" },
+  git: { icon: SiGit, color: "#F05032" },
 };
 
+const normalizeTech = (tech) => tech.trim().toLowerCase();
+
 const TechBadge = ({ tech }) => {
-  const Icon = TECH_ICONS[tech] || TECH_ICONS["default"];
+  const match = TECH_ICONS[normalizeTech(tech)];
+  const Icon = match?.icon || Package;
+  const color = match?.color || "#22d3ee";
   return (
     <div className="group relative overflow-hidden px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-cyan-600/10 to-blue-600/10 rounded-xl border border-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 cursor-default">
       <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-blue-500/0 group-hover:from-cyan-500/10 group-hover:to-blue-500/10 transition-all duration-500" />
       <div className="relative flex items-center gap-1.5 md:gap-2">
-        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 transition-colors" style={{ color }} />
         <span className="text-xs md:text-sm font-medium text-cyan-300/90 group-hover:text-cyan-200 transition-colors">
           {tech}
         </span>
