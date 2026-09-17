@@ -132,7 +132,7 @@ const ProjectStats = ({ project }) => {
   const featuresCount = project?.Features?.length || 0;
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 bg-[#0a0a1a] rounded-xl overflow-hidden relative">
+    <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 bg-[#130d08] rounded-xl overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-orange-900/20 to-amber-900/20 opacity-50 blur-2xl z-0" />
       <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-orange-500/20 transition-all duration-300 hover:scale-105 hover:border-orange-500/50 hover:shadow-lg">
         <div className="bg-orange-500/20 p-1.5 md:p-2 rounded-full">
@@ -179,7 +179,7 @@ const handleGithubClick = (githubLink, t) => {
       text: t.projectDetail.privateText,
       confirmButtonText: t.projectDetail.privateConfirm,
       confirmButtonColor: "#fbbf24",
-      background: "#030014",
+      background: "#0a0705",
       color: "#ffffff",
     });
     return false;
@@ -215,7 +215,7 @@ const ProjectDetails = () => {
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-[#030014] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0705] flex items-center justify-center">
         <div className="text-center space-y-6 animate-fadeIn">
           <div className="w-16 h-16 md:w-24 md:h-24 mx-auto border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
           <h2 className="text-xl md:text-3xl font-bold text-white">
@@ -269,7 +269,7 @@ const ProjectDetails = () => {
         `}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#030014] px-[2%] sm:px-0 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0a0705] px-[2%] sm:px-0 relative overflow-hidden">
         <div className="fixed inset-0">
           <div className="absolute -inset-[10px] opacity-20">
             <div className="absolute top-0 -left-4 w-72 md:w-96 h-72 md:h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
@@ -369,7 +369,7 @@ const ProjectDetails = () => {
 
               <div className="space-y-6 md:space-y-10 animate-slideInRight">
                 <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#030014] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0705] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={project.Img}
                     alt={project.Title}
@@ -379,7 +379,7 @@ const ProjectDetails = () => {
                   <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/10 transition-colors duration-300 rounded-2xl" />
                 </div>
 
-                <div className="bg-white/[0.02] backdrop-blur-xl rounded-2xl p-8 border border-white/10 space-y-6 hover:border-white/20 transition-colors duration-300 group">
+                <div className="bg-[#120c07]/55 backdrop-blur-xl rounded-2xl p-8 border border-white/10 space-y-6 hover:border-white/20 transition-colors duration-300 group">
                   <h3 className="text-xl font-semibold text-white/90 flex items-center gap-3">
                     <Star className="w-5 h-5 text-yellow-400 group-hover:rotate-[20deg] transition-transform duration-300" />
                     {t.projectDetail.keyFeatures}

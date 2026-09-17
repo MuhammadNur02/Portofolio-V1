@@ -29,13 +29,13 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id, featured 
 
   return (
     <div className="group relative w-full h-full" onMouseMove={handleMouseMove}>
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-orange-500/20 h-full">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-stone-900/90 to-stone-800/90 backdrop-blur-lg border border-white/10 shadow-2xl transition-all duration-300 hover:shadow-orange-500/20 h-full">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
         <div
           className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20"
           style={{
             background:
-              "radial-gradient(280px circle at var(--x, 50%) var(--y, 50%), rgba(6,182,212,0.12), transparent 70%)",
+              "radial-gradient(280px circle at var(--x, 50%) var(--y, 50%), rgba(224, 35, 28,0.12), transparent 70%)",
           }}
         />
 

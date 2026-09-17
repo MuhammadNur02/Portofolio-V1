@@ -17,7 +17,7 @@ const PAGE_SIZE = 10;
 const Card = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10 group-hover:opacity-20 transition duration-500 pointer-events-none" />
-    <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
+    <div className="relative bg-[#120c07]/60 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
       {children}
     </div>
   </div>
@@ -101,7 +101,7 @@ export default function Comments() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-xl blur opacity-50 pointer-events-none" />
-            <div className="relative w-9 h-9 bg-[#030014] rounded-xl border border-white/15 flex items-center justify-center">
+            <div className="relative w-9 h-9 bg-[#0a0705] rounded-xl border border-white/15 flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-amber-400" />
             </div>
           </div>

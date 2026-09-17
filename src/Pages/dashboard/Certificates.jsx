@@ -5,7 +5,7 @@ import { Award, Upload, Trash2, ImageIcon, Plus } from 'lucide-react'
 const Card = ({ children, className = '' }) => (
   <div className={`relative group ${className}`}>
     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10 group-hover:opacity-25 transition duration-500" />
-    <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
+    <div className="relative bg-[#120c07]/60 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
       {children}
     </div>
   </div>
@@ -14,7 +14,7 @@ const Card = ({ children, className = '' }) => (
 const SkeletonCard = () => (
   <div className="relative">
     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10" />
-    <div className="relative bg-white/5 border border-white/12 rounded-2xl overflow-hidden">
+    <div className="relative bg-[#120c07]/60 border border-white/12 rounded-2xl overflow-hidden">
       <div className="w-full aspect-[16/11.5] bg-white/5 animate-pulse" />
     </div>
   </div>
@@ -27,7 +27,7 @@ const CertCard = ({ cert, onDelete }) => {
   return (
     <div className="relative group">
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10 group-hover:opacity-30 transition duration-500" />
-      <div className="relative bg-white/5 border border-white/12 rounded-2xl overflow-hidden">
+      <div className="relative bg-[#120c07]/60 border border-white/12 rounded-2xl overflow-hidden">
         {/* Skeleton shown until image loads or fails */}
         {!imgLoaded && !imgError && (
           <div className="w-full aspect-[16/11.5] bg-white/5 animate-pulse" />
@@ -105,7 +105,7 @@ export default function Certificates() {
       <div className="flex items-center gap-3">
         <div className="relative">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-xl blur opacity-50" />
-          <div className="relative w-9 h-9 bg-[#030014] rounded-xl border border-white/15 flex items-center justify-center">
+          <div className="relative w-9 h-9 bg-[#0a0705] rounded-xl border border-white/15 flex items-center justify-center">
             <Award className="w-4 h-4 text-amber-400" />
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function Certificates() {
                 </button>
                 <button onClick={uploadImage} disabled={uploading} className="relative group/u">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-60 blur group-hover/u:opacity-100 transition duration-300" />
-                  <div className="relative flex items-center gap-2 px-4 py-1.5 bg-[#030014] rounded-xl border border-white/10">
+                  <div className="relative flex items-center gap-2 px-4 py-1.5 bg-[#0a0705] rounded-xl border border-white/10">
                     {uploading ? <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Upload className="w-3.5 h-3.5 text-amber-400" />}
                     <span className="text-xs text-gray-200">{uploading ? 'Uploading...' : 'Upload'}</span>
                   </div>

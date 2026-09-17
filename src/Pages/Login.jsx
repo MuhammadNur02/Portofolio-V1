@@ -33,7 +33,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-700" />
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/15 rounded-2xl p-8 space-y-7">
+          <div className="relative bg-[#120c07]/60 backdrop-blur-xl border border-white/15 rounded-2xl p-8 space-y-7">
 
             {/* Header */}
             <div className="text-center space-y-3">
@@ -90,7 +90,7 @@ export default function Login() {
 
               <button type="submit" disabled={loading} className="relative group/btn w-full mt-1">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-70 blur group-hover/btn:opacity-100 transition duration-300" />
-                <div className="relative h-11 bg-[#030014] rounded-xl border border-white/10 flex items-center justify-center gap-2 overflow-hidden">
+                <div className="relative h-11 bg-[#0a0705] rounded-xl border border-white/10 flex items-center justify-center gap-2 overflow-hidden">
                   <div className="absolute inset-0 scale-x-0 group-hover/btn:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#d97706]/20 to-[#b91c1c]/20" />
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

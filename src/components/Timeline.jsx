@@ -33,12 +33,12 @@ const TimelineItem = memo(({ item, index, isLast }) => {
 
       <div className="absolute left-0 top-0 -translate-x-1/2 flex items-center justify-center">
         <div className="absolute -inset-2 bg-gradient-to-r from-[#f59e0b] to-[#e0231c] rounded-full blur opacity-40 group-hover:opacity-70 transition-opacity duration-300" />
-        <div className="relative w-9 h-9 rounded-full bg-[#0a0a1a] border border-white/15 flex items-center justify-center">
+        <div className="relative w-9 h-9 rounded-full bg-[#130d08] border border-white/15 flex items-center justify-center">
           <Icon className="w-4 h-4 text-orange-300" />
         </div>
       </div>
 
-      <div className="bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-colors duration-300">
+      <div className="bg-[#120c07]/55 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-orange-500/30 transition-colors duration-300">
         <span className="inline-block text-xs font-medium text-orange-300/80 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-2">
           {item.period}
         </span>

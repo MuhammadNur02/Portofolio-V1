@@ -12,7 +12,7 @@ const InputField = ({ field, label, icon: Icon, formData, handleChange }) => {
     `;
 
     const hoverFocusClasses = isFocused
-      ? "shadow-[0_4px_12px_rgba(99,102,241,0.4)] border-[#f59e0b]"
+      ? "shadow-[0_4px_12px_rgba(245, 158, 11,0.4)] border-[#f59e0b]"
       : "border-white/20 hover:border-[#f59e0b]";
 
     return `${baseClasses} ${hoverFocusClasses} ${isTextArea ? "h-52 pt-12" : "pl-12"}`;

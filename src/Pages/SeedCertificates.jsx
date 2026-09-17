@@ -39,11 +39,11 @@ export default function SeedCertificates() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030014] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0a0705] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="relative">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-20" />
-          <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl p-8">
+          <div className="relative bg-[#120c07]/55 backdrop-blur-xl border border-white/12 rounded-2xl p-8">
             {/* Header */}
             <div className="text-center mb-6">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-red-500/20 border border-white/10 flex items-center justify-center mx-auto mb-4">
@@ -88,7 +88,7 @@ export default function SeedCertificates() {
               className="relative group w-full"
             >
               <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-60 blur group-hover:opacity-100 transition duration-300" />
-              <div className="relative flex items-center justify-center gap-2 w-full py-2.5 bg-[#030014] rounded-xl border border-white/10">
+              <div className="relative flex items-center justify-center gap-2 w-full py-2.5 bg-[#0a0705] rounded-xl border border-white/10">
                 {seeding ? (
                   <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
                 ) : (

@@ -15,7 +15,7 @@ import {
 const Card = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10 group-hover:opacity-25 transition duration-500" />
-    <div className="relative bg-white/5 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
+    <div className="relative bg-[#120c07]/60 backdrop-blur-xl border border-white/12 rounded-2xl h-full">
       {children}
     </div>
   </div>
@@ -39,7 +39,7 @@ const InputField = ({
       onChange={onChange}
       placeholder={placeholder}
       required={required}
-      className="w-full bg-[#0d0d22] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all"
+      className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all"
     />
   </div>
 );
@@ -47,7 +47,7 @@ const InputField = ({
 const SkeletonCard = () => (
   <div className="relative">
     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-10" />
-    <div className="relative bg-white/5 border border-white/12 rounded-2xl p-4 flex flex-col gap-3">
+    <div className="relative bg-[#120c07]/60 border border-white/12 rounded-2xl p-4 flex flex-col gap-3">
       <div className="w-full aspect-[16/8] bg-white/5 animate-pulse rounded-xl" />
       <div className="h-4 bg-white/5 animate-pulse rounded-lg w-2/3" />
       <div className="h-3 bg-white/5 animate-pulse rounded-lg w-full" />
@@ -173,7 +173,7 @@ const Modal = ({ title, onClose, children }) => (
       style={{ maxHeight: "calc(100vh - 24px)" }}
     >
       <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-2xl blur opacity-20 pointer-events-none" />
-      <div className="relative bg-[#0a0a1a] border border-white/12 rounded-2xl flex flex-col overflow-hidden">
+      <div className="relative bg-[#130d08] border border-white/12 rounded-2xl flex flex-col overflow-hidden">
         {/* Fixed header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/8 shrink-0">
           <h2 className="text-base font-semibold text-white">{title}</h2>
@@ -251,7 +251,7 @@ const ProjectForm = ({
             onChange={set("Description")}
             placeholder="Describe what this project does, its purpose, and impact..."
             rows={3}
-            className="w-full bg-[#0d0d22] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
+            className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
           />
         </div>
 
@@ -284,7 +284,7 @@ const ProjectForm = ({
           <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
             Project Image
           </label>
-          <label className="flex items-center gap-4 w-full bg-[#0d0d22] border border-dashed border-white/15 rounded-xl px-4 py-4 cursor-pointer hover:border-amber-500/40 hover:bg-white/4 transition-all">
+          <label className="flex items-center gap-4 w-full bg-[#17110a] border border-dashed border-white/15 rounded-xl px-4 py-4 cursor-pointer hover:border-amber-500/40 hover:bg-white/4 transition-all">
             {preview ? (
               <img
                 src={preview}
@@ -324,7 +324,7 @@ const ProjectForm = ({
         </button>
         <button type="submit" disabled={uploading} className="relative group/s">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-60 blur group-hover/s:opacity-100 transition duration-300" />
-          <div className="relative flex items-center gap-2 px-5 py-2 bg-[#030014] rounded-xl border border-white/10">
+          <div className="relative flex items-center gap-2 px-5 py-2 bg-[#0a0705] rounded-xl border border-white/10">
             {uploading ? (
               <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : (
@@ -430,7 +430,7 @@ export default function Projects() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-[#f59e0b] to-[#dc2626] rounded-xl blur opacity-50" />
-            <div className="relative w-9 h-9 bg-[#030014] rounded-xl border border-white/15 flex items-center justify-center">
+            <div className="relative w-9 h-9 bg-[#0a0705] rounded-xl border border-white/15 flex items-center justify-center">
               <FolderGit2 className="w-4 h-4 text-amber-400" />
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function Projects() {
           className="relative group shrink-0"
         >
           <div className="absolute -inset-0.5 bg-gradient-to-r from-[#d97706] to-[#b91c1c] rounded-xl opacity-50 blur group-hover:opacity-80 transition duration-300" />
-          <div className="relative flex items-center gap-2 px-4 py-2.5 bg-[#030014] rounded-xl border border-white/10">
+          <div className="relative flex items-center gap-2 px-4 py-2.5 bg-[#0a0705] rounded-xl border border-white/10">
             <Plus className="w-4 h-4 text-amber-400" />
             <span className="text-sm text-gray-200">New Project</span>
           </div>
