@@ -9,6 +9,7 @@ import Home from "./Pages/Home";
 import About from "./Pages/About";
 import AnimatedBackground from "./components/Background";
 import TentacleCanvas from "./components/DragonCanvas";
+import CursorTrail from "./components/CursorTrail";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
 
@@ -72,8 +73,9 @@ function App() {
       <div>
   <AnimatedBackground />
   <Analytics />
+  <CursorTrail />
       <BrowserRouter>
-        <TentacleCanvas showWelcome={showWelcome} />
+        <TentacleCanvas />
         <Routes>
           {/* PUBLIC */}
           <Route
