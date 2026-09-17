@@ -39,7 +39,7 @@ const AnimatedBackground = () => {
 
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {/* Background Image (bottom layer) with parallax float */}
+      {/* Background Image (bottom layer) with parallax float — fallback shown before/without WebGL */}
       <img
         ref={spaceRef}
         src="/Black.jpg"
