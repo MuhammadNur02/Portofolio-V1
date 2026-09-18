@@ -1,27 +1,10 @@
 import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { Helmet } from "react-helmet-async"
-import { Mail, ExternalLink, Sparkles } from "lucide-react"
+import { Mail, ExternalLink } from "lucide-react"
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa6"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import { useLanguage } from "../context/LanguageContext"
-
-const StatusBadge = memo(() => {
-  const { t } = useLanguage();
-  return (
-    <div className="inline-block animate-float lg:mx-0" data-aos="zoom-in" data-aos-delay="400">
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-full blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-        <div className="relative px-3 sm:px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10">
-          <span className="bg-gradient-to-r from-[#fbbf24] to-[#dc2626] text-transparent bg-clip-text sm:text-sm text-[0.7rem] font-medium flex items-center">
-            <Sparkles className="sm:w-4 sm:h-4 w-3 h-3 mr-2 text-orange-400" />
-            {t.hero.badge}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-});
 
 const MainTitle = memo(() => {
   const { lang } = useLanguage();
@@ -214,7 +197,6 @@ const Home = () => {
   data-aos-delay="200">
   
   <div className="space-y-6">
-    <StatusBadge />
     <MainTitle />
 
     {/* Typing Effect */}
