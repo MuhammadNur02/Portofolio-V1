@@ -74,17 +74,26 @@ function sharpenImageData(ctx, width, height, amount) {
   ctx.putImageData(out, 0, 0);
 }
 
+// Caps how many pixels the sharpen pass (and the getImageData/putImageData
+// round trip it needs) ever has to touch. Source art can come in far above
+// what a blurred, fogged-over 3D backdrop can actually show on screen —
+// running the unsharp mask at, say, 19MP measured as 2+ seconds of blocked
+// main thread on desktop, which reads as a freeze and can be much worse on
+// mobile CPUs. Downscaling first keeps quality well above what the plane
+// ever resolves while keeping the sharpen pass cheap.
+const MAX_TEXTURE_MEGAPIXELS = 4;
+
 function loadPlainTexture(url, { sharpen = 0, anisotropy = 1 } = {}) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      // Draw at the source's native pixel size (no downscale) so "full
-      // resolution" is preserved; the sharpen pass then runs on that canvas.
+      const sourcePixels = img.naturalWidth * img.naturalHeight;
+      const scale = Math.min(1, Math.sqrt((MAX_TEXTURE_MEGAPIXELS * 1e6) / sourcePixels));
       const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       if (sharpen > 0) sharpenImageData(ctx, canvas.width, canvas.height, sharpen);
 
       const texture = new THREE.CanvasTexture(canvas);
