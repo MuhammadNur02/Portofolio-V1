@@ -189,7 +189,7 @@ const Home = () => {
       <div className="min-h-screen bg-[#0a0705] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
         <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
           <div className="container mx-auto min-h-screen">
-            <div className="flex flex-col lg:flex-row items-center justify-center h-screen md:justify-between gap-0 sm:gap-12 lg:gap-20">
+            <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen pt-20 md:justify-between gap-0 sm:gap-12 lg:gap-20">
               {/* Left Column */}
               {/* Left Column */}
 <div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0 relative z-20"
