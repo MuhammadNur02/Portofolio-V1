@@ -107,7 +107,7 @@ const CursorTrail = () => {
         phase: Math.random() * Math.PI * 2,
         rotation: Math.random() * Math.PI * 2,
         spin: rand(-3, 3),
-        size: rand(9, 17),
+        size: rand(13, 24),
         life: 1,
         maxLife: rand(0.9, 1.8),
       };
@@ -189,7 +189,7 @@ const CursorTrail = () => {
           const u = 1 - m.life;
           const alpha =
             u < 0.12 ? u / 0.12 : Math.max(0, 1 - (u - 0.22) / 0.78);
-          const size = m.size * (1 + 0.5 * u);
+          const size = m.size * (1 + 0.9 * u);
           const dw = size * 2;
           const dh = dw / leafImg.aspect;
           const squish = Math.cos(now / 260 + m.phase);
