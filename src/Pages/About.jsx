@@ -5,6 +5,7 @@ import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Timeline from "../components/Timeline"
 import { useLanguage } from "../context/LanguageContext"
+import bingkaiUrl from "../assets/Bingkai-Profil.png"
 
 const useCountUp = (target, isInView) => {
   const [count, setCount] = useState(0);
@@ -48,43 +49,22 @@ const Header = memo(() => {
 });
 
 const ProfileImage = memo(() => (
-  <div className="flex justify-end items-center sm:p-12 sm:py-0 sm:pb-0 p-0 py-2 pb-2">
-    <div 
-  className="relative z-10 group" 
-  data-aos="fade-up"
-  data-aos-duration="1000"
-  id="about-profile-photo"
->
-      {/* Optimized gradient backgrounds with reduced complexity for mobile */}
-      <div className="absolute -inset-6 opacity-[25%] z-0 hidden sm:block">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-amber-600 rounded-full blur-2xl animate-spin-slower" />
-        <div className="absolute inset-0 bg-gradient-to-l from-amber-600 via-orange-500 to-teal-400 rounded-full blur-2xl animate-pulse-slow opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-orange-500 via-amber-600 to-amber-600 rounded-full blur-2xl animate-float opacity-50" />
-      </div>
+  <div className="flex justify-center lg:justify-end items-center sm:p-12 sm:py-0 sm:pb-0 p-0 py-2 pb-2">
+    <div
+      className="relative z-10 group w-72 h-72 sm:w-96 sm:h-96"
+      data-aos="fade-up"
+      data-aos-duration="1000"
+      id="about-profile-photo"
+    >
+      {/* Ambient maroon bloom bleeding out beyond the frame's own edge glow */}
+      <div className="absolute inset-0 -z-10 rounded-full bg-[#7f1d1d]/40 blur-3xl scale-75 animate-pulse-slow" />
 
-      <div className="relative">
-        <div className="w-72 h-72 sm:w-80 sm:h-80 rounded-full overflow-hidden shadow-[0_0_40px_rgba(224, 35, 28,0.3)] transform transition-all duration-700 group-hover:scale-105">
-          <div className="absolute inset-0 border-4 border-white/20 rounded-full z-20 transition-all duration-700 group-hover:border-white/40 group-hover:scale-105" />
-          
-          {/* Optimized overlay effects - disabled on mobile */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-10 transition-opacity duration-700 group-hover:opacity-0 hidden sm:block" />
-          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 via-transparent to-amber-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 hidden sm:block" />
-          
-          <img
-            src="/Profil.jpeg"
-            alt="Profile"
-            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
-            loading="lazy"
-          />
-
-          {/* Advanced hover effects - desktop only */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 hidden sm:block">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-white/10 to-transparent transform translate-y-full group-hover:-translate-y-full transition-transform duration-1000 delay-100" />
-            <div className="absolute inset-0 rounded-full border-8 border-white/10 scale-0 group-hover:scale-100 transition-transform duration-700 animate-pulse-slow" />
-          </div>
-        </div>
-      </div>
+      <img
+        src={bingkaiUrl}
+        alt="Muhammad Nurrahman Juliansyah"
+        loading="lazy"
+        className="relative w-full h-full object-contain animate-ember-glow transition-transform duration-700 ease-out group-hover:scale-110"
+      />
     </div>
   </div>
 ));
@@ -334,6 +314,26 @@ const AboutPage = () => {
         @keyframes spin-slower {
           to { transform: rotate(360deg); }
         }
+        @keyframes emberGlow {
+          0%, 100% {
+            filter: drop-shadow(0 0 14px rgba(127,29,29,0.55)) drop-shadow(0 0 32px rgba(224,35,28,0.35));
+          }
+          18% {
+            filter: drop-shadow(0 0 24px rgba(127,29,29,0.72)) drop-shadow(0 0 50px rgba(224,35,28,0.48));
+          }
+          34% {
+            filter: drop-shadow(0 0 10px rgba(127,29,29,0.4)) drop-shadow(0 0 22px rgba(224,35,28,0.25));
+          }
+          52% {
+            filter: drop-shadow(0 0 28px rgba(127,29,29,0.78)) drop-shadow(0 0 58px rgba(224,35,28,0.52));
+          }
+          67% {
+            filter: drop-shadow(0 0 16px rgba(127,29,29,0.5)) drop-shadow(0 0 34px rgba(224,35,28,0.3));
+          }
+          85% {
+            filter: drop-shadow(0 0 22px rgba(127,29,29,0.65)) drop-shadow(0 0 46px rgba(224,35,28,0.4));
+          }
+        }
         .animate-bounce-slow {
           animation: bounce 3s infinite;
         }
@@ -342,6 +342,9 @@ const AboutPage = () => {
         }
         .animate-spin-slower {
           animation: spin-slower 8s linear infinite;
+        }
+        .animate-ember-glow {
+          animation: emberGlow 5s ease-in-out infinite;
         }
       `}</style>
     </div>
