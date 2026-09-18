@@ -100,7 +100,7 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed w-full top-0 z-50 transition-all duration-500 ${
+            className={`fixed w-full top-0 z-50 transition-all duration-500 transform-gpu will-change-transform isolate ${
                 isOpen
                     ? "bg-[#0a0705]"
                     : scrolled
