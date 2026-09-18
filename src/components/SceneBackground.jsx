@@ -44,14 +44,53 @@ function loadCutoutTexture(url) {
   });
 }
 
-function loadPlainTexture(url) {
+// Unsharp-mask style convolution — boosts edge contrast at the source's native
+// resolution so the upscaled backdrop reads crisper instead of soft.
+function sharpenImageData(ctx, width, height, amount) {
+  const src = ctx.getImageData(0, 0, width, height);
+  const s = src.data;
+  const out = ctx.createImageData(width, height);
+  const d = out.data;
+  const stride = width * 4;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = y * stride + x * 4;
+      if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+        d[i] = s[i];
+        d[i + 1] = s[i + 1];
+        d[i + 2] = s[i + 2];
+        d[i + 3] = s[i + 3];
+        continue;
+      }
+      for (let c = 0; c < 3; c++) {
+        const center = s[i + c];
+        const neighborSum = s[i - stride + c] + s[i + stride + c] + s[i - 4 + c] + s[i + 4 + c];
+        const value = center * (1 + 4 * amount) - amount * neighborSum;
+        d[i + c] = value < 0 ? 0 : value > 255 ? 255 : value;
+      }
+      d[i + 3] = s[i + 3];
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+function loadPlainTexture(url, { sharpen = 0, anisotropy = 1 } = {}) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      const texture = new THREE.Texture(img);
-      texture.needsUpdate = true;
+      // Draw at the source's native pixel size (no downscale) so "full
+      // resolution" is preserved; the sharpen pass then runs on that canvas.
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      if (sharpen > 0) sharpenImageData(ctx, canvas.width, canvas.height, sharpen);
+
+      const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
-      resolve({ texture, aspect: img.naturalWidth / img.naturalHeight });
+      texture.anisotropy = anisotropy;
+      resolve({ texture, aspect: canvas.width / canvas.height });
     };
     img.onerror = reject;
     img.src = url;
@@ -66,11 +105,12 @@ function makeBackdrop(texture, aspect) {
 }
 
 // Scales the backdrop plane to cover the camera frustum at a given distance (CSS "background-size: cover").
-function fitBackdropCover(backdrop, camera, distance) {
+// `margin` over-scales it a touch so the extra parallax drift never reveals an edge.
+function fitBackdropCover(backdrop, camera, distance, margin = 1) {
   const vFov = (camera.fov * Math.PI) / 180;
   const visibleHeight = 2 * Math.tan(vFov / 2) * distance;
   const visibleWidth = visibleHeight * camera.aspect;
-  const scale = Math.max(visibleWidth / backdrop.aspect, visibleHeight);
+  const scale = Math.max(visibleWidth / backdrop.aspect, visibleHeight) * margin;
   backdrop.mesh.scale.set(scale * backdrop.aspect, scale, 1);
 }
 
@@ -158,9 +198,11 @@ const SceneBackground = () => {
     scene.fog = new THREE.FogExp2(PALETTE.fog, 0.006);
 
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 600);
-    const CAM_START_Z = 26;
-    const CAM_END_Z = 14;
+    const CAM_START_Z = 28;
+    const CAM_END_Z = 8;
     const BACKDROP_Z = -40;
+    // Extra over-scale on the cover fit so the wider parallax drift below never exposes an edge.
+    const BACKDROP_MARGIN = 1.3;
     camera.position.set(0, 4, CAM_START_Z);
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -173,20 +215,22 @@ const SceneBackground = () => {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      if (backdrop) fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z);
+      if (backdrop) fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z, BACKDROP_MARGIN);
     };
     resize();
 
-    loadPlainTexture(KUIL_URL).then(({ texture, aspect }) => {
-      if (disposed) {
-        texture.dispose();
-        return;
+    loadPlainTexture(KUIL_URL, { sharpen: 0.35, anisotropy: renderer.capabilities.getMaxAnisotropy() }).then(
+      ({ texture, aspect }) => {
+        if (disposed) {
+          texture.dispose();
+          return;
+        }
+        backdrop = makeBackdrop(texture, aspect);
+        backdrop.mesh.position.z = BACKDROP_Z;
+        fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z, BACKDROP_MARGIN);
+        scene.add(backdrop.mesh);
       }
-      backdrop = makeBackdrop(texture, aspect);
-      backdrop.mesh.position.z = BACKDROP_Z;
-      fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z);
-      scene.add(backdrop.mesh);
-    });
+    );
 
     // Falling leaves — built once the real leaf photo finishes loading.
     const leafCount = window.innerWidth < 640 ? 55 : 110;
@@ -234,9 +278,14 @@ const SceneBackground = () => {
       const p = scrollProgress;
 
       camera.position.z = CAM_START_Z - p * (CAM_START_Z - CAM_END_Z);
-      camera.position.y = 4 + p * 2.4;
-      camera.position.x = Math.sin(p * Math.PI) * 2;
+      camera.position.y = 4 + p * 3.4;
+      camera.position.x = Math.sin(p * Math.PI) * 5;
       camera.rotation.x = -0.02 - p * 0.05;
+
+      if (backdrop) {
+        backdrop.mesh.position.x = -p * 6 + Math.sin(elapsed * 0.06) * 1.4 * driftScale;
+        backdrop.mesh.position.y = p * 2.2;
+      }
 
       fallingLeaves.group.position.x = -p * 4;
 
