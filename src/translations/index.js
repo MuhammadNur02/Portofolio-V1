@@ -84,6 +84,11 @@ export const translations = {
     footer: {
       rights: "Seluruh Hak Cipta Dilindungi.",
     },
+    notFound: {
+      title: "Halaman Tidak Ditemukan",
+      text: "Halaman yang Anda cari tidak ada atau sudah dipindahkan.",
+      backHome: "Kembali ke Beranda",
+    },
     card: {
       featured: "Unggulan",
       liveDemo: "Demo Langsung",
@@ -93,6 +98,8 @@ export const translations = {
     },
     projectDetail: {
       loading: "Memuat Proyek...",
+      notFoundTitle: "Proyek Tidak Ditemukan",
+      notFoundText: "Proyek ini tidak ada atau sudah dihapus.",
       back: "Kembali",
       projects: "Proyek",
       overview: "Ringkasan Proyek",
@@ -194,6 +201,11 @@ export const translations = {
     footer: {
       rights: "All Rights Reserved.",
     },
+    notFound: {
+      title: "Page Not Found",
+      text: "The page you are looking for doesn't exist or has been moved.",
+      backHome: "Back to Home",
+    },
     card: {
       featured: "Featured",
       liveDemo: "Live Demo",
@@ -203,6 +215,8 @@ export const translations = {
     },
     projectDetail: {
       loading: "Loading Project...",
+      notFoundTitle: "Project Not Found",
+      notFoundText: "This project doesn't exist or has been removed.",
       back: "Back",
       projects: "Projects",
       overview: "Project Overview",

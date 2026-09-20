@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import AOS from "aos";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -26,6 +27,23 @@ const NotFoundPage = lazy(() => import("./Pages/404"));
 const SeedCertificates = lazy(() => import("./Pages/SeedCertificates"));
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
+  // AOS measures every element's position once. Sections that fill in afterwards (project data,
+  // images) push everything below them down, so AOS keeps stale positions and the scroll
+  // animations fire late or never. Re-measure whenever the page height changes.
+  useEffect(() => {
+    if (showWelcome) return;
+    let timer;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => AOS.refreshHard(), 120);
+    });
+    observer.observe(document.body);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [showWelcome]);
+
   return (
     <>
       <AnimatePresence mode="wait">
