@@ -252,7 +252,8 @@ const Komentar = () => {
                     .from('portfolio_comments')
                     .select('*')
                     .eq('is_pinned', true)
-                    .single();
+                    // maybeSingle: having no pinned comment is normal, not a 406 error in the console
+                    .maybeSingle();
                 
                 if (error && error.code !== 'PGRST116') {
                     return;

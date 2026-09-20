@@ -211,8 +211,11 @@ const SceneBackground = () => {
     let disposed = false;
     let backdrop = null;
 
+    // Size the drawing buffer from the canvas's real on-screen box (not window.inner*), so the
+    // scene always matches exactly what is visible — including while a phone's URL bar slides in/out.
     const resize = () => {
-      const { innerWidth: w, innerHeight: h } = window;
+      const w = canvas.clientWidth || window.innerWidth;
+      const h = canvas.clientHeight || window.innerHeight;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -295,11 +298,12 @@ const SceneBackground = () => {
     };
     raf = requestAnimationFrame(animate);
 
-    window.addEventListener("resize", resize);
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(canvas);
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      resizeObserver.disconnect();
       window.removeEventListener("scroll", handleScroll);
 
       if (backdrop) {
@@ -319,7 +323,9 @@ const SceneBackground = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-0" />;
+  // h-full/w-full matter: a <canvas> is a replaced element, so inset-0 alone would NOT stretch it — it
+  // would keep its drawing-buffer size, which on a 2x/3x phone screen is twice the viewport.
+  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 h-full w-full" />;
 };
 
 export default SceneBackground;

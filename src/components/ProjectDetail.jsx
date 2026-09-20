@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "../supabase";
 import {
   ArrowLeft,
   ExternalLink,
@@ -192,26 +193,68 @@ const ProjectDetails = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    // Cari project berdasarkan slug yang di-generate dari Title
-    const selectedProject = storedProjects.find(
-      (p) => toSlug(p.Title) === slug,
-    );
+    setNotFound(false);
 
-    if (selectedProject) {
-      const enhancedProject = {
-        ...selectedProject,
-        Features: selectedProject.Features || [],
-        TechStack: selectedProject.TechStack || [],
-        Github: selectedProject.Github || "https://github.com/MuhammadNur02",
-      };
-      setProject(enhancedProject);
+    const enhance = (p) => ({
+      ...p,
+      Features: p.Features || [],
+      TechStack: p.TechStack || [],
+      Github: p.Github || "https://github.com/MuhammadNur02",
+    });
+    // Cari project berdasarkan slug yang di-generate dari Title
+    const findBySlug = (list) => list.find((p) => toSlug(p.Title) === slug);
+
+    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
+    const cachedProject = findBySlug(storedProjects);
+    if (cachedProject) {
+      setProject(enhance(cachedProject));
+      return;
     }
+
+    // Nothing cached yet (link opened directly, e.g. a shared URL) — ask the database instead of
+    // waiting on the Portofolio page to fill the cache, otherwise this would load forever.
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("projects").select("*");
+      if (cancelled) return;
+      const found = findBySlug(data || []);
+      if (found) {
+        setProject(enhance(found));
+      } else {
+        setProject(null);
+        setNotFound(true);
+      }
+    })().catch(() => {
+      if (!cancelled) setNotFound(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
+
+  if (!project && notFound) {
+    return (
+      <div className="min-h-screen bg-[#0a0705] flex items-center justify-center px-6">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl md:text-4xl font-bold text-white">{t.projectDetail.notFoundTitle}</h2>
+          <p className="text-gray-400">{t.projectDetail.notFoundText}</p>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 text-gray-200 hover:text-white hover:border-white/25 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t.notFound.backHome}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -276,7 +319,6 @@ const ProjectDetails = () => {
             <div className="absolute top-0 -right-4 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
             <div className="absolute -bottom-8 left-20 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
           </div>
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02]" />
         </div>
 
         <div className="relative">
