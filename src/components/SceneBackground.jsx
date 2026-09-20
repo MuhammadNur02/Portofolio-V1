@@ -3,12 +3,32 @@ import * as THREE from "three";
 import daunUrl from "../assets/daun.webp";
 
 // Lives in /public (not bundled) so it's referenced by URL, not imported.
-const KUIL_URL = "/Kuil-jepang.webp";
+const BACKDROP_URL = "/Samurai_LE_upscale_prime_x4.jpg";
 
-const PALETTE = {
-  fog: 0x0b1620,
-  fogDeep: 0x010204,
+// ─── WALLPAPER — EDIT WHICH PART OF THE IMAGE SHOWS, AND HOW IT MOVES ───────
+// The image always fills the whole screen (CSS "object-fit: cover"), never stretched. The artwork
+// is portrait, so on a landscape screen the top/bottom gets cropped and on a narrow phone the
+// left/right does. Pick which part is visible (same idea as CSS object-position: 0% .. 100%):
+//   x    : 0 = show the image's left edge ... 0.5 = centered ... 1 = show its right edge
+//   y    : which vertical part shows at the TOP of the page   (0 = image's top edge ... 1 = its bottom edge)
+//   endY : which vertical part shows at the BOTTOM of the page. While scrolling, the wallpaper glides
+//          smoothly from y to endY (and back when scrolling up). The bigger the gap, the more it
+//          moves. Set endY = y to make it static.
+//   zoom : 1 = exact fit. Above 1 the image is enlarged a little, which gives it extra room to glide
+//          — needed on phones, where the image already fills the full height at zoom 1.
+// Keep endY around 0.85 or lower and x around 0.55+ on mobile so the "Let's Enhance.io" watermark
+// baked into the image's bottom-left corner stays out of view.
+const BACKDROP_FOCUS = {
+  desktop: { x: 0.5, y: 0.6, endY: 0.85, zoom: 1 },
+  mobile: { x: 0.55, y: 0.15, endY: 0.85, zoom: 1.25 },
 };
+// Screens narrower than this (px) use the "mobile" focus above.
+const MOBILE_MAX_WIDTH = 640;
+// ────────────────────────────────────────────────────────────────────────────
+
+// Distance from the camera at which the wallpaper plane sits. Only matters for
+// depth ordering — the plane is re-scaled to the screen at whatever distance this is.
+const BACKDROP_DISTANCE = 100;
 
 // Tint variants applied on top of the real leaf photo for a little color variety.
 const LEAF_TINTS = [0xffffff, 0xffcf9e, 0xffb37a, 0xff9a6a];
@@ -44,83 +64,57 @@ function loadCutoutTexture(url) {
   });
 }
 
-// Unsharp-mask style convolution — boosts edge contrast at the source's native
-// resolution so the upscaled backdrop reads crisper instead of soft.
-function sharpenImageData(ctx, width, height, amount) {
-  const src = ctx.getImageData(0, 0, width, height);
-  const s = src.data;
-  const out = ctx.createImageData(width, height);
-  const d = out.data;
-  const stride = width * 4;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = y * stride + x * 4;
-      if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
-        d[i] = s[i];
-        d[i + 1] = s[i + 1];
-        d[i + 2] = s[i + 2];
-        d[i + 3] = s[i + 3];
-        continue;
-      }
-      for (let c = 0; c < 3; c++) {
-        const center = s[i + c];
-        const neighborSum = s[i - stride + c] + s[i + stride + c] + s[i - 4 + c] + s[i + 4 + c];
-        const value = center * (1 + 4 * amount) - amount * neighborSum;
-        d[i + c] = value < 0 ? 0 : value > 255 ? 255 : value;
-      }
-      d[i + 3] = s[i + 3];
-    }
-  }
-  ctx.putImageData(out, 0, 0);
-}
-
-// Caps how many pixels the sharpen pass (and the getImageData/putImageData
-// round trip it needs) ever has to touch. Source art can come in far above
-// what a blurred, fogged-over 3D backdrop can actually show on screen —
-// running the unsharp mask at, say, 19MP measured as 2+ seconds of blocked
-// main thread on desktop, which reads as a freeze and can be much worse on
-// mobile CPUs. Downscaling first keeps quality well above what the plane
-// ever resolves while keeping the sharpen pass cheap.
-const MAX_TEXTURE_MEGAPIXELS = 4;
-
-function loadPlainTexture(url, { sharpen = 0, anisotropy = 1 } = {}) {
+// Loads the wallpaper as a plain texture — no canvas round trip, so nothing softens it.
+// Three.js downsizes it on its own only if a device's max texture size is smaller than the image.
+function loadBackdropTexture(url, renderer) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const sourcePixels = img.naturalWidth * img.naturalHeight;
-      const scale = Math.min(1, Math.sqrt((MAX_TEXTURE_MEGAPIXELS * 1e6) / sourcePixels));
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(img.naturalWidth * scale);
-      canvas.height = Math.round(img.naturalHeight * scale);
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      if (sharpen > 0) sharpenImageData(ctx, canvas.width, canvas.height, sharpen);
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = anisotropy;
-      resolve({ texture, aspect: canvas.width / canvas.height });
-    };
-    img.onerror = reject;
-    img.src = url;
+    new THREE.TextureLoader().load(
+      url,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        const { naturalWidth, naturalHeight } = texture.image;
+        resolve({ texture, aspect: naturalWidth / naturalHeight });
+      },
+      undefined,
+      reject
+    );
   });
 }
 
 function makeBackdrop(texture, aspect) {
   const geometry = new THREE.PlaneGeometry(aspect, 1);
-  const material = new THREE.MeshBasicMaterial({ map: texture, fog: true });
+  // depthWrite off + renderOrder -1 keeps it strictly behind everything else, leaves included.
+  const material = new THREE.MeshBasicMaterial({ map: texture, fog: false, depthWrite: false });
   const mesh = new THREE.Mesh(geometry, material);
+  mesh.renderOrder = -1;
   return { mesh, geometry, material, aspect };
 }
 
-// Scales the backdrop plane to cover the camera frustum at a given distance (CSS "background-size: cover").
-// `margin` over-scales it a touch so the extra parallax drift never reveals an edge.
-function fitBackdropCover(backdrop, camera, distance, margin = 1) {
+// Scales the plane to COVER the camera frustum (CSS "object-fit: cover") and remembers how much
+// of it overflows the screen. Run on load/resize; positionBackdrop then slides it within that
+// overflow. The plane is a child of the camera, so the camera dolly never zooms or crops it.
+function layoutBackdrop(backdrop, camera) {
+  const focus = window.innerWidth < MOBILE_MAX_WIDTH ? BACKDROP_FOCUS.mobile : BACKDROP_FOCUS.desktop;
   const vFov = (camera.fov * Math.PI) / 180;
-  const visibleHeight = 2 * Math.tan(vFov / 2) * distance;
+  const visibleHeight = 2 * Math.tan(vFov / 2) * BACKDROP_DISTANCE;
   const visibleWidth = visibleHeight * camera.aspect;
-  const scale = Math.max(visibleWidth / backdrop.aspect, visibleHeight) * margin;
-  backdrop.mesh.scale.set(scale * backdrop.aspect, scale, 1);
+
+  // The geometry is already `aspect` wide × 1 tall, so one uniform scale sets the plane's height.
+  const height = Math.max(visibleWidth / backdrop.aspect, visibleHeight) * focus.zoom;
+  const width = height * backdrop.aspect;
+  backdrop.mesh.scale.set(height, height, 1);
+  backdrop.focus = focus;
+  backdrop.overflowX = width - visibleWidth;
+  backdrop.overflowY = height - visibleHeight;
+}
+
+// Slides the wallpaper for a scroll progress of 0 (top of page) .. 1 (bottom of page).
+// Sliding only ever stays inside the overflow, so an edge of the image never shows.
+function positionBackdrop(backdrop, progress) {
+  const { focus, overflowX, overflowY } = backdrop;
+  const y = focus.y + (focus.endY - focus.y) * progress;
+  backdrop.mesh.position.set((0.5 - focus.x) * overflowX, (y - 0.5) * overflowY, -BACKDROP_DISTANCE);
 }
 
 function makeLeaves(count, bounds, texture, aspect) {
@@ -204,15 +198,13 @@ const SceneBackground = () => {
     }
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(PALETTE.fog, 0.006);
 
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 600);
     const CAM_START_Z = 28;
     const CAM_END_Z = 8;
-    const BACKDROP_Z = -40;
-    // Extra over-scale on the cover fit so the wider parallax drift below never exposes an edge.
-    const BACKDROP_MARGIN = 1.3;
     camera.position.set(0, 4, CAM_START_Z);
+    // The camera must be in the scene for the wallpaper plane parented to it to render.
+    scene.add(camera);
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
@@ -224,22 +216,24 @@ const SceneBackground = () => {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      if (backdrop) fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z, BACKDROP_MARGIN);
+      if (backdrop) layoutBackdrop(backdrop, camera);
     };
     resize();
 
-    loadPlainTexture(KUIL_URL, { sharpen: 0.35, anisotropy: renderer.capabilities.getMaxAnisotropy() }).then(
-      ({ texture, aspect }) => {
+    // 3D wallpaper — an image texture on a plane pinned to the camera, so the
+    // leaves and camera dolly still composite in 3D in front of it.
+    loadBackdropTexture(BACKDROP_URL, renderer)
+      .then(({ texture, aspect }) => {
         if (disposed) {
           texture.dispose();
           return;
         }
         backdrop = makeBackdrop(texture, aspect);
-        backdrop.mesh.position.z = BACKDROP_Z;
-        fitBackdropCover(backdrop, camera, CAM_START_Z - BACKDROP_Z, BACKDROP_MARGIN);
-        scene.add(backdrop.mesh);
-      }
-    );
+        layoutBackdrop(backdrop, camera);
+        positionBackdrop(backdrop, 0);
+        camera.add(backdrop.mesh);
+      })
+      .catch(() => {});
 
     // Falling leaves — built once the real leaf photo finishes loading.
     const leafCount = window.innerWidth < 640 ? 55 : 110;
@@ -291,14 +285,9 @@ const SceneBackground = () => {
       camera.position.x = Math.sin(p * Math.PI) * 5;
       camera.rotation.x = -0.02 - p * 0.05;
 
-      if (backdrop) {
-        backdrop.mesh.position.x = -p * 6 + Math.sin(elapsed * 0.06) * 1.4 * driftScale;
-        backdrop.mesh.position.y = p * 2.2;
-      }
+      if (backdrop) positionBackdrop(backdrop, p);
 
       fallingLeaves.group.position.x = -p * 4;
-
-      scene.fog.color.set(PALETTE.fog).lerp(new THREE.Color(PALETTE.fogDeep), p * 0.5);
 
       updateLeaves(fallingLeaves.leaves, dt, elapsed, LEAF_BOUNDS, driftScale, 1 + p * 0.6);
 
@@ -314,6 +303,7 @@ const SceneBackground = () => {
       window.removeEventListener("scroll", handleScroll);
 
       if (backdrop) {
+        camera.remove(backdrop.mesh);
         backdrop.geometry.dispose();
         backdrop.material.map?.dispose?.();
         backdrop.material.dispose();
