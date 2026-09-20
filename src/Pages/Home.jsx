@@ -268,15 +268,23 @@ const Home = () => {
       <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
         isHovering ? "scale-105" : "scale-100"
       }`}>
-        <img
-          src="Animation1.gif"
-          alt="Developer Animation"
-          className={`w-full h-full object-contain transition-all duration-500 ${
-            isHovering
-              ? "scale-[75%] sm:scale-[85%] md:scale-[90%] lg:scale-[90%] rotate-2"
-              : "scale-[65%] sm:scale-[75%] md:scale-[80%] lg:scale-[80%]"
-          }`}
-        />
+        {/* Float lives on a wrapper so its transform doesn't fight the hover scale/rotate on the <img> */}
+        <div className="animate-gate-float">
+          <img
+            src="Gate-Japanese-removebg-preview.png"
+            alt="Japanese torii gate"
+            className={`w-full h-full object-contain transition-all duration-500 ${
+              isHovering
+                ? "scale-[75%] sm:scale-[85%] md:scale-[90%] lg:scale-[90%] rotate-2"
+                : "scale-[65%] sm:scale-[75%] md:scale-[80%] lg:scale-[80%]"
+            }`}
+            // Dark aura hugging the gate's silhouette: tight edge shadow + wide soft falloff.
+            style={{
+              filter:
+                "drop-shadow(0 0 6px rgba(0,0,0,0.9)) drop-shadow(0 0 22px rgba(0,0,0,0.85)) drop-shadow(0 0 56px rgba(0,0,0,0.7))",
+            }}
+          />
+        </div>
       </div>
 
       <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${

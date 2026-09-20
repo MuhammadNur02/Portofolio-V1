@@ -6,7 +6,7 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	  font-family: "Poppins", system-ui, sans-serif;
+	  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
 	scroll-behavior: smooth;
 	scrollbar-width: thin;
 	scrollbar-color: rgba(224, 35, 28, 0.3) rgba(18, 10, 6, 0.356);
@@ -39,6 +39,48 @@ body {
 
 .animation-delay-4000 {
 	animation-delay: 4s;
+}
+
+/* Hero torii gate: slow levitation with a hint of sway */
+@keyframes gate-float {
+	0%,
+	100% {
+		transform: translate3d(0, 0, 0) rotate(-0.8deg);
+	}
+	50% {
+		transform: translate3d(0, -22px, 0) rotate(0.8deg);
+	}
+}
+
+.animate-gate-float {
+	animation: gate-float 6s ease-in-out infinite;
+	will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-gate-float {
+		animation: none;
+	}
+}
+
+/* Welcome screen loading bar: a soft highlight sweeping across the fill */
+@keyframes loader-shimmer {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(400%);
+	}
+}
+
+.animate-loader-shimmer {
+	animation: loader-shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-loader-shimmer {
+		animation: none;
+	}
 }
 
 /* Enhanced Custom Scrollbar Styles */
