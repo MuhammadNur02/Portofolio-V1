@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { GraduationCap, Briefcase, Award } from "lucide-react";
 import { supabase } from "../supabase";
 import { useLanguage } from "../context/LanguageContext";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, ImagePlus, X, Pin } from 'lucide-react';
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -6,7 +6,27 @@ import { supabase } from '../supabase';
 import { useLanguage } from '../context/LanguageContext';
 
 
-const Comment = memo(({ comment, formatDate, index, isPinned = false }) => {
+// Client-side spam guards (a determined bot can bypass these — real protection is Row Level Security +
+// a captcha on the server — but they stop casual spam and accidental double posts).
+const COMMENT_COOLDOWN_MS = 60_000;
+const LAST_POSTED_KEY = 'commentLastPostedAt';
+const readLastPosted = () => {
+    try {
+        return Number(localStorage.getItem(LAST_POSTED_KEY)) || 0;
+    } catch {
+        return 0;
+    }
+};
+const writeLastPosted = () => {
+    try {
+        localStorage.setItem(LAST_POSTED_KEY, String(Date.now()));
+    } catch {
+        /* storage unavailable — the cooldown just won't apply */
+    }
+};
+const countLinks = (text) => (text.match(/https?:\/\/|www\./gi) || []).length;
+
+const Comment = memo(({ comment, formatDate, isPinned = false }) => {
     const { t } = useLanguage();
     return (
     <div 
@@ -66,12 +86,13 @@ const Comment = memo(({ comment, formatDate, index, isPinned = false }) => {
     );
 });
 
-const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
+const CommentForm = memo(({ onSubmit, isSubmitting }) => {
     const { t } = useLanguage();
     const [newComment, setNewComment] = useState('');
     const [userName, setUserName] = useState('');
     const [imagePreview, setImagePreview] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [honey, setHoney] = useState(''); // honeypot: invisible to people, bots tend to fill it
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -111,7 +132,13 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
     const handleSubmit = useCallback((e) => {
         e.preventDefault();
         if (!newComment.trim() || !userName.trim()) return;
-        
+        // Honeypot filled -> a bot: look successful, post nothing.
+        if (honey) {
+            setNewComment('');
+            setUserName('');
+            return;
+        }
+
         onSubmit({ newComment, userName, imageFile });
         setNewComment('');
         setUserName('');
@@ -119,10 +146,20 @@ const CommentForm = memo(({ onSubmit, isSubmitting, error }) => {
         setImageFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    }, [newComment, userName, imageFile, onSubmit]);
+    }, [newComment, userName, imageFile, honey, onSubmit]);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
+            <input
+                type="text"
+                name="website"
+                value={honey}
+                onChange={(e) => setHoney(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+            />
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1000">
                 <label className="block text-sm font-medium text-white">
                     {t.comments.name} <span className="text-red-400">*</span>
@@ -262,7 +299,7 @@ const Komentar = () => {
                 if (data) {
                     setPinnedComment(data);
                 }
-            } catch (error) {
+            } catch {
                 // Silent fail for pinned comment
             }
         };
@@ -333,8 +370,16 @@ const Komentar = () => {
 
     const handleCommentSubmit = useCallback(async ({ newComment, userName, imageFile }) => {
         setError('');
+        if (Date.now() - readLastPosted() < COMMENT_COOLDOWN_MS) {
+            setError('Please wait about a minute before posting another comment.');
+            return;
+        }
+        if (countLinks(newComment) > 1) {
+            setError('Please include at most one link in a comment.');
+            return;
+        }
         setIsSubmitting(true);
-        
+
         try {
             const profileImageUrl = await uploadImage(imageFile);
             
@@ -353,6 +398,7 @@ const Komentar = () => {
             if (error) {
                 throw error;
             }
+            writeLastPosted();
         } catch (error) {
             console.error('Failed to post comment:', error);
             setError(

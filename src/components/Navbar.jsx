@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+
+const SECTION_HREFS = ["#Home", "#About", "#Portofolio", "#Testimonials", "#Contact"];
 
 const LanguageToggle = ({ className = "" }) => {
     const { lang, toggleLang } = useLanguage();
@@ -49,11 +51,12 @@ const Navbar = () => {
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
-            const sections = navItems.map(item => {
-                const section = document.querySelector(item.href);
+            // Only the hrefs matter here (they never change with the language), so this effect doesn't depend on navItems.
+            const sections = SECTION_HREFS.map(href => {
+                const section = document.querySelector(href);
                 if (section) {
                     return {
-                        id: item.href.replace("#", ""),
+                        id: href.replace("#", ""),
                         offset: section.offsetTop - 550,
                         height: section.offsetHeight
                     };

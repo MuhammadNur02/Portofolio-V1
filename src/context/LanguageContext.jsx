@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { translations } from "../translations";
 
 const LanguageContext = createContext(null);
@@ -40,6 +40,8 @@ export const LanguageProvider = ({ children }) => {
   );
 };
 
+// Provider + hook live together on purpose (the standard context pattern); fast refresh just reloads this file.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLanguage = () => {
   const ctx = useContext(LanguageContext);
   if (!ctx) throw new Error("useLanguage must be used within LanguageProvider");

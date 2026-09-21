@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, animate, useMotionValue, useTransform } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
+import { markWelcomeSeen } from '../utils/welcomeSession';
 
 // Lives in /public (not bundled) so it's referenced by URL, not imported.
-const WELCOME_IMAGE_URL = '/WelcomeScreenNew.jpg';
+const WELCOME_IMAGE_URL = '/WelcomeScreenNew.webp';
 
 // ─── LOADING BAR — EDIT SPEED / SIZE / POSITION HERE ────────────────────────
 // LOADING_DURATION_MS : how long the bar takes to fill from 0% to 100%.
@@ -82,6 +84,7 @@ const LoadingBar = ({ progress, done }) => {
 };
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [done, setDone] = useState(false);
   const progress = useMotionValue(0);
@@ -92,33 +95,50 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
     onCompleteRef.current = onLoadingComplete;
   }, [onLoadingComplete]);
 
+  const controlsRef = useRef(null);
+  const timersRef = useRef([]);
+  const leavingRef = useRef(false);
+
+  // Starts the exit (fade + hand over to the site) exactly once — whether the bar reached 100% or the visitor skipped.
+  const leave = useCallback(() => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    markWelcomeSeen();
+    setIsLoading(false);
+    timersRef.current.push(
+      setTimeout(() => {
+        onCompleteRef.current?.();
+      }, 1000)
+    );
+  }, []);
+
+  const skip = useCallback(() => {
+    controlsRef.current?.stop();
+    leave();
+  }, [leave]);
+
   useEffect(() => {
     progress.set(0);
-    let holdTimer;
-    let exitTimer;
+    leavingRef.current = false;
 
     // Surges and eases three times on the way to 100% so it reads like real loading, not a flat ramp.
-    const controls = animate(progress, [0, 34, 58, 100], {
+    controlsRef.current = animate(progress, [0, 34, 58, 100], {
       duration: LOADING_DURATION_MS / 1000,
       times: [0, 0.35, 0.65, 1],
       ease: 'easeInOut',
       onComplete: () => {
         setDone(true);
-        holdTimer = setTimeout(() => {
-          setIsLoading(false);
-          exitTimer = setTimeout(() => {
-            onCompleteRef.current?.();
-          }, 1000);
-        }, HOLD_AT_100_MS);
+        timersRef.current.push(setTimeout(leave, HOLD_AT_100_MS));
       },
     });
 
+    const timers = timersRef.current;
     return () => {
-      controls.stop();
-      clearTimeout(holdTimer);
-      clearTimeout(exitTimer);
+      controlsRef.current?.stop();
+      timers.forEach(clearTimeout);
+      timers.length = 0;
     };
-  }, [progress]);
+  }, [progress, leave]);
 
   return (
     <AnimatePresence>
@@ -149,6 +169,18 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
 
           <LoadingBar progress={progress} done={done} />
+
+          {/* Nobody should have to wait: skip straight to the site (also shown only once per session) */}
+          <button
+            type="button"
+            onClick={skip}
+            className="absolute right-4 top-4 sm:right-8 sm:top-6 rounded-full border border-white/20 bg-black/40 px-4 py-1.5
+                       text-xs sm:text-sm font-medium tracking-[0.2em] text-amber-100/90 backdrop-blur-sm
+                       hover:border-white/40 hover:text-white transition-colors duration-300
+                       focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300"
+          >
+            {t.welcome.skip.toUpperCase()}
+          </button>
         </motion.div>
       )}
     </AnimatePresence>

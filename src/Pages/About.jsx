@@ -1,11 +1,17 @@
-import React, { useEffect, useState, useRef, memo, useMemo } from "react"
-import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles, UserCheck } from "lucide-react"
+import { useEffect, useState, useRef, memo, useMemo } from "react"
+import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles } from "lucide-react"
 import { useInView, animate } from "framer-motion"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import Timeline from "../components/Timeline"
 import { useLanguage } from "../context/LanguageContext"
-import bingkaiUrl from "../assets/Bingkai-Profil.png"
+import bingkaiUrl from "../assets/Bingkai-Profil.webp"
+
+// Where the "Download CV" button points. Better than a Drive folder: put your CV in /public
+// (e.g. "/CV-Muhammad-Nurrahman-Juliansyah.pdf") and set it here — a direct PDF opens instantly,
+// downloads with one tap, and is readable by recruiters' applicant-tracking tools.
+const CV_URL = "https://drive.google.com/drive/folders/1gkmicadsk_7yh5qpweNi23js5rCBcsb6"
+const CV_IS_LOCAL_FILE = CV_URL.startsWith("/")
 
 const useCountUp = (target, isInView) => {
   const [count, setCount] = useState(0);
@@ -271,23 +277,23 @@ const AboutPage = () => {
             </div>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-4 lg:px-0 w-full">
-              <a href="https://drive.google.com/drive/folders/1gkmicadsk_7yh5qpweNi23js5rCBcsb6" className="w-full lg:w-auto">
-                <button 
-                  data-aos="fade-up"
-                  data-aos-duration="800"
-                  className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#f59e0b] to-[#e0231c] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl "
-                >
-                  <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.downloadCV}
-                </button>
+              {/* Links styled as buttons (a <button> inside an <a> is invalid HTML and confuses screen readers) */}
+              <a
+                href={CV_URL}
+                {...(CV_IS_LOCAL_FILE ? { download: true } : { target: "_blank", rel: "noopener noreferrer" })}
+                data-aos="fade-up"
+                data-aos-duration="800"
+                className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-[#f59e0b] to-[#e0231c] text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 shadow-lg hover:shadow-xl"
+              >
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.downloadCV}
               </a>
-              <a href="#Portofolio" className="w-full lg:w-auto">
-                <button
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
-                  className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg border border-[#e0231c]/50 text-[#e0231c] font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 hover:bg-[#e0231c]/10 "
-                >
-                  <Code className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.viewProjects}
-                </button>
+              <a
+                href="#Portofolio"
+                data-aos="fade-up"
+                data-aos-duration="1000"
+                className="w-full lg:w-auto sm:px-6 py-2 sm:py-3 rounded-lg border border-[#e0231c]/50 text-[#e0231c] font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-2 hover:bg-[#e0231c]/10"
+              >
+                <Code className="w-4 h-4 sm:w-5 sm:h-5" /> {t.about.viewProjects}
               </a>
             </div>
           </div>
@@ -306,7 +312,7 @@ const AboutPage = () => {
         <Timeline />
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-20px); }

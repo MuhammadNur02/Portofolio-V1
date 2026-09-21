@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import daunUrl from "../assets/daun.webp";
 
 // Lives in /public (not bundled) so it's referenced by URL, not imported.
-const BACKDROP_URL = "/Samurai_LE_upscale_prime_x4.jpg";
+// Two WebP renditions of the same artwork: the phone one is much lighter (~160 KB vs ~500 KB) and
+// still sharp there because the wallpaper is shown at only ~1.25x zoom on a screen of at most 2x density.
+const BACKDROP_URLS = { desktop: "/Samurai-desktop.webp", mobile: "/Samurai-mobile.webp" };
 
 // ─── WALLPAPER — EDIT WHICH PART OF THE IMAGE SHOWS, AND HOW IT MOVES ───────
 // The image always fills the whole screen (CSS "object-fit: cover"), never stretched. The artwork
@@ -183,6 +185,7 @@ function updateLeaves(leaves, dt, t, bounds, driftScale, windStrength) {
 
 const SceneBackground = () => {
   const canvasRef = useRef(null);
+  const [wallpaperReady, setWallpaperReady] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -225,7 +228,8 @@ const SceneBackground = () => {
 
     // 3D wallpaper — an image texture on a plane pinned to the camera, so the
     // leaves and camera dolly still composite in 3D in front of it.
-    loadBackdropTexture(BACKDROP_URL, renderer)
+    const backdropUrl = window.innerWidth < MOBILE_MAX_WIDTH ? BACKDROP_URLS.mobile : BACKDROP_URLS.desktop;
+    loadBackdropTexture(backdropUrl, renderer)
       .then(({ texture, aspect }) => {
         if (disposed) {
           texture.dispose();
@@ -235,6 +239,7 @@ const SceneBackground = () => {
         layoutBackdrop(backdrop, camera);
         positionBackdrop(backdrop, 0);
         camera.add(backdrop.mesh);
+        setWallpaperReady(true);
       })
       .catch(() => {});
 
@@ -325,7 +330,28 @@ const SceneBackground = () => {
 
   // h-full/w-full matter: a <canvas> is a replaced element, so inset-0 alone would NOT stretch it — it
   // would keep its drawing-buffer size, which on a 2x/3x phone screen is twice the viewport.
-  return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 h-full w-full" />;
+  // The canvas fades in once the wallpaper is decoded instead of popping in.
+  return (
+    <>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className={`pointer-events-none fixed inset-0 z-0 h-full w-full transition-opacity duration-[1200ms] ${
+          wallpaperReady ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      {/* Phones only: the bright moon sits right behind the hero headline, so dim the wallpaper a little for readable text */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-black/35 via-black/25 to-black/45 sm:hidden"
+      />
+      {/* Every screen: a soft shade behind the navbar so the menu stays readable over the red moon */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 top-0 z-0 h-28 bg-gradient-to-b from-black/60 to-transparent"
+      />
+    </>
+  );
 };
 
 export default SceneBackground;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Eye, ArrowRight, ExternalLink } from 'lucide-react';
 
 const ProjectCardModal = ({ title, description, link }) => {

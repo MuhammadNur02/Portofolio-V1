@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo, useRef } from "react"
+import { useState, useEffect, useCallback, memo } from "react"
 import { Helmet } from "react-helmet-async"
 import { Mail, ExternalLink } from "lucide-react"
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa6"
@@ -16,14 +16,15 @@ const MainTitle = memo(() => {
       <h1 className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
         <span className="relative inline-block">
           <span className="absolute -inset-2 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] blur-2xl opacity-20"></span>
-          <span className="relative bg-gradient-to-r from-white via-amber-100 to-orange-200 bg-clip-text text-transparent">
+          <span className="relative bg-gradient-to-r from-white via-amber-100 to-orange-200 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
             {line1}
           </span>
         </span>
         <br />
         <span className="relative inline-block mt-2">
           <span className="absolute -inset-2 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] blur-2xl opacity-20"></span>
-          <span className="relative bg-gradient-to-r from-[#fbbf24] to-[#dc2626] bg-clip-text text-transparent">
+          {/* On phones the headline sits on the red moon, so the gradient ends in a lighter orange there (pure red on red is unreadable) */}
+          <span className="relative bg-gradient-to-r from-[#fbbf24] to-[#f97316] sm:to-[#dc2626] bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
             {line2}
           </span>
         </span>
@@ -32,22 +33,6 @@ const MainTitle = memo(() => {
   );
 });
 
-const ProfilePhoto = memo(() => (
-  <div className="flex sm:justify-start justify-center mb-4 lg:mb-0" data-aos="fade-right" data-aos-delay="100">
-    <div className="relative group" id="home-profile-photo">
-      <div className="absolute -inset-3 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-full blur-xl opacity-40 group-hover:opacity-70 transition-all duration-500"></div>
-      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-orange-300/50 shadow-xl shadow-orange-500/20 transition-all duration-500 group-hover:scale-110 group-hover:border-white/40">
-        <img
-          src="/Profil.jpeg"
-          alt="Profile"
-          className="w-full h-full object-cover object-[center_40%]"
-          loading="lazy"
-        />
-      </div>
-    </div>
-  </div>
-));
-
 const TechStack = memo(({ tech }) => (
   <div className="px-4 py-2 hidden sm:block rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors">
     {tech}
@@ -55,34 +40,29 @@ const TechStack = memo(({ tech }) => (
 ));
 
 const CTAButton = memo(({ href, text, icon: Icon, variant }) => (
-  <a href={href}>
-    <button className="group relative w-[160px]">
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-[#e0231c] to-[#ea580c] rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700"></div>
-      <div className="relative h-11 bg-[#0a0705] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
-        <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#e0231c]/20 to-[#ea580c]/20"></div>
-        <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
-          <span className="bg-gradient-to-r from-gray-200 to-white bg-clip-text text-transparent font-medium z-10">
-            {text}
-          </span>
-          <Icon className={`w-4 h-4 text-gray-200 ${variant === 'contact' ? 'group-hover:translate-x-1' : 'group-hover:rotate-45'} transform transition-all duration-300 z-10`} />
+  <a href={href} className="group relative block w-[160px]">
+    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#e0231c] to-[#ea580c] rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700"></div>
+    <div className="relative h-11 bg-[#0a0705] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
+      <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#e0231c]/20 to-[#ea580c]/20"></div>
+      <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
+        <span className="bg-gradient-to-r from-gray-200 to-white bg-clip-text text-transparent font-medium z-10">
+          {text}
         </span>
-      </div>
-    </button>
+        <Icon className={`w-4 h-4 text-gray-200 ${variant === 'contact' ? 'group-hover:translate-x-1' : 'group-hover:rotate-45'} transform transition-all duration-300 z-10`} />
+      </span>
+    </div>
   </a>
 ));
 
 const SocialLink = memo(({ icon: Icon, link, label, color }) => (
-  <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label}>
-    <button className="group relative p-3"
-      aria-label={label}>
-      <div className="absolute inset-0 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-      <div className="relative rounded-xl bg-black/50 backdrop-blur-xl p-2 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-all duration-300">
-        <Icon
-          className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-          style={{ color }}
-        />
-      </div>
-    </button>
+  <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label} className="group relative block p-3">
+    <div className="absolute inset-0 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+    <div className="relative rounded-xl bg-black/50 backdrop-blur-xl p-2 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-all duration-300">
+      <Icon
+        className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+        style={{ color }}
+      />
+    </div>
   </a>
 ));
 
@@ -157,7 +137,7 @@ const Home = () => {
       isTyping ? TYPING_SPEED : ERASING_SPEED
     );
     return () => clearTimeout(timeout);
-  }, [handleTyping]);
+  }, [handleTyping, isTyping]);
 
   return (
     <>
@@ -271,7 +251,7 @@ const Home = () => {
         {/* Float lives on a wrapper so its transform doesn't fight the hover scale/rotate on the <img> */}
         <div className="animate-gate-float">
           <img
-            src="Gate-Japanese-removebg-preview.png"
+            src="/Gate-Japanese.webp"
             alt="Japanese torii gate"
             className={`w-full h-full object-contain transition-all duration-500 ${
               isHovering
