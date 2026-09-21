@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 import { Quote, Sparkles } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -117,7 +117,7 @@ const Testimonials = () => {
       id="Testimonials"
     >
       <img
-        src="/Kane.jpg"
+        src="/Kane.webp"
         alt=""
         aria-hidden="true"
         draggable={false}

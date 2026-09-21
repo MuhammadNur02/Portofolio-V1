@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, ArrowRight, Sparkles } from "lucide-react";
 import { toSlug } from "../utils/slug";

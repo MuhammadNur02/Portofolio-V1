@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  { ignores: ['dist', '.claude'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -29,6 +29,11 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
+      // The project does not use PropTypes (no TypeScript either); enforcing them only adds noise.
+      'react/prop-types': 'off',
+      // Cosmetic only (component names in React DevTools / quote characters in JSX text) — no effect on behaviour.
+      'react/display-name': 'off',
+      'react/no-unescaped-entities': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

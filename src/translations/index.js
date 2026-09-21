@@ -57,6 +57,8 @@ export const translations = {
       messagePlaceholder: "Pesan Anda",
       send: "Kirim Pesan",
       sending: "Mengirim...",
+      cooldownTitle: "Tunggu sebentar",
+      cooldownText: "Anda baru saja mengirim pesan. Silakan coba lagi sekitar satu menit lagi.",
       sendingTitle: "Mengirim Pesan...",
       sendingText: "Harap tunggu selagi kami mengirim pesan Anda",
       successTitle: "Berhasil!",
@@ -83,6 +85,12 @@ export const translations = {
     },
     footer: {
       rights: "Seluruh Hak Cipta Dilindungi.",
+    },
+    welcome: {
+      skip: "Lewati",
+    },
+    a11y: {
+      skipToContent: "Lewati ke konten utama",
     },
     notFound: {
       title: "Halaman Tidak Ditemukan",
@@ -174,6 +182,8 @@ export const translations = {
       messagePlaceholder: "Your Message",
       send: "Send Message",
       sending: "Sending...",
+      cooldownTitle: "Please wait a moment",
+      cooldownText: "You just sent a message. Please try again in about a minute.",
       sendingTitle: "Sending Message...",
       sendingText: "Please wait while we send your message",
       successTitle: "Success!",
@@ -200,6 +210,12 @@ export const translations = {
     },
     footer: {
       rights: "All Rights Reserved.",
+    },
+    welcome: {
+      skip: "Skip",
+    },
+    a11y: {
+      skipToContent: "Skip to main content",
     },
     notFound: {
       title: "Page Not Found",

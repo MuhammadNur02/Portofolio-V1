@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import AOS from "aos";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
@@ -12,11 +12,13 @@ import AnimatedBackground from "./components/Background";
 import CursorTrail from "./components/CursorTrail";
 import { AnimatePresence } from "framer-motion";
 import Footer from "./components/Footer";
-
-import Login from "./Pages/Login";
-import Dashboard from "./Pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useLanguage } from "./context/LanguageContext";
+import { hasSeenWelcome } from "./utils/welcomeSession";
 
+// Admin pages are lazy: regular visitors never download the dashboard code.
+const Login = lazy(() => import("./Pages/Login"));
+const Dashboard = lazy(() => import("./Pages/Dashboard"));
 const SceneBackground = lazy(() => import("./components/SceneBackground"));
 const Portofolio = lazy(() => import("./Pages/Portofolio"));
 const Testimonials = lazy(() => import("./Pages/Testimonials"));
@@ -24,7 +26,38 @@ const ContactPage = lazy(() => import("./Pages/Contact"));
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
 const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
-const SeedCertificates = lazy(() => import("./Pages/SeedCertificates"));
+
+// Mounts its children only once the browser has had a moment to breathe, so the heavy 3D scene
+// never competes with the first paint and the welcome screen for bandwidth and CPU.
+const WhenIdle = ({ delay = 1200, children }) => {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let idleId;
+    const timer = setTimeout(() => {
+      if ("requestIdleCallback" in window) idleId = window.requestIdleCallback(() => setReady(true), { timeout: 2000 });
+      else setReady(true);
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+      if (idleId !== undefined) window.cancelIdleCallback(idleId);
+    };
+  }, [delay]);
+  return ready ? children : null;
+};
+
+const SkipLink = () => {
+  const { t } = useLanguage();
+  return (
+    <a
+      href="#Home"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-lg
+                 focus:bg-[#0a0705] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-amber-200
+                 focus:outline focus:outline-2 focus:outline-amber-300"
+    >
+      {t.a11y.skipToContent}
+    </a>
+  );
+};
 
 const LandingPage = ({ showWelcome, setShowWelcome }) => {
   // AOS measures every element's position once. Sections that fill in afterwards (project data,
@@ -56,6 +89,7 @@ const LandingPage = ({ showWelcome, setShowWelcome }) => {
 
       {!showWelcome && (
         <>
+          <SkipLink />
           <Navbar />
       
           <Home />
@@ -82,7 +116,8 @@ const ProjectPageLayout = () => (
 );
 
 function App() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  // Shown once per session: returning visitors and reloads go straight to the site.
+  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome());
 
   return (
     
@@ -93,9 +128,11 @@ function App() {
   <Analytics />
   <CursorTrail />
       <BrowserRouter>
-        <Suspense fallback={null}>
-          <SceneBackground />
-        </Suspense>
+        <WhenIdle>
+          <Suspense fallback={null}>
+            <SceneBackground />
+          </Suspense>
+        </WhenIdle>
         <Routes>
           {/* PUBLIC */}
           <Route
@@ -111,25 +148,24 @@ function App() {
           <Route path="/project/:slug" element={<ProjectPageLayout />} />
 
           {/* AUTH */}
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={null}>
+                <Login />
+              </Suspense>
+            }
+          />
 
           {/* ADMIN (PROTECTED) */}
           <Route
             path="/dashboard/*"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Suspense fallback={null}>
+                  <Dashboard />
+                </Suspense>
               </ProtectedRoute>
-            }
-          />
-
-          {/* SEED */}
-          <Route
-            path="/seed"
-            element={
-              <Suspense fallback={null}>
-                <SeedCertificates />
-              </Suspense>
             }
           />
 

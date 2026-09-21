@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
-import { Link } from "react-router-dom";
 import SocialLinks from "../components/SocialLinks";
 import Komentar from "../components/Commentar";
 import Swal from "sweetalert2";
@@ -9,12 +8,30 @@ import "aos/dist/aos.css";
 import axios from "axios";
 import { useLanguage } from "../context/LanguageContext";
 
+const SEND_COOLDOWN_MS = 60_000;
+const LAST_SENT_KEY = "contactLastSentAt";
+const readLastSent = () => {
+  try {
+    return Number(localStorage.getItem(LAST_SENT_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+};
+const writeLastSent = () => {
+  try {
+    localStorage.setItem(LAST_SENT_KEY, String(Date.now()));
+  } catch {
+    /* storage unavailable — the guard just won't apply */
+  }
+};
+
 const ContactPage = () => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
+    _honey: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,6 +51,23 @@ const ContactPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Spam guard 1: the invisible honeypot field was filled -> a bot. Look successful, send nothing.
+    if (formData._honey) {
+      setFormData({ name: "", email: "", message: "", _honey: "" });
+      return;
+    }
+    // Spam guard 2: at most one message per minute from the same browser.
+    if (Date.now() - readLastSent() < SEND_COOLDOWN_MS) {
+      Swal.fire({
+        title: t.contact.cooldownTitle,
+        text: t.contact.cooldownText,
+        icon: "info",
+        confirmButtonColor: "#fbbf24",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     Swal.fire({
@@ -55,6 +89,7 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
       submitData.append('email', formData.email);
       submitData.append('message', formData.message);
       submitData.append('_subject', 'Pesan Baru dari Website Portfolio');
+      submitData.append('_honey', ''); // FormSubmit's own honeypot: it discards submissions where this is filled
       submitData.append('_captcha', 'false'); // Nonaktifkan captcha
       submitData.append('_template', 'table'); // Format email sebagai tabel
 
@@ -74,10 +109,12 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
         timerProgressBar: true
       });
 
+      writeLastSent();
       setFormData({
         name: "",
         email: "",
         message: "",
+        _honey: "",
       });
 
     } catch (error) {
@@ -92,10 +129,12 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
           timerProgressBar: true
         });
 
+        writeLastSent();
         setFormData({
           name: "",
           email: "",
           message: "",
+          _honey: "",
         });
       } else {
         Swal.fire({
@@ -165,6 +204,17 @@ const formSubmitUrl = 'https://formsubmit.co/muhammadnurrahmanjuliansyah@gmail.c
               onSubmit={handleSubmit}
               className="space-y-6"
             >
+              {/* Honeypot: invisible to people, bots tend to fill it. Filled = treated as spam and never sent. */}
+              <input
+                type="text"
+                name="_honey"
+                value={formData._honey ?? ""}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+              />
               <div
                 data-aos="fade-up"
                 data-aos-delay="100"

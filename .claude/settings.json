@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(foreach \\($p in 5199, 5198\\) { $c = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }; \"stopped $p\" } else { \"no listener on $p\" } })",
+      "Bash(awk '{print $5\"\\\\t\"$9}')",
+      "Bash(sort -k2)",
+      "Bash(awk '{print $9}')",
+      "Bash(node \"C:/Users/Mucha/AppData/Local/Temp/claude/c--Users-Mucha-OneDrive-Dokumen-Portofolio/b03db3e3-6901-4bed-90d6-fafe0b83d1ed/scratchpad/refs.cjs\")",
+      "Bash(grep -v \"^--$\")",
+      "Bash(git commit *)"
+    ]
+  }
+}
