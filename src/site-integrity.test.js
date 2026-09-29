@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const existsInPublic = (urlPath) => fs.existsSync(path.join(root, "public", decodeURIComponent(urlPath.replace(/^\//, ""))));
 
-const SITE = "https://julian.vercel.app";
+const SITE = "https://portofolio-v1-one-gamma.vercel.app";
 // Components that no page renders (their assets may be gone). Remove an entry once the file is deleted.
 const UNUSED_COMPONENTS = [];
 

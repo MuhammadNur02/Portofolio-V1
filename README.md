@@ -4,7 +4,7 @@
 
 A bilingual (Bahasa Indonesia / English) portfolio for an **AI-assisted fullstack developer**, designed around a Japanese shrine theme: a real-time 3D backdrop, a "blood-moon" intro that cuts open like a katana, a layered parallax torii gate, and an admin dashboard that updates every project, certificate, photo and testimonial without touching code.
 
-**Live:** https://julian.vercel.app
+**Live:** https://portofolio-v1-one-gamma.vercel.app
 
 <p align="center">
   <img src="docs/screenshots/home-desktop.webp" alt="Hero: availability badge, FULLSTACK DEVELOPER headline, calls to action and live stats over the 3D samurai backdrop" width="820" />
