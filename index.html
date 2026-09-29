@@ -47,35 +47,59 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="id_ID" />
-  <meta property="og:url" content="https://portofolio-v1-one-gamma.vercel.app/" />
+  <!-- The site toggles ID/EN client-side rather than serving separate URLs, so this is a locale hint
+       for platforms unfurling the link — not a substitute for hreflang, which needs distinct URLs. -->
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:url" content="https://julian.vercel.app/" />
   <meta property="og:title" content="Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer" />
   <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer." />
-  <meta property="og:image" content="https://portofolio-v1-one-gamma.vercel.app/og-image.jpg" />
+  <meta property="og:image" content="https://julian.vercel.app/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://portofolio-v1-one-gamma.vercel.app/" />
+  <meta name="twitter:url" content="https://julian.vercel.app/" />
   <meta name="twitter:title" content="Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer" />
   <meta name="twitter:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah." />
-  <meta name="twitter:image" content="https://portofolio-v1-one-gamma.vercel.app/og-image.jpg" />
+  <meta name="twitter:image" content="https://julian.vercel.app/og-image.jpg" />
   <meta name="twitter:image:alt" content="Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer" />
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://portofolio-v1-one-gamma.vercel.app/" />
+  <link rel="canonical" href="https://julian.vercel.app/" />
 
-  <!-- Structured Data: Person -->
+  <!-- Structured Data: Person. knowsAbout/alumniOf give Google (and any AI answer engine reading
+       this page) the keywords and context to associate this name with — matters for both classic
+       search and "who is..." style AI-generated answers. Keep this in sync with src/config/site.js
+       and the About section by hand; it's a static file, not wired to the live data. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Muhammad Nurrahman Juliansyah",
-    "url": "https://portofolio-v1-one-gamma.vercel.app/",
-    "image": "https://portofolio-v1-one-gamma.vercel.app/Portrait.webp",
+    "alternateName": "Julian",
+    "url": "https://julian.vercel.app/",
+    "image": "https://julian.vercel.app/Portrait.webp",
     "jobTitle": "AI-Assisted Fullstack Developer",
     "description": "Combining AI-assisted workflows, clean design, and full-stack architecture to build web applications that are fast, scalable, and intuitive. Focused on crafting seamless UI, robust APIs, and end-to-end user experiences.",
+    "email": "mailto:muchammad.nur02@gmail.com",
+    "knowsAbout": [
+      "React",
+      "Next.js",
+      "JavaScript",
+      "TypeScript",
+      "Node.js",
+      "Tailwind CSS",
+      "Supabase",
+      "Three.js",
+      "Full-Stack Web Development",
+      "AI-Assisted Development"
+    ],
+    "alumniOf": {
+      "@type": "CollegeOrUniversity",
+      "name": "Universitas Ivet Semarang"
+    },
     "sameAs": [
       "https://www.linkedin.com/in/MuchammadNur/",
       "https://github.com/MuhammadNur02",
