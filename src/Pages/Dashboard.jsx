@@ -6,13 +6,15 @@ import Certificates from './dashboard/Certificates'
 import Comments from './dashboard/Comments'
 import Experience from './dashboard/Experience'
 import Testimonials from './dashboard/Testimonials'
-import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote } from 'lucide-react'
+import Gallery from './dashboard/Gallery'
+import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote, Images } from 'lucide-react'
 
 const NAV_ITEMS = [
   { to: 'projects', label: 'Projects', icon: FolderGit2 },
   { to: 'certificates', label: 'Certificates', icon: Award },
   { to: 'experience', label: 'Experience', icon: History },
   { to: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote },
+  { to: 'gallery', label: 'Gallery', icon: Images },
   { to: 'comments', label: 'Comments', icon: MessageSquare },
 ]
 
@@ -132,6 +134,7 @@ export default function Dashboard() {
             <Route path="certificates" element={<Certificates />} />
             <Route path="experience" element={<Experience />} />
             <Route path="testimonials" element={<Testimonials />} />
+            <Route path="gallery" element={<Gallery />} />
             <Route path="comments" element={<Comments />} />
           </Routes>
         </main>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
+import { compressImage, safeFileName } from "../../lib/compressImage";
 import {
   Plus,
   Trash2,
@@ -282,9 +283,14 @@ export default function Testimonials() {
     fetchItems();
   }, []);
 
-  const uploadAvatar = async (f) => {
-    const fileName = `${Date.now()}-${f.name}`;
-    await supabase.storage.from("testimonial-images").upload(fileName, f);
+  const uploadAvatar = async (original) => {
+    const f = await compressImage(original, { maxSize: 512 });
+    const fileName = `${Date.now()}-${safeFileName(f.name)}`;
+    const { error } = await supabase.storage.from("testimonial-images").upload(fileName, f);
+    if (error) {
+      alert(`Avatar upload failed: ${error.message}`);
+      return null;
+    }
     const { data } = supabase.storage
       .from("testimonial-images")
       .getPublicUrl(fileName);
@@ -294,7 +300,10 @@ export default function Testimonials() {
   const handleCreate = async (form, file) => {
     setUploading(true);
     let avatarUrl = null;
-    if (file) avatarUrl = await uploadAvatar(file);
+    if (file) {
+      avatarUrl = await uploadAvatar(file);
+      if (!avatarUrl) return setUploading(false);
+    }
     await supabase.from("testimonials").insert({ ...form, avatar: avatarUrl });
     setShowCreate(false);
     setUploading(false);
@@ -304,7 +313,10 @@ export default function Testimonials() {
   const handleEdit = async (form, file) => {
     setUploading(true);
     let avatarUrl = editItem.avatar || null;
-    if (file) avatarUrl = await uploadAvatar(file);
+    if (file) {
+      avatarUrl = await uploadAvatar(file);
+      if (!avatarUrl) return setUploading(false);
+    }
     await supabase
       .from("testimonials")
       .update({ ...form, avatar: avatarUrl })

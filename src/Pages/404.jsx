@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Home } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
 const NotFoundPage = () => {
@@ -9,28 +9,28 @@ const NotFoundPage = () => {
   return (
     <>
       <Helmet>
-        <title>404 — {t.notFound.title}</title>
+        <title>{`404 — ${t.notFound.title}`}</title>
         <meta name="robots" content="noindex" />
       </Helmet>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-lg text-center bg-[#120c07]/55 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-12">
-          <p className="text-7xl sm:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#fbbf24] to-[#dc2626]">
-            404
-          </p>
-          <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-white">{t.notFound.title}</h1>
-          <p className="mt-3 text-gray-400">{t.notFound.text}</p>
-
-          <Link
-            to="/"
-            className="mt-8 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-[#0a0705]
-                       bg-gradient-to-r from-[#fbbf24] to-[#dc2626] hover:opacity-90 transition-opacity duration-300"
-          >
-            <Home className="w-5 h-5" />
+      <main className="relative z-10 flex min-h-screen items-center justify-center overflow-hidden bg-ink/85 px-6 py-16">
+        <img
+          src="/Torii-Gate-sm.webp"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-1/2 w-[min(90vw,760px)] -translate-x-1/2 opacity-[0.12] brightness-0 invert"
+        />
+        <div className="relative max-w-lg text-center">
+          <p className="font-kanji text-2xl text-shu-400">迷子</p>
+          <p className="mt-2 font-display text-[7rem] font-extrabold leading-none text-washi font-wide sm:text-[9rem]">404</p>
+          <h1 className="mt-4 font-display text-2xl font-bold text-washi sm:text-3xl">{t.notFound.title}</h1>
+          <p className="mt-3 text-washi-muted">{t.notFound.text}</p>
+          <Link to="/" className="btn-primary mt-10">
+            <ArrowLeft className="h-4 w-4" />
             {t.notFound.backHome}
           </Link>
         </div>
-      </div>
+      </main>
     </>
   );
 };

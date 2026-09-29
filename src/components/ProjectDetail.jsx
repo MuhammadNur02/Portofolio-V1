@@ -1,192 +1,64 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Code2, Layers, Lock } from "lucide-react";
+import { FaGithub } from "react-icons/fa6";
 import { supabase } from "../supabase";
-import {
-  ArrowLeft,
-  ExternalLink,
-  Github,
-  Code2,
-  Star,
-  ChevronRight,
-  Layers,
-  Package,
-} from "lucide-react";
-import {
-  SiReact,
-  SiNextdotjs,
-  SiVuedotjs,
-  SiAngular,
-  SiSvelte,
-  SiTailwindcss,
-  SiBootstrap,
-  SiNodedotjs,
-  SiExpress,
-  SiPython,
-  SiDjango,
-  SiFlask,
-  SiJavascript,
-  SiTypescript,
-  SiHtml5,
-  SiCss,
-  SiSass,
-  SiPhp,
-  SiLaravel,
-  SiSupabase,
-  SiFirebase,
-  SiMongodb,
-  SiPostgresql,
-  SiMysql,
-  SiVite,
-  SiVercel,
-  SiMui,
-  SiRedux,
-  SiGraphql,
-  SiDocker,
-  SiFigma,
-  SiFlutter,
-  SiGit,
-} from "react-icons/si";
-import Swal from "sweetalert2";
 import { toSlug } from "../utils/slug";
 import { useLanguage } from "../context/LanguageContext";
+import { SITE } from "../config/site";
+import { Hanko, LanguageToggle } from "./Navbar";
+import BrowserFrame from "./ui/BrowserFrame";
+import TechBadge from "./ui/TechBadge";
+import Reveal, { RevealGroup, RevealItem } from "./ui/Reveal";
 
-const TECH_ICONS = {
-  react: { icon: SiReact, color: "#61DAFB" },
-  "next.js": { icon: SiNextdotjs, color: "#ffffff" },
-  nextjs: { icon: SiNextdotjs, color: "#ffffff" },
-  "vue.js": { icon: SiVuedotjs, color: "#4FC08D" },
-  vue: { icon: SiVuedotjs, color: "#4FC08D" },
-  angular: { icon: SiAngular, color: "#DD0031" },
-  svelte: { icon: SiSvelte, color: "#FF3E00" },
-  tailwind: { icon: SiTailwindcss, color: "#38BDF8" },
-  "tailwind css": { icon: SiTailwindcss, color: "#38BDF8" },
-  bootstrap: { icon: SiBootstrap, color: "#7952B3" },
-  "node.js": { icon: SiNodedotjs, color: "#5FA04E" },
-  nodejs: { icon: SiNodedotjs, color: "#5FA04E" },
-  express: { icon: SiExpress, color: "#ffffff" },
-  python: { icon: SiPython, color: "#3776AB" },
-  django: { icon: SiDjango, color: "#0C4B33" },
-  flask: { icon: SiFlask, color: "#ffffff" },
-  javascript: { icon: SiJavascript, color: "#F7DF1E" },
-  typescript: { icon: SiTypescript, color: "#3178C6" },
-  html: { icon: SiHtml5, color: "#E34F26" },
-  html5: { icon: SiHtml5, color: "#E34F26" },
-  css: { icon: SiCss, color: "#663399" },
-  css3: { icon: SiCss, color: "#663399" },
-  sass: { icon: SiSass, color: "#CC6699" },
-  php: { icon: SiPhp, color: "#777BB4" },
-  laravel: { icon: SiLaravel, color: "#FF2D20" },
-  supabase: { icon: SiSupabase, color: "#3ECF8E" },
-  firebase: { icon: SiFirebase, color: "#FFCA28" },
-  mongodb: { icon: SiMongodb, color: "#47A248" },
-  postgresql: { icon: SiPostgresql, color: "#4169E1" },
-  mysql: { icon: SiMysql, color: "#4479A1" },
-  vite: { icon: SiVite, color: "#646CFF" },
-  vercel: { icon: SiVercel, color: "#ffffff" },
-  "material ui": { icon: SiMui, color: "#007FFF" },
-  mui: { icon: SiMui, color: "#007FFF" },
-  redux: { icon: SiRedux, color: "#764ABC" },
-  graphql: { icon: SiGraphql, color: "#E10098" },
-  docker: { icon: SiDocker, color: "#2496ED" },
-  figma: { icon: SiFigma, color: "#F24E1E" },
-  flutter: { icon: SiFlutter, color: "#02569B" },
-  git: { icon: SiGit, color: "#F05032" },
-};
+const EASE = [0.22, 1, 0.36, 1];
+const isPublicRepo = (github) => typeof github === "string" && /^https?:\/\//.test(github);
 
-const normalizeTech = (tech) => tech.trim().toLowerCase();
+const normalize = (p) => ({
+  ...p,
+  Features: Array.isArray(p.Features) ? p.Features.filter(Boolean) : [],
+  TechStack: Array.isArray(p.TechStack) ? p.TechStack.filter(Boolean) : [],
+});
 
-const TechBadge = ({ tech }) => {
-  const match = TECH_ICONS[normalizeTech(tech)];
-  const Icon = match?.icon || Package;
-  const color = match?.color || "#fb923c";
+function TopBar({ t, title }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // "default" = this is the first page of the visit (opened from a shared link or a search result):
+  // going "back" would leave the site, so go to the projects section instead.
+  const goBack = () => (location.key === "default" ? navigate("/#Portofolio") : navigate(-1));
+
   return (
-    <div className="group relative overflow-hidden px-3 py-2 md:px-4 md:py-2.5 bg-gradient-to-r from-orange-600/10 to-amber-600/10 rounded-xl border border-orange-500/10 hover:border-orange-500/30 transition-all duration-300 cursor-default">
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 to-amber-500/0 group-hover:from-orange-500/10 group-hover:to-amber-500/10 transition-all duration-500" />
-      <div className="relative flex items-center gap-1.5 md:gap-2">
-        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 transition-colors" style={{ color }} />
-        <span className="text-xs md:text-sm font-medium text-orange-300/90 group-hover:text-orange-200 transition-colors">
-          {tech}
-        </span>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <button type="button" onClick={goBack} className="btn-ghost group h-11 shrink-0 px-4">
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+          {t.projectDetail.back}
+        </button>
+        {title && (
+          <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-sm text-washi-subtle md:flex">
+            <Link to="/#Portofolio" className="hover:text-washi">
+              {t.projectDetail.projects}
+            </Link>
+            <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+            <span className="truncate text-washi-muted">{title}</span>
+          </nav>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <LanguageToggle />
+        <Link to="/" title={SITE.name} className="hidden items-center gap-2.5 sm:flex">
+          <Hanko />
+          <span className="font-display text-lg font-bold text-washi font-semiwide">
+            {SITE.shortName}
+            <span className="text-shu-500">.</span>
+          </span>
+        </Link>
       </div>
     </div>
   );
-};
-
-const FeatureItem = ({ feature }) => {
-  return (
-    <li className="group flex items-start space-x-3 p-2.5 md:p-3.5 rounded-xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-white/10">
-      <div className="relative mt-2">
-        <div className="absolute -inset-1 bg-gradient-to-r from-orange-600/20 to-amber-600/20 rounded-full blur group-hover:opacity-100 opacity-0 transition-opacity duration-300" />
-        <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 group-hover:scale-125 transition-transform duration-300" />
-      </div>
-      <span className="text-sm md:text-base text-gray-300 group-hover:text-white transition-colors">
-        {feature}
-      </span>
-    </li>
-  );
-};
-
-const ProjectStats = ({ project }) => {
-  const { t } = useLanguage();
-  const techStackCount = project?.TechStack?.length || 0;
-  const featuresCount = project?.Features?.length || 0;
-
-  return (
-    <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4 bg-[#130d08] rounded-xl overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-900/20 to-amber-900/20 opacity-50 blur-2xl z-0" />
-      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-orange-500/20 transition-all duration-300 hover:scale-105 hover:border-orange-500/50 hover:shadow-lg">
-        <div className="bg-orange-500/20 p-1.5 md:p-2 rounded-full">
-          <Code2
-            className="text-orange-300 w-4 h-4 md:w-6 md:h-6"
-            strokeWidth={1.5}
-          />
-        </div>
-        <div className="flex-grow">
-          <div className="text-lg md:text-xl font-semibold text-orange-200">
-            {techStackCount}
-          </div>
-          <div className="text-[10px] md:text-xs text-gray-400">
-            {t.projectDetail.totalTech}
-          </div>
-        </div>
-      </div>
-
-      <div className="relative z-10 flex items-center space-x-2 md:space-x-3 bg-white/5 p-2 md:p-3 rounded-lg border border-amber-500/20 transition-all duration-300 hover:scale-105 hover:border-amber-500/50 hover:shadow-lg">
-        <div className="bg-amber-500/20 p-1.5 md:p-2 rounded-full">
-          <Layers
-            className="text-amber-300 w-4 h-4 md:w-6 md:h-6"
-            strokeWidth={1.5}
-          />
-        </div>
-        <div className="flex-grow">
-          <div className="text-lg md:text-xl font-semibold text-amber-200">
-            {featuresCount}
-          </div>
-          <div className="text-[10px] md:text-xs text-gray-400">
-            {t.projectDetail.totalFeatures}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const handleGithubClick = (githubLink, t) => {
-  if (githubLink === "Private") {
-    Swal.fire({
-      icon: "info",
-      title: t.projectDetail.privateTitle,
-      text: t.projectDetail.privateText,
-      confirmButtonText: t.projectDetail.privateConfirm,
-      confirmButtonColor: "#fbbf24",
-      background: "#0a0705",
-      color: "#ffffff",
-    });
-    return false;
-  }
-  return true;
-};
+}
 
 const ProjectDetails = () => {
   const { t } = useLanguage();
@@ -194,315 +66,229 @@ const ProjectDetails = () => {
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [showPrivate, setShowPrivate] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setNotFound(false);
-
-    const enhance = (p) => ({
-      ...p,
-      Features: p.Features || [],
-      TechStack: p.TechStack || [],
-      Github: p.Github || "https://github.com/MuhammadNur02",
-    });
-    // Cari project berdasarkan slug yang di-generate dari Title
     const findBySlug = (list) => list.find((p) => toSlug(p.Title) === slug);
 
-    const storedProjects = JSON.parse(localStorage.getItem("projects")) || [];
-    const cachedProject = findBySlug(storedProjects);
+    let cached = [];
+    try {
+      cached = JSON.parse(localStorage.getItem("projects")) || [];
+    } catch {
+      cached = [];
+    }
+    const cachedProject = findBySlug(cached);
     if (cachedProject) {
-      setProject(enhance(cachedProject));
+      setProject(normalize(cachedProject));
       return;
     }
 
-    // Nothing cached yet (link opened directly, e.g. a shared URL) — ask the database instead of
-    // waiting on the Portofolio page to fill the cache, otherwise this would load forever.
+    // Nothing cached yet (link opened directly, e.g. a shared URL) — ask the database.
     let cancelled = false;
-    (async () => {
-      const { data } = await supabase.from("projects").select("*");
-      if (cancelled) return;
-      const found = findBySlug(data || []);
-      if (found) {
-        setProject(enhance(found));
-      } else {
-        setProject(null);
-        setNotFound(true);
-      }
-    })().catch(() => {
-      if (!cancelled) setNotFound(true);
-    });
-
+    supabase
+      .from("projects")
+      .select("*")
+      .then(({ data }) => {
+        if (cancelled) return;
+        const found = findBySlug(data || []);
+        if (found) setProject(normalize(found));
+        else setNotFound(true);
+      }, () => !cancelled && setNotFound(true));
     return () => {
       cancelled = true;
     };
   }, [slug]);
 
-  if (!project && notFound) {
-    return (
-      <div className="min-h-screen bg-[#0a0705] flex items-center justify-center px-6">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl md:text-4xl font-bold text-white">{t.projectDetail.notFoundTitle}</h2>
-          <p className="text-gray-400">{t.projectDetail.notFoundText}</p>
-          <button
-            onClick={() => navigate("/")}
-            className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 text-gray-200 hover:text-white hover:border-white/25 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t.notFound.backHome}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (!project) {
     return (
-      <div className="min-h-screen bg-[#0a0705] flex items-center justify-center">
-        <div className="text-center space-y-6 animate-fadeIn">
-          <div className="w-16 h-16 md:w-24 md:h-24 mx-auto border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
-          <h2 className="text-xl md:text-3xl font-bold text-white">
+      <div className="container-site flex min-h-screen items-center justify-center">
+        {notFound ? (
+          <div className="text-center">
+            <p className="font-display text-7xl font-extrabold text-shu-500 font-wide">404</p>
+            <h1 className="mt-4 font-display text-3xl font-bold text-washi">{t.projectDetail.notFoundTitle}</h1>
+            <p className="mt-3 text-washi-muted">{t.projectDetail.notFoundText}</p>
+            <button type="button" onClick={() => navigate("/")} className="btn-primary mt-8">
+              <ArrowLeft className="h-4 w-4" />
+              {t.notFound.backHome}
+            </button>
+          </div>
+        ) : (
+          <div role="status" className="flex flex-col items-center gap-5 text-washi-muted">
+            <span className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-shu-500" />
             {t.projectDetail.loading}
-          </h2>
-        </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  const projectUrl = `https://portofolio-v1-one-gamma.vercel.app/project/${toSlug(project.Title)}`;
+  const projectUrl = `${SITE.url}/project/${toSlug(project.Title)}`;
+  const description = project.Description?.slice(0, 155) || `${project.Title} — ${SITE.name}, ${SITE.role}.`;
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.Title,
+    description: project.Description || "",
+    url: projectUrl,
+    image: project.Img || undefined,
+    author: { "@type": "Person", name: SITE.name, url: `${SITE.url}/` },
+  }).replace(/</g, String.fromCharCode(92) + "u003c"); // "<" as a JSON escape, so a description containing "</script>" can not close the tag early
+
+  const stats = [
+    { icon: Code2, value: project.TechStack.length, label: t.projectDetail.totalTech },
+    { icon: Layers, value: project.Features.length, label: t.projectDetail.totalFeatures },
+  ].filter((s) => s.value > 0);
+  const hasTech = project.TechStack.length > 0;
+  const hasFeatures = project.Features.length > 0;
 
   return (
     <>
       <Helmet>
-        <title>{project.Title} — Muhammad Nurrahman Juliansyah</title>
-        <meta
-          name="description"
-          content={
-            project.Description
-              ? project.Description.slice(0, 155)
-            : `Project ${project.Title} oleh Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer.`
-          }
-        />
+        <title>{`${project.Title} — ${SITE.name}`}</title>
+        <meta name="description" content={description} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={projectUrl} />
-        <meta
-          property="og:title"
-          content={`${project.Title} — Muhammad Nurrahman Juliansyah`}
-        />
-        <meta
-          property="og:description"
-          content={project.Description?.slice(0, 155)}
-        />
+        <meta property="og:title" content={`${project.Title} — ${SITE.name}`} />
+        <meta property="og:description" content={description} />
         <meta property="og:url" content={projectUrl} />
         <meta property="og:type" content="website" />
         {project.Img && <meta property="og:image" content={project.Img} />}
-        <script type="application/ld+json">{`
-          {
-            "@context": "https://schema.org",
-            "@type": "CreativeWork",
-            "name": "${project.Title}",
-            "description": "${project.Description?.replace(/"/g, '\\"')}",
-            "url": "${projectUrl}",
-            "author": {
-              "@type": "Person",
-              "name": "Muhammad Nurrahman Juliansyah",
-              "url": "https://portofolio-v1-one-gamma.vercel.app/"
-            }
-          }
-        `}</script>
+        <script type="application/ld+json">{jsonLd}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#0a0705] px-[2%] sm:px-0 relative overflow-hidden">
-        <div className="fixed inset-0">
-          <div className="absolute -inset-[10px] opacity-20">
-            <div className="absolute top-0 -left-4 w-72 md:w-96 h-72 md:h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-            <div className="absolute top-0 -right-4 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-8 left-20 w-72 md:w-96 h-72 md:h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
-          </div>
-        </div>
+      <div className="relative min-h-screen bg-ink/80">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[60vh] bg-[radial-gradient(ellipse_at_50%_0%,rgba(232,71,47,0.14),transparent_65%)]" />
 
-        <div className="relative">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-16">
-            <div className="flex items-center space-x-2 md:space-x-4 mb-8 md:mb-12 animate-fadeIn">
-              <button
-                onClick={() => navigate(-1)}
-                className="group inline-flex items-center space-x-1.5 md:space-x-2 px-3 md:px-5 py-2 md:py-2.5 bg-white/5 backdrop-blur-xl rounded-xl text-white/90 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-sm md:text-base"
+        <div className="container-site relative pb-24 pt-8 sm:pt-10">
+          <TopBar t={t} title={project.Title} />
+
+          <div className="mt-16 grid gap-14 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: EASE }}
+                className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.28em] text-shu-400"
               >
-                <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
-                <span>{t.projectDetail.back}</span>
-              </button>
-              <div className="flex items-center space-x-1 md:space-x-2 text-sm md:text-base text-white/50">
-                <span>{t.projectDetail.projects}</span>
-                <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
-                <span className="text-white/90 truncate">{project.Title}</span>
-              </div>
-            </div>
+                <span aria-hidden="true" className="h-px w-8 bg-shu-500/70" />
+                {t.projectDetail.overview}
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.05, ease: EASE }}
+                className="mt-5 font-display text-4xl font-bold leading-[1.02] tracking-tight text-washi text-balance font-semiwide sm:text-5xl lg:text-6xl"
+              >
+                {project.Title}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.12, ease: EASE }}
+                className="mt-6 text-base leading-relaxed text-washi-muted text-pretty sm:text-lg"
+              >
+                {project.Description}
+              </motion.p>
 
-            <div className="grid lg:grid-cols-2 gap-8 md:gap-16">
-              <div className="space-y-6 md:space-y-10 animate-slideInLeft">
-                <div className="space-y-4 md:space-y-6">
-                  <h1 className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-amber-200 via-orange-200 to-white bg-clip-text text-transparent leading-tight">
-                    {project.Title}
-                  </h1>
-                  <div className="relative h-1 w-16 md:w-24">
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full animate-pulse" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full blur-sm" />
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:space-y-3">
-                  <h2 className="text-sm md:text-base font-semibold text-orange-400/90 uppercase tracking-wider">
-                    {t.projectDetail.overview}
-                  </h2>
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-base md:text-lg text-gray-300/90 leading-relaxed">
-                      {project.Description}
-                    </p>
-                  </div>
-                </div>
-
-                <ProjectStats project={project} />
-
-                <div className="flex flex-wrap gap-3 md:gap-4">
-                  <a
-                    href={project.Link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-orange-600/10 to-amber-600/10 hover:from-orange-600/20 hover:to-amber-600/20 text-orange-300 rounded-xl transition-all duration-300 border border-orange-500/20 hover:border-orange-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
-                  >
-                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-orange-600/10 to-amber-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
-                    <ExternalLink className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
-                    <span className="relative font-medium">{t.projectDetail.liveDemo}</span>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.2, ease: EASE }}
+                className="mt-8 flex flex-wrap gap-3"
+              >
+                {project.Link && (
+                  <a href={project.Link} target="_blank" rel="noopener noreferrer" className="btn-primary group">
+                    {t.projectDetail.liveDemo}
+                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </a>
-
-                  <a
-                    href={project.Github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-8 py-2.5 md:py-4 bg-gradient-to-r from-amber-600/10 to-orange-600/10 hover:from-amber-600/20 hover:to-orange-600/20 text-amber-300 rounded-xl transition-all duration-300 border border-amber-500/20 hover:border-amber-500/40 backdrop-blur-xl overflow-hidden text-sm md:text-base"
-                    onClick={(e) =>
-                      !handleGithubClick(project.Github, t) && e.preventDefault()
-                    }
-                  >
-                    <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-amber-600/10 to-orange-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
-                    <Github className="relative w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
-                    <span className="relative font-medium">{t.projectDetail.github}</span>
+                )}
+                {isPublicRepo(project.Github) ? (
+                  <a href={project.Github} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                    <FaGithub className="h-4 w-4" />
+                    {t.projectDetail.github}
                   </a>
-                </div>
+                ) : (
+                  <button type="button" onClick={() => setShowPrivate((v) => !v)} aria-expanded={showPrivate} className="btn-ghost">
+                    <Lock className="h-4 w-4" />
+                    {t.projectDetail.github}
+                  </button>
+                )}
+              </motion.div>
+              {showPrivate && (
+                <p role="status" className="mt-3 flex items-center gap-2 text-sm text-washi-subtle">
+                  <Lock aria-hidden="true" className="h-3.5 w-3.5" />
+                  {t.projectDetail.privateText}
+                </p>
+              )}
 
-                <div className="space-y-4 md:space-y-6">
-                  <h3 className="text-lg md:text-xl font-semibold text-white/90 mt-[3rem] md:mt-0 flex items-center gap-2 md:gap-3">
-                    <Code2 className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
-                    {t.projectDetail.technologiesUsed}
-                  </h3>
-                  {project.TechStack.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 md:gap-3">
-                      {project.TechStack.map((tech, index) => (
-                        <TechBadge key={index} tech={tech} />
-                      ))}
+              {stats.length > 0 && (
+              <dl className={`mt-10 grid gap-3 ${stats.length > 1 ? "grid-cols-2" : "max-w-[15rem] grid-cols-1"}`}>
+                {stats.map(({ icon: Icon, value, label }) => (
+                  <div key={label} className="surface flex items-center gap-4 p-4">
+                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-shu-500/15 text-shu-400">
+                      <Icon aria-hidden="true" className="h-5 w-5" />
+                    </span>
+                    <div className="flex flex-col-reverse">
+                      <dt className="text-xs text-washi-subtle">{label}</dt>
+                      <dd className="font-display text-2xl font-bold text-washi">{value}</dd>
                     </div>
-                  ) : (
-                    <p className="text-sm md:text-base text-gray-400 opacity-50">
-                      {t.projectDetail.noTech}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-6 md:space-y-10 animate-slideInRight">
-                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0705] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <img
-                    src={project.Img}
-                    alt={project.Title}
-                    className="w-full object-cover transform transition-transform duration-700 will-change-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/10 transition-colors duration-300 rounded-2xl" />
-                </div>
-
-                <div className="bg-[#120c07]/55 backdrop-blur-xl rounded-2xl p-8 border border-white/10 space-y-6 hover:border-white/20 transition-colors duration-300 group">
-                  <h3 className="text-xl font-semibold text-white/90 flex items-center gap-3">
-                    <Star className="w-5 h-5 text-yellow-400 group-hover:rotate-[20deg] transition-transform duration-300" />
-                    {t.projectDetail.keyFeatures}
-                  </h3>
-                  {project.Features.length > 0 ? (
-                    <ul className="list-none space-y-2">
-                      {project.Features.map((feature, index) => (
-                        <FeatureItem key={index} feature={feature} />
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-400 opacity-50">
-                      {t.projectDetail.noFeatures}
-                    </p>
-                  )}
-                </div>
-              </div>
+                  </div>
+                ))}
+              </dl>
+              )}
             </div>
-          </div>
-        </div>
 
-        <style>{`
-          @keyframes blob {
-            0% {
-              transform: translate(0px, 0px) scale(1);
-            }
-            33% {
-              transform: translate(30px, -50px) scale(1.1);
-            }
-            66% {
-              transform: translate(-20px, 20px) scale(0.9);
-            }
-            100% {
-              transform: translate(0px, 0px) scale(1);
-            }
-          }
-          .animate-blob {
-            animation: blob 10s infinite;
-          }
-          .animation-delay-2000 {
-            animation-delay: 2s;
-          }
-          .animation-delay-4000 {
-            animation-delay: 4s;
-          }
-          .animate-fadeIn {
-            animation: fadeIn 0.7s ease-out;
-          }
-          .animate-slideInLeft {
-            animation: slideInLeft 0.7s ease-out;
-          }
-          .animate-slideInRight {
-            animation: slideInRight 0.7s ease-out;
-          }
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-          @keyframes slideInLeft {
-            from {
-              opacity: 0;
-              transform: translateX(-30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-          @keyframes slideInRight {
-            from {
-              opacity: 0;
-              transform: translateX(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-        `}</style>
+            <motion.div
+              className="lg:col-span-7"
+              initial={{ opacity: 0, y: 30, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 1, delay: 0.15, ease: EASE }}
+            >
+              <BrowserFrame key={project.id} src={project.Img} alt={project.Title} url={project.Link} eager />
+            </motion.div>
+          </div>
+
+          {(hasTech || hasFeatures) && (
+            <div className={`mt-20 grid gap-10 ${hasTech && hasFeatures ? "lg:grid-cols-2" : ""}`}>
+              {hasTech && (
+                <Reveal className="surface p-6 sm:p-8">
+                  <h2 className="flex items-center gap-3 font-display text-xl font-bold text-washi font-semiwide">
+                    <Code2 aria-hidden="true" className="h-5 w-5 text-shu-400" />
+                    {t.projectDetail.technologiesUsed}
+                  </h2>
+                  <ul className="mt-6 flex flex-wrap gap-2.5">
+                    {project.TechStack.map((tech, i) => (
+                      <li key={`${i}-${tech}`}>
+                        <TechBadge tech={tech} size="md" />
+                      </li>
+                    ))}
+                  </ul>
+                </Reveal>
+              )}
+
+              {hasFeatures && (
+                <Reveal className="surface p-6 sm:p-8" delay={0.08}>
+                  <h2 className="flex items-center gap-3 font-display text-xl font-bold text-washi font-semiwide">
+                    <Layers aria-hidden="true" className="h-5 w-5 text-shu-400" />
+                    {t.projectDetail.keyFeatures}
+                  </h2>
+                  <RevealGroup as="ul" className="mt-6 space-y-3" stagger={0.05}>
+                    {project.Features.map((feature, i) => (
+                      <RevealItem as="li" key={`${i}-${feature}`} className="flex items-start gap-3 text-washi-muted">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-shu-500/15 text-shu-400">
+                          <Check aria-hidden="true" className="h-3 w-3" />
+                        </span>
+                        {feature}
+                      </RevealItem>
+                    ))}
+                  </RevealGroup>
+                </Reveal>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

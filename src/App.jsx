@@ -1,31 +1,35 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect, lazy, Suspense } from "react";
-import AOS from "aos";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
+import { useState, useEffect, lazy, Suspense, startTransition } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
-import { LanguageProvider } from "./context/LanguageContext";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
+import { hasSeenWelcome } from "./utils/welcomeSession";
+import { useSmoothScroll, scrollToTarget } from "./lib/smoothScroll";
 import "./index.css";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import AnimatedBackground from "./components/Background";
+import ScrollProgress from "./components/ui/ScrollProgress";
+import ErrorBoundary, { SectionBoundary } from "./components/ErrorBoundary";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
-import AnimatedBackground from "./components/Background";
-import CursorTrail from "./components/CursorTrail";
-import { AnimatePresence } from "framer-motion";
-import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useLanguage } from "./context/LanguageContext";
-import { hasSeenWelcome } from "./utils/welcomeSession";
 
-// Admin pages are lazy: regular visitors never download the dashboard code.
-const Login = lazy(() => import("./Pages/Login"));
-const Dashboard = lazy(() => import("./Pages/Dashboard"));
+// Below-the-fold sections, the welcome screen and the admin pages load on demand.
 const SceneBackground = lazy(() => import("./components/SceneBackground"));
+const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
+const Experience = lazy(() => import("./Pages/Experience"));
+const WorksParallax = lazy(() => import("./Pages/WorksParallax"));
 const Portofolio = lazy(() => import("./Pages/Portofolio"));
+const Gallery = lazy(() => import("./Pages/Gallery"));
 const Testimonials = lazy(() => import("./Pages/Testimonials"));
 const ContactPage = lazy(() => import("./Pages/Contact"));
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
-const WelcomeScreen = lazy(() => import("./Pages/WelcomeScreen"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
+const Login = lazy(() => import("./Pages/Login"));
+const Dashboard = lazy(() => import("./Pages/Dashboard"));
+// Lazy as well: it imports the Supabase client, which visitors of the public pages should not wait for.
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
 // Mounts its children only once the browser has had a moment to breathe, so the heavy 3D scene
 // never competes with the first paint and the welcome screen for bandwidth and CPU.
@@ -49,139 +53,225 @@ const SkipLink = () => {
   const { t } = useLanguage();
   return (
     <a
-      href="#Home"
-      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-lg
-                 focus:bg-[#0a0705] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-amber-200
-                 focus:outline focus:outline-2 focus:outline-amber-300"
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10000] focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-washi"
     >
       {t.a11y.skipToContent}
     </a>
   );
 };
 
-const LandingPage = ({ showWelcome, setShowWelcome }) => {
-  // AOS measures every element's position once. Sections that fill in afterwards (project data,
-  // images) push everything below them down, so AOS keeps stale positions and the scroll
-  // animations fire late or never. Re-measure whenever the page height changes.
+// Past the hero, the 3D artwork dims so long-form content sits on a calm, readable field
+// (the scene itself keeps rendering in 3D underneath — only a DOM shade is added on top).
+const BackgroundDim = () => {
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, (y) => Math.min(y / (window.innerHeight * 0.9), 1) * 0.78);
+  return <motion.div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[1] bg-ink" style={{ opacity }} />;
+};
+
+// Opening a project and pressing Back should land the visitor where they left off, not at the top.
+// The position is saved when the landing page unmounts (an in-app navigation) and read on the next
+// Back/Forward ("POP") mount — a fresh visit or reload never has one, because unloading skips React cleanup.
+const SCROLL_KEY = "landingScrollY";
+const readSavedScroll = () => {
+  try {
+    return Number(sessionStorage.getItem(SCROLL_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+};
+
+function useRestoreScrollOnBack(savedY) {
   useEffect(() => {
-    if (showWelcome) return;
-    let timer;
-    const observer = new ResizeObserver(() => {
-      clearTimeout(timer);
-      timer = setTimeout(() => AOS.refreshHard(), 120);
-    });
-    observer.observe(document.body);
+    try {
+      sessionStorage.removeItem(SCROLL_KEY);
+    } catch {
+      /* storage blocked — nothing to restore */
+    }
+
+    let frame;
+    if (savedY > 0) {
+      const deadline = performance.now() + 4000;
+      const restore = () => {
+        const reachable = document.documentElement.scrollHeight - window.innerHeight >= savedY;
+        if (reachable || performance.now() > deadline) window.scrollTo(0, savedY);
+        else frame = requestAnimationFrame(restore);
+      };
+      restore();
+    }
+
     return () => {
-      clearTimeout(timer);
-      observer.disconnect();
+      cancelAnimationFrame(frame);
+      try {
+        sessionStorage.setItem(SCROLL_KEY, String(Math.round(window.scrollY)));
+      } catch {
+        /* ignore */
+      }
     };
-  }, [showWelcome]);
+    // Mount/unmount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+// The sections below About are rendered after the first paint, as a low-priority transition: React
+// splits that work into small slices, so it never blocks the intro animation or the first scroll
+// (one long render of every section at start-up was the site's biggest main-thread task).
+// They mount at once if the visitor scrolls, taps or types — or when a #section link/Back needs them.
+function useDeferredMount(immediate) {
+  const [ready, setReady] = useState(immediate);
+  useEffect(() => {
+    if (ready) return;
+    const events = ["scroll", "pointerdown", "keydown", "touchstart"];
+    const go = () => startTransition(() => setReady(true));
+    const idle = "requestIdleCallback" in window ? window.requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 300);
+    events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
+    return () => {
+      if ("requestIdleCallback" in window) window.cancelIdleCallback(idle);
+      else clearTimeout(idle);
+      events.forEach((e) => window.removeEventListener(e, go));
+    };
+  }, [ready]);
+  return ready;
+}
+
+const LandingPage = () => {
+  // Shown once per session: returning visitors and reloads go straight to the site.
+  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome());
+  const [revealed, setRevealed] = useState(!showWelcome);
+  const { hash } = useLocation();
+  const navigationType = useNavigationType();
+  const [savedY] = useState(() => (navigationType === "POP" && !hash ? readSavedScroll() : 0));
+  const sectionsReady = useDeferredMount(Boolean(hash) || savedY > 0);
+  useSmoothScroll();
+  useRestoreScrollOnBack(savedY);
+
+  // Arriving from another page with a #section (e.g. the footer links on a project page):
+  // wait until that lazily loaded section exists, then glide to it.
+  useEffect(() => {
+    if (!hash || showWelcome) return;
+    let frame;
+    const deadline = performance.now() + 4000;
+    const tryScroll = () => {
+      if (document.querySelector(hash)) setTimeout(() => scrollToTarget(hash), 150);
+      else if (performance.now() < deadline) frame = requestAnimationFrame(tryScroll);
+    };
+    tryScroll();
+    return () => cancelAnimationFrame(frame);
+  }, [hash, showWelcome]);
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        {showWelcome && (
-          <Suspense fallback={null}>
-            <WelcomeScreen onLoadingComplete={() => setShowWelcome(false)} />
-          </Suspense>
-        )}
-      </AnimatePresence>
-
-      {!showWelcome && (
-        <>
-          <SkipLink />
-          <Navbar />
-      
-          <Home />
-          <About />
-          <Suspense fallback={<div className="h-20" />}>
-            <Portofolio />
-            <Testimonials />
-            <ContactPage />
-          </Suspense>
-          <Footer />
-        </>
+      {showWelcome && (
+        <Suspense fallback={<div className="fixed inset-0 z-[100] bg-[#050404]" />}>
+          <WelcomeScreen onReveal={() => setRevealed(true)} onLoadingComplete={() => setShowWelcome(false)} />
+        </Suspense>
       )}
+
+      {/* While the intro covers the screen, the page behind it can't be tabbed into or read out. */}
+      <div {...(showWelcome ? { inert: "" } : {})}>
+        <SkipLink />
+        <ScrollProgress />
+        <BackgroundDim />
+        <Navbar />
+
+        <main id="main" className="relative z-10">
+          <Home ready={revealed} />
+          <About />
+          {sectionsReady ? (
+            <SectionBoundary>
+              <Suspense fallback={<div className="h-screen" />}>
+                <Experience />
+                <WorksParallax />
+                <Portofolio />
+                <Gallery />
+                <Testimonials />
+                <ContactPage />
+              </Suspense>
+            </SectionBoundary>
+          ) : (
+            <div className="h-screen" />
+          )}
+        </main>
+        <Footer />
+      </div>
     </>
   );
 };
 
-const ProjectPageLayout = () => (
-  <>
-    <Suspense fallback={<div className="min-h-screen" />}>
-      <ProjectDetails />
-    </Suspense>
-    <Footer />
-  </>
-);
+const ProjectPageLayout = () => {
+  useSmoothScroll();
+  return (
+    <>
+      <ScrollProgress />
+      <main className="relative z-10">
+        <ErrorBoundary>
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <ProjectDetails />
+          </Suspense>
+        </ErrorBoundary>
+      </main>
+      <Footer />
+    </>
+  );
+};
 
 function App() {
-  // Shown once per session: returning visitors and reloads go straight to the site.
-  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome());
-
   return (
-    
-<HelmetProvider>
-    <LanguageProvider>
-      <div>
-  <AnimatedBackground />
-  <Analytics />
-  <CursorTrail />
-      <BrowserRouter>
-        <WhenIdle>
-          <Suspense fallback={null}>
-            <SceneBackground />
-          </Suspense>
-        </WhenIdle>
-        <Routes>
-          {/* PUBLIC */}
-          <Route
-            path="/"
-            element={
-              <LandingPage
-                showWelcome={showWelcome}
-                setShowWelcome={setShowWelcome}
+    <HelmetProvider>
+      <LanguageProvider>
+        <AnimatedBackground />
+        <Analytics />
+        <div className="grain" aria-hidden="true" />
+        <BrowserRouter>
+          {/* If the 3D chunk ever fails to load, the site simply keeps its static fallback background */}
+          <ErrorBoundary silent>
+            <WhenIdle>
+              <Suspense fallback={null}>
+                <SceneBackground />
+              </Suspense>
+            </WhenIdle>
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <Routes>
+              {/* PUBLIC */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/project/:slug" element={<ProjectPageLayout />} />
+
+              {/* AUTH */}
+              <Route
+                path="/login"
+                element={
+                  <Suspense fallback={null}>
+                    <Login />
+                  </Suspense>
+                }
               />
-            }
-          />
 
-          <Route path="/project/:slug" element={<ProjectPageLayout />} />
+              {/* ADMIN (PROTECTED) */}
+              <Route
+                path="/dashboard/*"
+                element={
+                  <Suspense fallback={null}>
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  </Suspense>
+                }
+              />
 
-          {/* AUTH */}
-          <Route
-            path="/login"
-            element={
-              <Suspense fallback={null}>
-                <Login />
-              </Suspense>
-            }
-          />
-
-          {/* ADMIN (PROTECTED) */}
-          <Route
-            path="/dashboard/*"
-            element={
-              <ProtectedRoute>
-                <Suspense fallback={null}>
-                  <Dashboard />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <Suspense fallback={null}>
-                <NotFoundPage />
-              </Suspense>
-            }
-          />
-</Routes>
-      </BrowserRouter>
-      </div>
-    </LanguageProvider>
+              {/* 404 */}
+              <Route
+                path="*"
+                element={
+                  <Suspense fallback={null}>
+                    <NotFoundPage />
+                  </Suspense>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </LanguageProvider>
     </HelmetProvider>
   );
 }

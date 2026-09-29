@@ -1,212 +1,309 @@
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { scrollToTarget, useScrollLock } from "../lib/smoothScroll";
+import { cn } from "../lib/utils";
+import { SITE, SOCIALS } from "../config/site";
+import MenuToggleIcon from "./ui/MenuToggleIcon";
 
-const SECTION_HREFS = ["#Home", "#About", "#Portofolio", "#Testimonials", "#Contact"];
-
-const LanguageToggle = ({ className = "" }) => {
-    const { lang, toggleLang } = useLanguage();
-    return (
-        <button
-            onClick={toggleLang}
-            aria-label="Toggle language"
-            className={`relative flex items-center gap-1 px-1 py-1 rounded-full border border-white/15 bg-white/5 text-xs font-semibold ${className}`}
-        >
-            <span
-                className={`px-2 py-1 rounded-full transition-all duration-300 ${
-                    lang === "id"
-                        ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] text-white"
-                        : "text-[#fde8c8]"
-                }`}
-            >
-                ID
-            </span>
-            <span
-                className={`px-2 py-1 rounded-full transition-all duration-300 ${
-                    lang === "en"
-                        ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] text-white"
-                        : "text-[#fde8c8]"
-                }`}
-            >
-                EN
-            </span>
-        </button>
-    );
+const SECTIONS = ["About", "Experience", "Portofolio", "Gallery", "Testimonials", "Contact"];
+const LABEL_KEY = {
+  About: "about",
+  Experience: "experience",
+  Portofolio: "portfolio",
+  Gallery: "gallery",
+  Testimonials: "testimonials",
+  Contact: "contact",
 };
 
-const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [activeSection, setActiveSection] = useState("Home");
-    const { t } = useLanguage();
-
-    const navItems = [
-        { href: "#Home", label: t.nav.home },
-        { href: "#About", label: t.nav.about },
-        { href: "#Portofolio", label: t.nav.portfolio },
-        { href: "#Testimonials", label: t.nav.testimonials },
-        { href: "#Contact", label: t.nav.contact },
-    ];
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-            // Only the hrefs matter here (they never change with the language), so this effect doesn't depend on navItems.
-            const sections = SECTION_HREFS.map(href => {
-                const section = document.querySelector(href);
-                if (section) {
-                    return {
-                        id: href.replace("#", ""),
-                        offset: section.offsetTop - 550,
-                        height: section.offsetHeight
-                    };
-                }
-                return null;
-            }).filter(Boolean);
-
-            const currentPosition = window.scrollY;
-            const active = sections.find(section => 
-                currentPosition >= section.offset && 
-                currentPosition < section.offset + section.height
-            );
-
-            if (active) {
-                setActiveSection(active.id);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        handleScroll();
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-    }, [isOpen]);
-
-    const scrollToSection = (e, href) => {
-        e.preventDefault();
-        const section = document.querySelector(href);
-        if (section) {
-            const top = section.offsetTop - 100;
-            window.scrollTo({
-                top: top,
-                behavior: "smooth"
-            });
-        }
-        setIsOpen(false);
+// Sections appear only once their data exists, so the menu lists just the ones currently on the page.
+function usePresentSections(ids) {
+  const [present, setPresent] = useState([]);
+  useEffect(() => {
+    let frame;
+    const check = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const next = ids.filter((id) => document.getElementById(id));
+        setPresent((prev) => (prev.join() === next.join() ? prev : next));
+      });
     };
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [ids]);
+  return present;
+}
 
-    return (
-        <nav
-            className={`fixed w-full top-0 z-50 transition-all duration-500 transform-gpu will-change-transform isolate ${
-                isOpen
-                    ? "bg-[#0a0705]"
-                    : scrolled
-                    ? "bg-[#0a0705]/50 backdrop-blur-xl"
-                    : "bg-transparent"
-            }`}
-        >
-            <div className="mx-auto px-[5%] sm:px-[5%] lg:px-[10%]">
-                <div className="flex items-center justify-between h-16">
-                    {/* Logo */}
-                    <div className="flex-shrink-0">
-                        <a
-                            href="#Home"
-                            onClick={(e) => scrollToSection(e, "#Home")}
-                            className="text-xl font-bold bg-gradient-to-r from-[#dc2626] to-[#fbbf24] bg-clip-text text-transparent"
-                        >
-                            Julian
-                        </a>
-                    </div>
-        
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-8">
-                        <div className="flex items-center space-x-8">
-                            {navItems.map((item) => (
-                                <a
-                                    key={item.label}
-                                    href={item.href}
-                                    onClick={(e) => scrollToSection(e, item.href)}
-                                    className="group relative px-1 py-2 text-sm font-medium"
-                                >
-                                    <span
-                                        className={`relative z-10 transition-colors duration-300 ${
-                                            activeSection === item.href.substring(1)
-                                                ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] bg-clip-text text-transparent font-semibold"
-                                                : "text-[#fde8c8] group-hover:text-white"
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </span>
-                                    <span
-                                        className={`absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] transform origin-left transition-transform duration-300 ${
-                                            activeSection === item.href.substring(1)
-                                                ? "scale-x-100"
-                                                : "scale-x-0 group-hover:scale-x-100"
-                                        }`}
-                                    />
-                                </a>
-                            ))}
-                        </div>
-                        <LanguageToggle />
-                    </div>
-
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center gap-3">
-                        <LanguageToggle />
-                        <button
-                            onClick={() => setIsOpen(!isOpen)}
-                            className={`relative p-2 text-[#fde8c8] hover:text-white transition-transform duration-300 ease-in-out transform ${
-                                isOpen ? "rotate-90 scale-125" : "rotate-0 scale-100"
-                            }`}
-                        >
-                            {isOpen ? (
-                                <X className="w-6 h-6" />
-                            ) : (
-                                <Menu className="w-6 h-6" />
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        
-            {/* Mobile Menu */}
-            <div
-                className={`md:hidden transition-all duration-300 ease-in-out ${
-                    isOpen
-                        ? "max-h-screen opacity-100"
-                        : "max-h-0 opacity-0 overflow-hidden"
-                }`}
-            >
-                <div className="px-4 py-6 space-y-4">
-                    {navItems.map((item, index) => (
-                        <a
-                            key={item.label}
-                            href={item.href}
-                            onClick={(e) => scrollToSection(e, item.href)}
-                            className={`block px-4 py-3 text-lg font-medium transition-all duration-300 ease ${
-                                activeSection === item.href.substring(1)
-                                    ? "bg-gradient-to-r from-[#fbbf24] to-[#dc2626] bg-clip-text text-transparent font-semibold"
-                                    : "text-[#fde8c8] hover:text-white"
-                            }`}
-                            style={{
-                                transitionDelay: `${index * 100}ms`,
-                                transform: isOpen ? "translateX(0)" : "translateX(50px)",
-                                opacity: isOpen ? 1 : 0,
-                            }}
-                        >
-                            {item.label}
-                        </a>
-                    ))}
-                </div>
-            </div>
-        </nav>
+// The section crossing the middle of the viewport is the active one.
+function useActiveSection(ids) {
+  const [active, setActive] = useState(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => entry.isIntersecting && setActive(entry.target.id)),
+      { rootMargin: "-45% 0px -50% 0px" }
     );
-};
+    ["Home", ...ids].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
 
-export default Navbar;
+export function Hanko({ className }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "grid h-8 w-8 shrink-0 place-items-center rounded-[6px] bg-shu-500 font-kanji text-base font-extrabold text-white shadow-[0_6px_20px_-6px_rgba(232,71,47,0.8)]",
+        className
+      )}
+    >
+      侍
+    </span>
+  );
+}
+
+export function LanguageToggle({ className }) {
+  const { lang, setLang, t } = useLanguage();
+  return (
+    <div
+      role="group"
+      aria-label={t.nav.language}
+      className={cn("relative flex items-center rounded-full border border-white/10 bg-white/[0.03] p-1 text-xs font-semibold", className)}
+    >
+      {["id", "en"].map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => setLang(code)}
+          aria-pressed={lang === code}
+          lang={code}
+          className={cn(
+            "relative z-10 grid h-8 min-w-[2.25rem] place-items-center rounded-full px-2.5 uppercase transition-colors duration-300",
+            lang === code ? "text-white" : "text-washi-subtle hover:text-washi"
+          )}
+        >
+          {lang === code && (
+            <motion.span
+              layoutId="lang-pill"
+              className="absolute inset-0 -z-10 rounded-full bg-shu-600"
+              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+            />
+          )}
+          {code}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function Navbar() {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const present = usePresentSections(SECTIONS);
+  const active = useActiveSection(present);
+  const toggleRef = useRef(null);
+  const menuRef = useRef(null);
+  useScrollLock(open);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // The menu behaves like a dialog: Esc closes it, Tab stays inside it (the toggle button included),
+  // and focus returns to the toggle when it closes.
+  useEffect(() => {
+    if (!open) return;
+    const toggle = toggleRef.current;
+    menuRef.current?.querySelector("a")?.focus();
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Tab" || !menuRef.current) return;
+      const focusables = [toggle, ...menuRef.current.querySelectorAll("a, button")];
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      toggle?.focus();
+    };
+  }, [open]);
+
+  // Close the menu if the window grows past the breakpoint where the desktop links appear.
+  useEffect(() => {
+    if (!open) return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e) => e.matches && setOpen(false);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [open]);
+
+  const go = (e, target) => {
+    e.preventDefault();
+    setOpen(false);
+    // Let the menu start closing (and scrolling unlock) before the page glides away.
+    requestAnimationFrame(() => scrollToTarget(target));
+  };
+
+  const items = present.map((id) => ({ id, href: `#${id}`, label: t.nav[LABEL_KEY[id]] }));
+
+  return (
+    <>
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div
+          className={cn(
+            "mx-auto flex items-center justify-between transition-all duration-500 ease-out",
+            scrolled || open
+              ? "mt-3 w-[calc(100%-1.5rem)] max-w-5xl rounded-full border border-white/10 bg-ink/75 py-2 pl-3 pr-2 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+              : "w-full max-w-site border border-transparent px-5 py-5 sm:px-8 lg:px-12"
+          )}
+        >
+          <a href="#Home" onClick={(e) => go(e, 0)} className="flex items-center gap-2.5 rounded-full pr-2" title={SITE.name}>
+            <Hanko />
+            <span className="font-display text-lg font-bold tracking-tight text-washi font-semiwide">
+              {SITE.shortName}
+              <span className="text-shu-500">.</span>
+            </span>
+          </a>
+
+          <LayoutGroup id="nav">
+            <nav aria-label="Primary" className="hidden lg:block">
+              <ul className="flex items-center gap-1">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={item.href}
+                      onClick={(e) => go(e, item.href)}
+                      aria-current={active === item.id ? "true" : undefined}
+                      className={cn(
+                        "relative block rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300",
+                        active === item.id ? "text-washi" : "text-washi-muted hover:text-washi"
+                      )}
+                    >
+                      {active === item.id && (
+                        <motion.span
+                          layoutId="nav-pill"
+                          className="absolute inset-0 -z-10 rounded-full border border-white/10 bg-white/[0.07]"
+                          transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                        />
+                      )}
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </LayoutGroup>
+
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <a
+              href="#Contact"
+              onClick={(e) => go(e, "#Contact")}
+              className="btn-primary hidden h-10 px-5 md:inline-flex"
+            >
+              {t.nav.hire}
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-washi transition-colors hover:border-white/25 lg:hidden"
+            >
+              <MenuToggleIcon open={open} className="h-6 w-6" duration={500} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={menuRef}
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            data-lenis-prevent
+            className="fixed inset-0 z-40 flex flex-col overflow-y-auto overscroll-contain bg-ink/95 px-6 pb-10 pt-28 backdrop-blur-2xl lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.3, delay: 0.1 } }}
+          >
+            <span aria-hidden="true" className="pointer-events-none absolute -right-6 bottom-24 font-kanji text-[14rem] leading-none text-white/[0.03]">
+              道
+            </span>
+            <nav aria-label="Mobile" className="flex-1">
+              <ul className="space-y-2">
+                {items.map((item, i) => (
+                  <motion.li
+                    key={item.id}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0, transition: { delay: 0.05 + i * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
+                    exit={{ opacity: 0, y: -12, transition: { duration: 0.2 } }}
+                  >
+                    <a
+                      href={item.href}
+                      onClick={(e) => go(e, item.href)}
+                      className={cn(
+                        "flex items-baseline gap-4 py-2 font-display text-4xl font-bold tracking-tight font-semiwide sm:text-5xl",
+                        active === item.id ? "text-shu-400" : "text-washi"
+                      )}
+                    >
+                      <span className="text-xs font-medium tabular-nums text-washi-subtle">{String(i + 1).padStart(2, "0")}</span>
+                      {item.label}
+                    </a>
+                  </motion.li>
+                ))}
+              </ul>
+            </nav>
+
+            <motion.div
+              className="space-y-4 border-t border-white/10 pt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { delay: 0.35 } }}
+              exit={{ opacity: 0 }}
+            >
+              <a href={`mailto:${SITE.email}`} className="block break-all text-sm text-washi-muted hover:text-washi">
+                {SITE.email}
+              </a>
+              <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                {SOCIALS.map((s) => (
+                  <li key={s.id}>
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-washi hover:text-shu-400">
+                      {s.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}

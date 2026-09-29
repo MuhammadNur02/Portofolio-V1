@@ -11,7 +11,7 @@ const existsInPublic = (urlPath) => fs.existsSync(path.join(root, "public", deco
 
 const SITE = "https://portofolio-v1-one-gamma.vercel.app";
 // Components that no page renders (their assets may be gone). Remove an entry once the file is deleted.
-const UNUSED_COMPONENTS = ["src/components/PresenceWidget.jsx"];
+const UNUSED_COMPONENTS = [];
 
 const walk = (dir, out = []) => {
   for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
