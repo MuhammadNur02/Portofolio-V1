@@ -1,8 +1,15 @@
 // ─── EVERYTHING PERSONAL LIVES HERE ─────────────────────────────────────────
 // Edit this one file to update your name, links, CV and availability across the whole site.
 
+// Before changing `url`: renaming the Vercel PROJECT does not by itself move the live domain — the
+// short "<name>.vercel.app" you want is a name shared by every Vercel user on earth, so it's usually
+// already taken by someone else's unrelated project (this happened once: "julian.vercel.app" turned
+// out to belong to a stranger's game). Check the "Domains" panel on the Vercel project page — whatever
+// is listed there is what's actually live — before updating this value (and public/robots.txt,
+// scripts/generate-sitemap.mjs, index.html's meta tags, public/og-image.jpg, and README.md, which all
+// hardcode the same URL and need to change together).
 export const SITE = {
-  url: "https://julian.vercel.app",
+  url: "https://portofolio-v1-one-gamma.vercel.app",
   name: "Muhammad Nurrahman Juliansyah",
   shortName: "Julian",
   role: "AI-Assisted Fullstack Developer",
