@@ -9,7 +9,7 @@
 // scripts/generate-sitemap.mjs, index.html's meta tags, public/og-image.jpg, and README.md, which all
 // hardcode the same URL and need to change together).
 export const SITE = {
-  url: "https://portofolio-v1-one-gamma.vercel.app",
+  url: "https://juliansyah.vercel.app",
   name: "Muhammad Nurrahman Juliansyah",
   shortName: "Julian",
   role: "AI-Assisted Fullstack Developer",

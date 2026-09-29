@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const SITE_URL = "https://portofolio-v1-one-gamma.vercel.app";
+const SITE_URL = "https://juliansyah.vercel.app";
 
 // Mirrors src/utils/slug.js — kept in sync manually since this script runs outside Vite/Babel and
 // can't import project source directly without extra build tooling.
