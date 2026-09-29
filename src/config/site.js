@@ -2,7 +2,7 @@
 // Edit this one file to update your name, links, CV and availability across the whole site.
 
 export const SITE = {
-  url: "https://portofolio-v1-one-gamma.vercel.app",
+  url: "https://julian.vercel.app",
   name: "Muhammad Nurrahman Juliansyah",
   shortName: "Julian",
   role: "AI-Assisted Fullstack Developer",
