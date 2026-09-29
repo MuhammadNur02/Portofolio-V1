@@ -24,11 +24,15 @@ const enter = (ready, delay, reduce) => ({
 
 function HeadlineLine({ children, ready, delay, reduce, className }) {
   return (
-    // Extra room above/below the glyphs: this box also drives the reveal animation (overflow-hidden
-    // masks the slide-up), and the display font's bold/wide cut can overshoot a tight line-height
-    // without it. The hero content is centered as a whole block, so the couple extra pixels this adds
-    // are absorbed automatically — nothing else needs to shift to compensate.
-    <span className="block overflow-hidden pb-[0.14em] pt-[0.04em]">
+    // Extra room around the glyphs: this box also drives the reveal animation (overflow-hidden masks
+    // the slide-up), and two things can paint outside the text's own layout box without it — the
+    // display font's bold/wide cut can overshoot a tight line-height, and -webkit-text-stroke (used by
+    // "DEVELOPER"'s outline effect) extends past the glyph edge without the browser counting it toward
+    // the box's width, so the last letter's stroke could get clipped on the right. pr keeps the left
+    // edge flush with the badge/paragraph/buttons above and below (they aren't inset the same way).
+    // The hero content is centered as a whole block, so the extra pixels this adds are absorbed
+    // automatically — nothing else needs to shift to compensate.
+    <span className="block overflow-hidden pb-[0.14em] pr-2 pt-[0.04em]">
       <motion.span
         // data-text feeds the ::before/::after outline layers in .text-outline-shu (see index.css) —
         // harmless on lines that don't use that class.
@@ -129,7 +133,11 @@ const Home = ({ ready = true }) => {
               {t.hero.greeting}
             </motion.p>
 
-            <h1 className="mt-5 font-display text-[11.5vw] font-extrabold uppercase leading-[0.88] tracking-tight text-washi font-semiwide sm:text-[8.2vw] sm:font-wide lg:text-[7vw] 2xl:text-[7.5rem]">
+            {/* The 2xl cap must land at or below what 7vw already reaches at exactly 1536px (~107px) —
+                7.5rem (120px) used to jump ABOVE that, which is what pushed "DEVELOPER" past the
+                896px-wide column on desktop screens ≥1536px wide. 6.5rem stays a hair under it, so the
+                size keeps easing off past that breakpoint instead of suddenly growing. */}
+            <h1 className="mt-5 font-display text-[11.5vw] font-extrabold uppercase leading-[0.88] tracking-tight text-washi font-semiwide sm:text-[8.2vw] sm:font-wide lg:text-[7vw] 2xl:text-[6.5rem]">
               <span className="sr-only">{SITE.name} — </span>
               <HeadlineLine ready={ready} delay={0.3} reduce={reduce} className="text-shine">
                 {t.hero.titleA}
