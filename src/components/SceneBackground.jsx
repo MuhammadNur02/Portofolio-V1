@@ -18,8 +18,8 @@ const BACKDROP_URLS = { desktop: "/Samurai-desktop.webp", mobile: "/Samurai-mobi
 //          moves. Set endY = y to make it static.
 //   zoom : 1 = exact fit. Above 1 the image is enlarged a little, which gives it extra room to glide
 //          — needed on phones, where the image already fills the full height at zoom 1.
-// Keep endY around 0.85 or lower and x around 0.55+ on mobile so the "Let's Enhance.io" watermark
-// baked into the image's bottom-left corner stays out of view.
+// (Both renditions were cropped to 90% of their original height to remove an upscaler watermark that
+// sat in the bottom-left corner, so any focus value is safe to use.)
 const BACKDROP_FOCUS = {
   desktop: { x: 0.5, y: 0.6, endY: 0.85, zoom: 1 },
   mobile: { x: 0.55, y: 0.15, endY: 0.85, zoom: 1.25 },

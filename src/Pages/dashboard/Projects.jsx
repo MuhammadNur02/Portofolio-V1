@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
+import { compressImage, safeFileName } from "../../lib/compressImage";
 import {
   Plus,
   Trash2,
@@ -361,9 +362,14 @@ export default function Projects() {
     fetchProjects();
   }, []);
 
-  const uploadImage = async (f) => {
-    const fileName = `${Date.now()}-${f.name}`;
-    await supabase.storage.from("project-images").upload(fileName, f);
+  const uploadImage = async (original) => {
+    const f = await compressImage(original);
+    const fileName = `${Date.now()}-${safeFileName(f.name)}`;
+    const { error } = await supabase.storage.from("project-images").upload(fileName, f);
+    if (error) {
+      alert(`Image upload failed: ${error.message}`);
+      return null;
+    }
     const { data } = supabase.storage
       .from("project-images")
       .getPublicUrl(fileName);
@@ -373,7 +379,10 @@ export default function Projects() {
   const handleCreate = async (form, file) => {
     setUploading(true);
     let imgUrl = "";
-    if (file) imgUrl = await uploadImage(file);
+    if (file) {
+      imgUrl = await uploadImage(file);
+      if (!imgUrl) return setUploading(false);
+    }
     await supabase.from("projects").insert({
       Title: form.Title,
       Description: form.Description,
@@ -395,7 +404,10 @@ export default function Projects() {
   const handleEdit = async (form, file) => {
     setUploading(true);
     let imgUrl = editProject.Img || "";
-    if (file) imgUrl = await uploadImage(file);
+    if (file) {
+      imgUrl = await uploadImage(file);
+      if (!imgUrl) return setUploading(false);
+    }
     await supabase
       .from("projects")
       .update({

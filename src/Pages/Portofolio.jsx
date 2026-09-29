@@ -1,392 +1,276 @@
-import { useEffect, useState, useCallback } from "react";
-
-import { supabase } from "../supabase"; 
-
-import PropTypes from "prop-types";
-import SwipeableViews from "react-swipeable-views";
-import { useTheme } from "@mui/material/styles";
-import AppBar from "@mui/material/AppBar";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import CardProject from "../components/CardProject";
-import TechStackIcon from "../components/TechStackIcon";
-import AOS from "aos";
-import "aos/dist/aos.css";
-import Certificate from "../components/Certificate";
-import { Code, Award, Boxes } from "lucide-react";
+import { memo, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, ArrowUpRight, Award, ChevronDown, Code2, Maximize2 } from "lucide-react";
+import { FaGithub } from "react-icons/fa6";
 import { useLanguage } from "../context/LanguageContext";
+import { useCollection } from "../lib/useCollection";
+import { toSlug } from "../utils/slug";
+import { cn } from "../lib/utils";
+import SectionHeading from "../components/ui/SectionHeading";
+import Reveal, { RevealGroup, RevealItem } from "../components/ui/Reveal";
+import BrowserFrame from "../components/ui/BrowserFrame";
+import TechBadge from "../components/ui/TechBadge";
+import Lightbox from "../components/ui/Lightbox";
 
+const INITIAL_PROJECTS = 6;
+const INITIAL_CERTIFICATES = 8;
+const MAX_BADGES = 6;
 
-const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }) => (
-  <button
-    onClick={onClick}
-    className="
-      px-3 py-1.5
-      text-stone-300 
-      hover:text-white 
-      text-sm 
-      font-medium 
-      transition-all 
-      duration-300 
-      ease-in-out
-      flex 
-      items-center 
-      gap-2
-      bg-white/5 
-      hover:bg-white/10
-      rounded-md
-      border 
-      border-white/10
-      hover:border-white/20
-      backdrop-blur-sm
-      group
-      relative
-      overflow-hidden
-    "
-  >
-    <span className="relative z-10 flex items-center gap-2">
-      {isShowingMore ? seeLessLabel : seeMoreLabel}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={`
-          transition-transform 
-          duration-300 
-          ${isShowingMore ? "group-hover:-transtone-y-0.5" : "group-hover:transtone-y-0.5"}
-        `}
-      >
-        <polyline points={isShowingMore ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}></polyline>
-      </svg>
-    </span>
-    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500/50 transition-all duration-300 group-hover:w-full"></span>
-  </button>
-);
+const isPublicRepo = (github) => typeof github === "string" && /^https?:\/\//.test(github);
 
+function ProjectRow({ project, index, total, t }) {
+  const flipped = index % 2 === 1;
+  const slug = toSlug(project.Title);
+  const tech = Array.isArray(project.TechStack) ? project.TechStack : [];
+  const extra = tech.length - MAX_BADGES;
 
-function TabPanel({ children, value, index, ...other }) {
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: { xs: 1, sm: 3 } }}>
-          <Typography component="div">{children}</Typography>
-        </Box>
-      )}
+    <Reveal as="article" className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14" amount={0.25}>
+      <Link
+        to={`/project/${slug}`}
+        aria-label={`${t.portfolio.caseStudy}: ${project.Title}`}
+        className={cn("group relative block lg:col-span-7", flipped && "lg:order-2")}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute -inset-6 rounded-[36px] bg-[radial-gradient(ellipse_at_center,rgba(232,71,47,0.18),transparent_70%)] opacity-0 blur-2xl transition-opacity duration-700 group-hover:opacity-100"
+        />
+        <BrowserFrame
+          src={project.Img}
+          alt={project.Title}
+          url={project.Link}
+          className="relative transition-transform duration-700 ease-out group-hover:-translate-y-1.5"
+          imgClassName="transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04]"
+        />
+      </Link>
+
+      <div className={cn("lg:col-span-5", flipped && "lg:order-1")}>
+        <p className="flex items-center gap-3 font-display text-sm font-semibold tabular-nums text-shu-400">
+          {String(index + 1).padStart(2, "0")}
+          <span aria-hidden="true" className="h-px w-8 bg-white/15" />
+          <span className="text-washi-subtle">{String(total).padStart(2, "0")}</span>
+        </p>
+        <h3 className="mt-4 font-display text-2xl font-bold leading-tight tracking-tight text-washi text-balance font-semiwide sm:text-3xl">
+          <Link to={`/project/${slug}`} className="transition-colors hover:text-shu-300">
+            {project.Title}
+          </Link>
+        </h3>
+        {project.Description && (
+          <p className="mt-4 line-clamp-4 leading-relaxed text-washi-muted text-pretty">{project.Description}</p>
+        )}
+
+        {tech.length > 0 && (
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {tech.slice(0, MAX_BADGES).map((name, i) => (
+              <li key={`${i}-${name}`}>
+                <TechBadge tech={name} />
+              </li>
+            ))}
+            {extra > 0 && (
+              <li className="inline-flex items-center rounded-full border border-dashed border-white/15 px-3 py-1 text-xs text-washi-subtle">
+                +{extra}
+              </li>
+            )}
+          </ul>
+        )}
+
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
+          <Link to={`/project/${slug}`} className="group inline-flex items-center gap-2 text-washi hover:text-shu-300">
+            {t.portfolio.caseStudy}
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+          {project.Link && (
+            <a
+              href={project.Link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-1.5 text-washi-muted hover:text-washi"
+            >
+              {t.portfolio.liveDemo}
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </a>
+          )}
+          {isPublicRepo(project.Github) && (
+            <a
+              href={project.Github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-washi-muted hover:text-washi"
+            >
+              <FaGithub className="h-4 w-4" />
+              {t.portfolio.source}
+            </a>
+          )}
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function ToggleMore({ expanded, onClick, t }) {
+  return (
+    <div className="mt-14 flex justify-center">
+      <button type="button" onClick={onClick} aria-expanded={expanded} className="btn-ghost group">
+        {expanded ? t.portfolio.seeLess : t.portfolio.seeMore}
+        <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", expanded && "rotate-180")} />
+      </button>
     </div>
   );
 }
 
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
-
-function a11yProps(index) {
-  return {
-    id: `full-width-tab-${index}`,
-    "aria-controls": `full-width-tabpanel-${index}`,
-  };
-}
-
-// techStacks tetap sama
-const techStacks = [
-  { icon: "html.svg", language: "HTML" },
-  { icon: "css.svg", language: "CSS" },
-  { icon: "javascript.svg", language: "JavaScript" },
-  { icon: "tailwind.svg", language: "Tailwind CSS" },
-  { icon: "reactjs.svg", language: "ReactJS" },
-  { icon: "vite.svg", language: "Vite" },
-  { icon: "nodejs.svg", language: "Node JS" },
-  { icon: "bootstrap.svg", language: "Bootstrap" },
-  { icon: "firebase.svg", language: "Firebase" },
-  { icon: "MUI.svg", language: "Material UI" },
-  { icon: "vercel.svg", language: "Vercel" },
-  { icon: "SweetAlert.svg", language: "SweetAlert2" },
-];
-
-export default function FullWidthTabs() {
+const Portfolio = () => {
   const { t } = useLanguage();
-  const theme = useTheme();
-  const [value, setValue] = useState(0);
-  const [projects, setProjects] = useState([]);
-  const [certificates, setCertificates] = useState([]);
-  const [showAllProjects, setShowAllProjects] = useState(false);
-  const [showAllCertificates, setShowAllCertificates] = useState(false);
-  const isMobile = window.innerWidth < 768;
-  const initialItems = isMobile ? 4 : 6;
+  const { data: projects, loading } = useCollection("projects");
+  const { data: certificates } = useCollection("certificates");
+  const [tab, setTab] = useState("projects");
+  const [allProjects, setAllProjects] = useState(false);
+  const [allCertificates, setAllCertificates] = useState(false);
+  const [viewer, setViewer] = useState(null);
 
-  useEffect(() => {
-    AOS.init({
-      once: false,
-    });
-  }, []);
+  const tabs = [
+    { id: "projects", label: t.portfolio.tabProjects, icon: Code2, count: projects.length },
+    { id: "certificates", label: t.portfolio.tabCertificates, icon: Award, count: certificates.length },
+  ];
 
-
-  const fetchData = useCallback(async () => {
-    try {
-      // Mengambil data dari Supabase secara paralel
-      const [projectsResponse, certificatesResponse] = await Promise.all([
-        supabase.from("projects").select("*").order('id', { ascending: false }),
-        supabase.from("certificates").select("*").order('id', { ascending: false }), 
-      ]);
-
-      // Error handling untuk setiap request
-      if (projectsResponse.error) throw projectsResponse.error;
-      if (certificatesResponse.error) throw certificatesResponse.error;
-
-      // Supabase mengembalikan data dalam properti 'data'
-      const projectData = projectsResponse.data || [];
-      const certificateData = certificatesResponse.data || [];
-
-      setProjects(projectData);
-      setCertificates(certificateData);
-
-      // Store in localStorage (fungsionalitas ini tetap dipertahankan)
-      localStorage.setItem("projects", JSON.stringify(projectData));
-      localStorage.setItem("certificates", JSON.stringify(certificateData));
-      
-      // Dispatch custom event to notify other components (like About)
-      window.dispatchEvent(new Event("portfolioDataUpdated"));
-    } catch (error) {
-      console.error("Error fetching data from Supabase:", error.message);
-    }
-  }, []);
-
-
-
-  useEffect(() => {
-    // Coba ambil dari localStorage dulu untuk laod lebih cepat
-    const cachedProjects = localStorage.getItem('projects');
-    const cachedCertificates = localStorage.getItem('certificates');
-
-    if (cachedProjects && cachedCertificates) {
-        setProjects(JSON.parse(cachedProjects));
-        setCertificates(JSON.parse(cachedCertificates));
-    }
-    
-    fetchData(); // Tetap panggil fetchData untuk sinkronisasi data terbaru
-  }, [fetchData]);
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  // WAI-ARIA tabs: ←/→ (and Home/End) move between tabs; only the selected tab is in the Tab order.
+  const onTabKeyDown = (e) => {
+    const ids = tabs.map((x) => x.id);
+    const current = ids.indexOf(tab);
+    const next = { ArrowRight: current + 1, ArrowLeft: current - 1, Home: 0, End: ids.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    const id = ids[(next + ids.length) % ids.length];
+    setTab(id);
+    document.getElementById(`tab-${id}`)?.focus();
   };
 
-  const toggleShowMore = useCallback((type) => {
-    if (type === 'projects') {
-      setShowAllProjects(prev => !prev);
-    } else {
-      setShowAllCertificates(prev => !prev);
-    }
-  }, []);
+  const shownProjects = allProjects ? projects : projects.slice(0, INITIAL_PROJECTS);
+  const shownCertificates = allCertificates ? certificates : certificates.slice(0, INITIAL_CERTIFICATES);
+  const viewerItems = useMemo(
+    () => certificates.map((c, i) => ({ src: c.Img || c.img, caption: `${t.portfolio.certificate} ${i + 1}` })),
+    [certificates, t]
+  );
 
-  const displayedProjects = showAllProjects ? projects : projects.slice(0, initialItems);
-  const displayedCertificates = showAllCertificates ? certificates : certificates.slice(0, initialItems);
-
-  // Sisa dari komponen (return statement) tidak ada perubahan
   return (
-    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#0a0705] overflow-hidden" id="Portofolio">
-      {/* Header section - unchanged */}
-      <div className="text-center pb-10" data-aos="fade-up" data-aos-duration="1000">
-        <h2 className="inline-block text-3xl md:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#fbbf24] to-[#dc2626]">
-          <span style={{
-            color: '#fbbf24',
-            backgroundImage: 'linear-gradient(45deg, #fbbf24 10%, #dc2626 93%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }}>
-            {t.portfolio.title}
-          </span>
-        </h2>
-        <p className="text-stone-400 max-w-2xl mx-auto text-sm md:text-base mt-2">
-          {t.portfolio.subtitle}
-        </p>
+    <section id="Portofolio" className="section-y relative scroll-mt-20">
+      <div className="container-site">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <SectionHeading index="03" eyebrow={t.portfolio.eyebrow} title={t.portfolio.title} lead={t.portfolio.lead} kanji="作" />
+
+          <Reveal delay={0.2}>
+            <div
+              role="tablist"
+              aria-label={t.portfolio.eyebrow}
+              onKeyDown={onTabKeyDown}
+              className="inline-flex rounded-full border border-white/10 bg-white/[0.03] p-1"
+            >
+              {tabs.map(({ id, label, icon: Icon, count }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${id}`}
+                  aria-selected={tab === id}
+                  aria-controls={tab === id ? `panel-${id}` : undefined}
+                  tabIndex={tab === id ? 0 : -1}
+                  onClick={() => setTab(id)}
+                  className={cn(
+                    "relative flex h-11 items-center gap-2 rounded-full px-5 text-sm font-medium transition-colors duration-300",
+                    tab === id ? "text-white" : "text-washi-muted hover:text-washi"
+                  )}
+                >
+                  {tab === id && (
+                    <motion.span
+                      layoutId="portfolio-tab"
+                      className="absolute inset-0 -z-10 rounded-full bg-shu-600"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <Icon aria-hidden="true" className="h-4 w-4" />
+                  {label}
+                  <span className={cn("text-xs tabular-nums", tab === id ? "text-white/70" : "text-washi-subtle")}>{count}</span>
+                </button>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={tab}
+            id={`panel-${tab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${tab}`}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-20"
+          >
+            {tab === "projects" ? (
+              <>
+                {loading && projects.length === 0 ? (
+                  <div className="grid animate-pulse gap-8 lg:grid-cols-12">
+                    <div className="aspect-[16/10] rounded-2xl bg-white/[0.04] lg:col-span-7" />
+                    <div className="space-y-4 lg:col-span-5">
+                      <div className="h-8 w-2/3 rounded bg-white/[0.04]" />
+                      <div className="h-24 rounded bg-white/[0.04]" />
+                    </div>
+                  </div>
+                ) : projects.length === 0 ? (
+                  <p className="surface px-6 py-16 text-center text-washi-muted">{t.portfolio.empty}</p>
+                ) : (
+                  <div className="space-y-24 sm:space-y-32">
+                    {shownProjects.map((project, i) => (
+                      <ProjectRow key={project.id} project={project} index={i} total={projects.length} t={t} />
+                    ))}
+                  </div>
+                )}
+                {projects.length > INITIAL_PROJECTS && (
+                  <ToggleMore expanded={allProjects} onClick={() => setAllProjects((v) => !v)} t={t} />
+                )}
+              </>
+            ) : (
+              <>
+                <RevealGroup as="ul" className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" stagger={0.06}>
+                  {shownCertificates.map((cert, i) => (
+                    <RevealItem as="li" key={cert.id}>
+                      <button
+                        type="button"
+                        onClick={() => setViewer(i)}
+                        aria-label={`${t.portfolio.viewCertificate} ${i + 1}`}
+                        className="group relative block aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/10 bg-ink-800"
+                      >
+                        <img
+                          src={cert.Img || cert.img}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                        <span className="absolute inset-0 flex items-end bg-gradient-to-t from-ink/90 via-ink/20 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                          <span className="flex items-center gap-2 text-sm font-medium text-washi">
+                            <Maximize2 aria-hidden="true" className="h-4 w-4 text-shu-400" />
+                            {t.portfolio.viewCertificate}
+                          </span>
+                        </span>
+                      </button>
+                    </RevealItem>
+                  ))}
+                </RevealGroup>
+                {certificates.length > INITIAL_CERTIFICATES && (
+                  <ToggleMore expanded={allCertificates} onClick={() => setAllCertificates((v) => !v)} t={t} />
+                )}
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <Box sx={{ width: "100%" }}>
-        {/* AppBar and Tabs section - unchanged */}
-        <AppBar
-          position="static"
-          elevation={0}
-          sx={{
-            bgcolor: "transparent",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "20px",
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "linear-gradient(180deg, rgba(224, 35, 28, 0.03) 0%, rgba(220, 38, 38, 0.03) 100%)",
-              backdropFilter: "blur(10px)",
-              zIndex: 0,
-            },
-          }}
-          className="md:px-4"
-        >
-          {/* Tabs remain unchanged */}
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            textColor="secondary"
-            indicatorColor="secondary"
-            variant="fullWidth"
-            sx={{
-              minHeight: "70px",
-              "& .MuiTab-root": {
-                fontSize: { xs: "0.9rem", md: "1rem" },
-                fontWeight: "600",
-                color: "#94a3b8",
-                textTransform: "none",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                padding: "20px 0",
-                zIndex: 1,
-                margin: "8px",
-                borderRadius: "12px",
-                "&:hover": {
-                  color: "#ffffff",
-                  backgroundColor: "rgba(224, 35, 28, 0.1)",
-                  transform: "translateY(-2px)",
-                  "& .lucide": {
-                    transform: "scale(1.1) rotate(5deg)",
-                  },
-                },
-                "&.Mui-selected": {
-                  color: "#fff",
-                  background: "linear-gradient(135deg, rgba(224, 35, 28, 0.2), rgba(220, 38, 38, 0.2))",
-                  boxShadow: "0 4px 15px -3px rgba(224, 35, 28, 0.2)",
-                  "& .lucide": {
-                    color: "#fb923c",
-                  },
-                },
-              },
-              "& .MuiTabs-indicator": {
-                height: 0,
-              },
-              "& .MuiTabs-flexContainer": {
-                gap: "8px",
-              },
-            }}
-          >
-            <Tab
-              icon={<Code className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label={t.portfolio.tabProjects}
-              {...a11yProps(0)}
-            />
-            <Tab
-              icon={<Award className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label={t.portfolio.tabCertificates}
-              {...a11yProps(1)}
-            />
-            <Tab
-              icon={<Boxes className="mb-2 w-5 h-5 transition-all duration-300" />}
-              label={t.portfolio.tabTechStack}
-              {...a11yProps(2)}
-            />
-          </Tabs>
-        </AppBar>
-
-        <SwipeableViews
-          axis={theme.direction === "rtl" ? "x-reverse" : "x"}
-          index={value}
-          onChangeIndex={setValue}
-        >
-          <TabPanel value={value} index={0} dir={theme.direction}>
-            <div className="container mx-auto flex justify-center items-center overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-5">
-                {displayedProjects.map((project, index) => (
-                  <div
-                    key={project.id || index}
-                    className={index === 0 ? "md:col-span-2 2xl:col-span-2" : ""}
-                    data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                    data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
-                  >
-                    <CardProject
-                      Img={project.Img}
-                      Title={project.Title}
-                      Description={project.Description}
-                      Link={project.Link}
-                      id={project.id}
-                      featured={index === 0}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            {projects.length > initialItems && (
-              <div className="mt-6 w-full flex justify-start">
-                <ToggleButton
-                  onClick={() => toggleShowMore('projects')}
-                  isShowingMore={showAllProjects}
-                  seeMoreLabel={t.portfolio.seeMore}
-                  seeLessLabel={t.portfolio.seeLess}
-                />
-              </div>
-            )}
-          </TabPanel>
-
-          <TabPanel value={value} index={1} dir={theme.direction}>
-            <div className="container mx-auto flex justify-center items-center overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-3 md:gap-5 gap-4">
-                {displayedCertificates.map((certificate, index) => (
-                  <div
-                    key={certificate.id || index}
-                    data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                    data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
-                  >
-                    <Certificate ImgSertif={certificate.img || certificate.Img} />
-                  </div>
-                ))}
-              </div>
-            </div>
-            {certificates.length > initialItems && (
-              <div className="mt-6 w-full flex justify-start">
-                <ToggleButton
-                  onClick={() => toggleShowMore('certificates')}
-                  isShowingMore={showAllCertificates}
-                  seeMoreLabel={t.portfolio.seeMore}
-                  seeLessLabel={t.portfolio.seeLess}
-                />
-              </div>
-            )}
-          </TabPanel>
-
-          <TabPanel value={value} index={2} dir={theme.direction}>
-            <div className="container mx-auto flex justify-center items-center overflow-hidden pb-[5%]">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-8 gap-5">
-                {techStacks.map((stack, index) => (
-                  <div
-                    key={index}
-                    data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                    data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
-                  >
-                    <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </TabPanel>
-        </SwipeableViews>
-      </Box>
-    </div>
+      <Lightbox items={viewerItems} index={viewer} onClose={() => setViewer(null)} onIndexChange={setViewer} labels={t.lightbox} />
+    </section>
   );
-}
+};
+
+export default memo(Portfolio);

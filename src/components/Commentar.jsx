@@ -1,513 +1,474 @@
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, ImagePlus, X, Pin } from 'lucide-react';
-import AOS from "aos";
-import "aos/dist/aos.css";
-import { supabase } from '../supabase';
-import { useLanguage } from '../context/LanguageContext';
-
+import { useState, useEffect, useRef, useCallback, memo } from "react";
+import {
+  AlertCircle,
+  ImagePlus,
+  Loader2,
+  MessageCircle,
+  Pin,
+  Send,
+  UserCircle2,
+  X,
+} from "lucide-react";
+import { supabase } from "../supabase";
+import { useLanguage } from "../context/LanguageContext";
+import Reveal from "./ui/Reveal";
 
 // Client-side spam guards (a determined bot can bypass these — real protection is Row Level Security +
 // a captcha on the server — but they stop casual spam and accidental double posts).
 const COMMENT_COOLDOWN_MS = 60_000;
-const LAST_POSTED_KEY = 'commentLastPostedAt';
+const LAST_POSTED_KEY = "commentLastPostedAt";
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
 const readLastPosted = () => {
-    try {
-        return Number(localStorage.getItem(LAST_POSTED_KEY)) || 0;
-    } catch {
-        return 0;
-    }
+  try {
+    return Number(localStorage.getItem(LAST_POSTED_KEY)) || 0;
+  } catch {
+    return 0;
+  }
 };
 const writeLastPosted = () => {
-    try {
-        localStorage.setItem(LAST_POSTED_KEY, String(Date.now()));
-    } catch {
-        /* storage unavailable — the cooldown just won't apply */
-    }
+  try {
+    localStorage.setItem(LAST_POSTED_KEY, String(Date.now()));
+  } catch {
+    /* storage unavailable — the cooldown just won't apply */
+  }
 };
 const countLinks = (text) => (text.match(/https?:\/\/|www\./gi) || []).length;
 
+const inputClass =
+  "w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 text-washi placeholder:text-washi-subtle/70 transition-[border-color,box-shadow] duration-300 hover:border-white/20 focus:border-shu-500 focus:outline-none focus:ring-4 focus:ring-shu-500/15";
+
 const Comment = memo(({ comment, formatDate, isPinned = false }) => {
-    const { t } = useLanguage();
-    return (
-    <div 
-        className={`px-4 pt-4 pb-2 rounded-xl border transition-all group hover:shadow-lg hover:-translate-y-0.5 ${
-            isPinned 
-                ? 'bg-gradient-to-r from-orange-500/10 to-amber-500/10 border-orange-500/30 hover:bg-gradient-to-r hover:from-orange-500/15 hover:to-amber-500/15' 
-                : 'bg-white/5 border-white/10 hover:bg-white/10'
-        }`}
+  const { t } = useLanguage();
+  return (
+    <li
+      className={
+        isPinned
+          ? "rounded-2xl border border-shu-500/30 bg-shu-500/[0.06] p-4"
+          : "rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.04]"
+      }
     >
-        {isPinned && (
-            <div className="flex items-center gap-2 mb-3 text-orange-400">
-                <Pin className="w-4 h-4" />
-                <span className="text-xs font-medium uppercase tracking-wide">{t.comments.pinned}</span>
-            </div>
+      {isPinned && (
+        <p className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-shu-300">
+          <Pin aria-hidden="true" className="h-3.5 w-3.5" />
+          {t.comments.pinned}
+        </p>
+      )}
+      <div className="flex items-start gap-3">
+        {comment.profile_image ? (
+          <img
+            src={comment.profile_image}
+            alt=""
+            loading="lazy"
+            className="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"
+          />
+        ) : (
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/[0.05] text-washi-muted">
+            <UserCircle2 aria-hidden="true" className="h-5 w-5" />
+          </span>
         )}
-        <div className="flex items-start gap-3">
-            {comment.profile_image ? (
-                <img
-                    src={comment.profile_image}
-                    alt={`${comment.user_name}'s profile`}
-                    className={`w-10 h-10 rounded-full object-cover border-2 flex-shrink-0  ${
-                        isPinned ? 'border-orange-500/50' : 'border-orange-500/30'
-                    }`}
-                    loading="lazy"
-                />
-            ) : (
-                <div className={`p-2 rounded-full text-orange-400 group-hover:bg-orange-500/30 transition-colors ${
-                    isPinned ? 'bg-orange-500/30' : 'bg-orange-500/20'
-                }`}>
-                    <UserCircle2 className="w-5 h-5" />
-                </div>
-            )}
-            <div className="flex-grow min-w-0">
-                <div className="flex items-center justify-between gap-4 mb-2">
-                    <div className="flex items-center gap-2">
-                        <h4 className={`font-medium truncate ${
-                            isPinned ? 'text-orange-200' : 'text-white'
-                        }`}>
-                            {comment.user_name}
-                        </h4>
-                        {isPinned && (
-                            <span className="px-2 py-0.5 text-xs bg-orange-500/20 text-orange-300 rounded-full">
-                                {t.comments.admin}
-                            </span>
-                        )}
-                    </div>
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
-                        {formatDate(comment.created_at)}
-                    </span>
-                </div>
-                <p className="text-gray-300 text-sm break-words leading-relaxed relative bottom-2">
-                    {comment.content}
-                </p>
-            </div>
-        </div>
-    </div>
-    );
-});
-
-const CommentForm = memo(({ onSubmit, isSubmitting }) => {
-    const { t } = useLanguage();
-    const [newComment, setNewComment] = useState('');
-    const [userName, setUserName] = useState('');
-    const [imagePreview, setImagePreview] = useState(null);
-    const [imageFile, setImageFile] = useState(null);
-    const [honey, setHoney] = useState(''); // honeypot: invisible to people, bots tend to fill it
-    const textareaRef = useRef(null);
-    const fileInputRef = useRef(null);
-
-    const handleImageChange = useCallback((e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Check file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB. Please choose a smaller image.');
-                // Reset the input
-                if (e.target) e.target.value = '';
-                return;
-            }
-            
-            // Check file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select a valid image file.');
-                if (e.target) e.target.value = '';
-                return;
-            }
-            
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result);
-            reader.readAsDataURL(file);
-        }
-    }, []);
-
-    const handleTextareaChange = useCallback((e) => {
-        setNewComment(e.target.value);
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        }
-    }, []);
-
-    const handleSubmit = useCallback((e) => {
-        e.preventDefault();
-        if (!newComment.trim() || !userName.trim()) return;
-        // Honeypot filled -> a bot: look successful, post nothing.
-        if (honey) {
-            setNewComment('');
-            setUserName('');
-            return;
-        }
-
-        onSubmit({ newComment, userName, imageFile });
-        setNewComment('');
-        setUserName('');
-        setImagePreview(null);
-        setImageFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    }, [newComment, userName, imageFile, honey, onSubmit]);
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <input
-                type="text"
-                name="website"
-                value={honey}
-                onChange={(e) => setHoney(e.target.value)}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
-            />
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1000">
-                <label className="block text-sm font-medium text-white">
-                    {t.comments.name} <span className="text-red-400">*</span>
-                </label>
-                <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                     maxLength={15}
-                    placeholder={t.comments.namePlaceholder}
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all"
-                    required
-                />
-            </div>
-
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1200">
-                <label className="block text-sm font-medium text-white">
-                    {t.comments.message} <span className="text-red-400">*</span>
-                </label>
-                <textarea
-                    ref={textareaRef}
-                    value={newComment}
-                     maxLength={200}
-
-                    onChange={handleTextareaChange}
-                    placeholder={t.comments.messagePlaceholder}
-                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all resize-none min-h-[120px]"
-                    required
-                />
-            </div>
-
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1400">
-                <label className="block text-sm font-medium text-white">
-                    {t.comments.profilePhoto} <span className="text-gray-400">{t.comments.optional}</span>
-                </label>
-                <div className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
-                    {imagePreview ? (
-                        <div className="flex items-center gap-4">
-                            <img
-                                src={imagePreview}
-                                alt="Profile preview"
-                                className="w-16 h-16 rounded-full object-cover border-2 border-orange-500/50"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setImagePreview(null);
-                                    setImageFile(null);
-                                    if (fileInputRef.current) fileInputRef.current.value = '';
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all group"
-                            >
-                                <X className="w-4 h-4" />
-                                <span>{t.comments.removePhoto}</span>
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="w-full">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleImageChange}
-                                accept="image/*"
-                                className="hidden"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-all border border-dashed border-orange-500/50 hover:border-orange-500 group"
-                            >
-                                <ImagePlus className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                <span>{t.comments.choosePhoto}</span>
-                            </button>
-                            <p className="text-center text-gray-400 text-sm mt-2">
-                                {t.comments.maxFileSize}
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <button
-                type="submit"
-                disabled={isSubmitting}
-                data-aos="fade-up" data-aos-duration="1000"
-                className="relative w-full h-12 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-xl font-medium text-white overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-4">
+            <p className="flex min-w-0 items-center gap-2">
+              <span
+                className={`truncate font-medium ${isPinned ? "text-shu-200" : "text-washi"}`}
+              >
+                {comment.user_name}
+              </span>
+              {isPinned && (
+                <span className="rounded-full bg-shu-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase text-shu-200">
+                  {t.comments.admin}
+                </span>
+              )}
+            </p>
+            <time
+              dateTime={comment.created_at}
+              className="shrink-0 text-xs text-washi-subtle"
             >
-                <div className="absolute inset-0 bg-white/20 translate-y-12 group-hover:translate-y-0 transition-transform duration-300" />
-                <div className="relative flex items-center justify-center gap-2">
-                    {isSubmitting ? (
-                        <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>{t.comments.posting}</span>
-                        </>
-                    ) : (
-                        <>
-                            <Send className="w-4 h-4" />
-                            <span>{t.comments.post}</span>
-                        </>
-                    )}
-                </div>
-            </button>
-        </form>
-    );
+              {formatDate(comment.created_at)}
+            </time>
+          </div>
+          <p className="mt-1 break-words text-sm leading-relaxed text-washi-muted">
+            {comment.content}
+          </p>
+        </div>
+      </div>
+    </li>
+  );
 });
+Comment.displayName = "Comment";
+
+const CommentForm = memo(({ onSubmit, isSubmitting, onError }) => {
+  const { t } = useLanguage();
+  const [newComment, setNewComment] = useState("");
+  const [userName, setUserName] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [honey, setHoney] = useState(""); // honeypot: invisible to people, bots tend to fill it
+  const fileInputRef = useRef(null);
+
+  const clearImage = () => {
+    setImagePreview(null);
+    setImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleImageChange = useCallback(
+    (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > MAX_IMAGE_BYTES || !file.type.startsWith("image/")) {
+        onError(
+          file.size > MAX_IMAGE_BYTES
+            ? t.comments.fileTooLarge
+            : t.comments.fileInvalid,
+        );
+        e.target.value = "";
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    },
+    [onError, t],
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newComment.trim() || !userName.trim()) return;
+    // Honeypot filled -> a bot: look successful, post nothing.
+    if (!honey) onSubmit({ newComment, userName, imageFile });
+    setNewComment("");
+    setUserName("");
+    clearImage();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <input
+        type="text"
+        name="website"
+        value={honey}
+        onChange={(e) => setHoney(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px opacity-0"
+      />
+      <div>
+        <label
+          htmlFor="comment-name"
+          className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-washi-subtle"
+        >
+          {t.comments.name} <span className="text-shu-400">*</span>
+        </label>
+        <input
+          id="comment-name"
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          maxLength={15}
+          placeholder={t.comments.namePlaceholder}
+          className={`${inputClass} h-12`}
+          required
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="comment-message"
+          className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-washi-subtle"
+        >
+          {t.comments.message} <span className="text-shu-400">*</span>
+        </label>
+        <textarea
+          id="comment-message"
+          value={newComment}
+          maxLength={200}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder={t.comments.messagePlaceholder}
+          className={`${inputClass} min-h-[110px] resize-none py-3.5`}
+          required
+        />
+        <p className="mt-1 text-right text-[11px] tabular-nums text-washi-subtle">
+          {newComment.length}/200
+        </p>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-washi-subtle">
+          {t.comments.profilePhoto}{" "}
+          <span className="normal-case tracking-normal">
+            {t.comments.optional}
+          </span>
+        </p>
+        {imagePreview ? (
+          <div className="flex items-center gap-4">
+            <img
+              src={imagePreview}
+              alt=""
+              className="h-14 w-14 rounded-full border border-white/15 object-cover"
+            />
+            <button
+              type="button"
+              onClick={clearImage}
+              className="btn-ghost h-10 px-4 text-xs"
+            >
+              <X className="h-4 w-4" />
+              {t.comments.removePhoto}
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+              id="comment-photo"
+            />
+            <label
+              htmlFor="comment-photo"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 px-4 py-3 text-sm text-washi-muted transition-colors hover:border-shu-500/60 hover:text-washi"
+            >
+              <ImagePlus aria-hidden="true" className="h-4 w-4" />
+              {t.comments.choosePhoto}
+              <span className="text-xs text-washi-subtle">
+                · {t.comments.maxFileSize}
+              </span>
+            </label>
+          </>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="btn-primary w-full"
+      >
+        {isSubmitting ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Send className="h-4 w-4" />
+        )}
+        {isSubmitting ? t.comments.posting : t.comments.post}
+      </button>
+    </form>
+  );
+});
+CommentForm.displayName = "CommentForm";
 
 const Komentar = () => {
-    const { t } = useLanguage();
-    const [comments, setComments] = useState([]);
-    const [pinnedComment, setPinnedComment] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
+  const { t, lang } = useLanguage();
+  const [comments, setComments] = useState([]);
+  const [pinnedComment, setPinnedComment] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  // Comments (and the realtime websocket) load only when the guestbook comes near the viewport:
+  // most visitors never scroll this far, and an open socket also keeps the page out of the back/forward cache.
+  const rootRef = useRef(null);
+  const [active, setActive] = useState(false);
 
-    useEffect(() => {
-        // Initialize AOS
-        AOS.init({
-            once: false,
-            duration: 1000,
-        });
-    }, []);
-
-    // Fetch pinned comment
-    useEffect(() => {
-        const fetchPinnedComment = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('portfolio_comments')
-                    .select('*')
-                    .eq('is_pinned', true)
-                    // maybeSingle: having no pinned comment is normal, not a 406 error in the console
-                    .maybeSingle();
-                
-                if (error && error.code !== 'PGRST116') {
-                    return;
-                }
-                
-                if (data) {
-                    setPinnedComment(data);
-                }
-            } catch {
-                // Silent fail for pinned comment
-            }
-        };
-
-        fetchPinnedComment();
-    }, []);
-
-    // Fetch regular comments (excluding pinned) and set up real-time subscription
-    useEffect(() => {
-        const fetchComments = async () => {
-            const { data, error } = await supabase
-                .from('portfolio_comments')
-                .select('*')
-                .eq('is_pinned', false)
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                return;
-            }
-            
-            setComments(data || []);
-        };
-
-        fetchComments();
-
-        // Set up real-time subscription
-        const subscription = supabase
-            .channel('portfolio_comments')
-            .on('postgres_changes', 
-                { 
-                    event: '*', 
-                    schema: 'public', 
-                    table: 'portfolio_comments',
-                    filter: 'is_pinned=eq.false'
-                }, 
-                () => {
-                    fetchComments(); // Refresh comments when changes occur
-                }
-            )
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
-
-    const uploadImage = useCallback(async (imageFile) => {
-        if (!imageFile) return null;
-        
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `profile-images/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-            .from('profile-images')
-            .upload(filePath, imageFile);
-
-        if (uploadError) {
-            throw uploadError;
-        }
-
-        const { data } = supabase.storage
-            .from('profile-images')
-            .getPublicUrl(filePath);
-
-        return data.publicUrl;
-    }, []);
-
-    const handleCommentSubmit = useCallback(async ({ newComment, userName, imageFile }) => {
-        setError('');
-        if (Date.now() - readLastPosted() < COMMENT_COOLDOWN_MS) {
-            setError('Please wait about a minute before posting another comment.');
-            return;
-        }
-        if (countLinks(newComment) > 1) {
-            setError('Please include at most one link in a comment.');
-            return;
-        }
-        setIsSubmitting(true);
-
-        try {
-            const profileImageUrl = await uploadImage(imageFile);
-            
-            const { error } = await supabase
-                .from('portfolio_comments')
-                .insert([
-                    {
-                        content: newComment,
-                        user_name: userName,
-                        profile_image: profileImageUrl,
-                        is_pinned: false,
-                        created_at: new Date().toISOString()
-                    }
-                ]);
-
-            if (error) {
-                throw error;
-            }
-            writeLastPosted();
-        } catch (error) {
-            console.error('Failed to post comment:', error);
-            setError(
-                error?.message
-                    ? `Failed to post comment: ${error.message}`
-                    : 'Failed to post comment. Please try again.'
-            );
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [uploadImage]);
-
-    const formatDate = useCallback((timestamp) => {
-        if (!timestamp) return '';
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffMinutes = Math.floor((now - date) / (1000 * 60));
-        const diffHours = Math.floor(diffMinutes / 60);
-        const diffDays = Math.floor(diffHours / 24);
-
-        if (diffMinutes < 1) return 'Just now';
-        if (diffMinutes < 60) return `${diffMinutes}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-
-        return new Intl.DateTimeFormat('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        }).format(date);
-    }, []);
-
-    // Calculate total comments (pinned + regular)
-    const totalComments = comments.length + (pinnedComment ? 1 : 0);
-
-    return (
-        <div className="w-full bg-gradient-to-b from-white/10 to-white/5 rounded-2xl  backdrop-blur-xl shadow-xl" data-aos="fade-up" data-aos-duration="1000">
-            <div className="p-6 border-b border-white/10" data-aos="fade-down" data-aos-duration="800">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-orange-500/20">
-                        <MessageCircle className="w-6 h-6 text-orange-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-white">
-                        {t.comments.heading} <span className="text-orange-400">({totalComments})</span>
-                    </h3>
-                </div>
-            </div>
-            <div className="p-6 space-y-6">
-                {error && (
-                    <div className="flex items-center gap-2 p-4 text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl" data-aos="fade-in">
-                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                        <p className="text-sm">{error}</p>
-                    </div>
-                )}
-                
-                <div>
-                    <CommentForm onSubmit={handleCommentSubmit} isSubmitting={isSubmitting} error={error} />
-                </div>
-
-                <div className="space-y-4 h-[328px] overflow-y-auto overflow-x-hidden custom-scrollbar pt-1 pr-1 " data-aos="fade-up" data-aos-delay="200">
-                    {/* Pinned Comment */}
-                    {pinnedComment && (
-                        <div data-aos="fade-down" data-aos-duration="800">
-                            <Comment 
-                                comment={pinnedComment} 
-                                formatDate={formatDate}
-                                index={0}
-                                isPinned={true}
-                            />
-                        </div>
-                    )}
-                    
-                    {/* Regular Comments */}
-                    {comments.length === 0 && !pinnedComment ? (
-                        <div className="text-center py-8" data-aos="fade-in">
-                            <UserCircle2 className="w-12 h-12 text-orange-400 mx-auto mb-3 opacity-50" />
-                            <p className="text-gray-400">{t.comments.empty}</p>
-                        </div>
-                    ) : (
-                        comments.map((comment, index) => (
-                            <Comment 
-                                key={comment.id} 
-                                comment={comment} 
-                                formatDate={formatDate}
-                                index={index + (pinnedComment ? 1 : 0)}
-                                isPinned={false}
-                            />
-                        ))
-                    )}
-                </div>
-            </div>
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(224, 35, 28, 0.5);
-                    border-radius: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(224, 35, 28, 0.7);
-                }
-            `}</style>
-        </div>
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || active) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => entry.isIntersecting && setActive(true),
+      { rootMargin: "600px 0px" },
     );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [active]);
+
+  useEffect(() => {
+    if (!active) return;
+    supabase
+      .from("portfolio_comments")
+      .select("*")
+      .eq("is_pinned", true)
+      // maybeSingle: having no pinned comment is normal, not a 406 error in the console
+      .maybeSingle()
+      .then(({ data }) => data && setPinnedComment(data));
+  }, [active]);
+
+  // Regular comments (excluding pinned) plus a real-time subscription that refreshes them.
+  useEffect(() => {
+    if (!active) return;
+    const fetchComments = async () => {
+      const { data, error } = await supabase
+        .from("portfolio_comments")
+        .select("*")
+        .eq("is_pinned", false)
+        .order("created_at", { ascending: false });
+      if (!error) setComments(data || []);
+    };
+    fetchComments();
+
+    const subscription = supabase
+      .channel("portfolio_comments")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "portfolio_comments",
+          filter: "is_pinned=eq.false",
+        },
+        fetchComments,
+      )
+      .subscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [active]);
+
+  const uploadImage = useCallback(async (imageFile) => {
+    if (!imageFile) return null;
+    const fileExt = imageFile.name.split(".").pop();
+    const filePath = `profile-images/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const { error: uploadError } = await supabase.storage
+      .from("profile-images")
+      .upload(filePath, imageFile);
+    if (uploadError) throw uploadError;
+    return supabase.storage.from("profile-images").getPublicUrl(filePath).data
+      .publicUrl;
+  }, []);
+
+  const handleCommentSubmit = useCallback(
+    async ({ newComment, userName, imageFile }) => {
+      setError("");
+      if (Date.now() - readLastPosted() < COMMENT_COOLDOWN_MS) {
+        setError(t.comments.cooldown);
+        return;
+      }
+      if (countLinks(newComment) > 1) {
+        setError(t.comments.tooManyLinks);
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        const profileImageUrl = await uploadImage(imageFile);
+        const { error } = await supabase.from("portfolio_comments").insert([
+          {
+            content: newComment,
+            user_name: userName,
+            profile_image: profileImageUrl,
+            is_pinned: false,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+        if (error) throw error;
+        writeLastPosted();
+      } catch (err) {
+        console.error("Failed to post comment:", err);
+        setError(t.comments.failed);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [uploadImage, t],
+  );
+
+  const formatDate = useCallback(
+    (timestamp) => {
+      if (!timestamp) return "";
+      const date = new Date(timestamp);
+      const diffSeconds = Math.round((date - Date.now()) / 1000);
+      const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+      const units = [
+        ["day", 86400],
+        ["hour", 3600],
+        ["minute", 60],
+      ];
+      if (Math.abs(diffSeconds) >= 7 * 86400) {
+        return new Intl.DateTimeFormat(lang, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }).format(date);
+      }
+      for (const [unit, seconds] of units) {
+        if (Math.abs(diffSeconds) >= seconds)
+          return rtf.format(Math.round(diffSeconds / seconds), unit);
+      }
+      return rtf.format(0, "minute");
+    },
+    [lang],
+  );
+
+  const totalComments = comments.length + (pinnedComment ? 1 : 0);
+
+  return (
+    <div ref={rootRef}>
+      <Reveal className="surface grid gap-10 p-6 sm:p-10 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-shu-500/15 text-shu-400">
+              <MessageCircle aria-hidden="true" className="h-5 w-5" />
+            </span>
+            <h3 className="font-display text-2xl font-bold text-washi font-semiwide">
+              {t.comments.heading}{" "}
+              <span className="text-base font-medium tabular-nums text-washi-subtle">
+                ({totalComments})
+              </span>
+            </h3>
+          </div>
+          <p className="mb-8 mt-3 text-sm leading-relaxed text-washi-muted">
+            {t.comments.lead}
+          </p>
+
+          {error && (
+            <p
+              role="alert"
+              className="mb-5 flex items-center gap-2 rounded-xl border border-shu-500/30 bg-shu-500/10 p-3 text-sm text-shu-200"
+            >
+              <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
+              {error}
+            </p>
+          )}
+          <CommentForm
+            onSubmit={handleCommentSubmit}
+            isSubmitting={isSubmitting}
+            onError={setError}
+          />
+        </div>
+
+        <div className="lg:col-span-7">
+          <ul
+            data-lenis-prevent
+            className="max-h-[560px] space-y-3 overflow-y-auto overscroll-contain pr-2"
+          >
+            {pinnedComment && (
+              <Comment
+                comment={pinnedComment}
+                formatDate={formatDate}
+                isPinned
+              />
+            )}
+            {comments.length === 0 && !pinnedComment ? (
+              <li className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 py-20 text-center text-washi-subtle">
+                <UserCircle2
+                  aria-hidden="true"
+                  className="mb-3 h-10 w-10 opacity-50"
+                />
+                {t.comments.empty}
+              </li>
+            ) : (
+              comments.map((comment) => (
+                <Comment
+                  key={comment.id}
+                  comment={comment}
+                  formatDate={formatDate}
+                />
+              ))
+            )}
+          </ul>
+        </div>
+      </Reveal>
+    </div>
+  );
 };
 
 export default Komentar;

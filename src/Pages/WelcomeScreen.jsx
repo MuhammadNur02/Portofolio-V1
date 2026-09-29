@@ -1,189 +1,329 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, animate, useMotionValue, useTransform } from 'framer-motion';
-import { useLanguage } from '../context/LanguageContext';
-import { markWelcomeSeen } from '../utils/welcomeSession';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useReducedMotion, useTransform, animate } from "framer-motion";
+import { useLanguage } from "../context/LanguageContext";
+import { markWelcomeSeen } from "../utils/welcomeSession";
+import { useScrollLock } from "../lib/smoothScroll";
+import { SITE } from "../config/site";
 
-// Lives in /public (not bundled) so it's referenced by URL, not imported.
-const WELCOME_IMAGE_URL = '/WelcomeScreenNew.webp';
-
-// ─── LOADING BAR — EDIT SPEED / SIZE / POSITION HERE ────────────────────────
-// LOADING_DURATION_MS : how long the bar takes to fill from 0% to 100%.
-// HOLD_AT_100_MS      : how long it rests at 100% before the welcome screen switches to the site.
-// BAR_SIDE_GAP        : space left/right of the bar ('px-0' makes it touch both screen edges).
-// BAR_BOTTOM          : distance from the bottom of the screen (mobile / desktop).
-// BAR_HEIGHT          : thickness of the bar (mobile / desktop).
-const LOADING_DURATION_MS = 5000;
-const HOLD_AT_100_MS = 600;
-const BAR_SIDE_GAP = 'px-4 sm:px-10';
-const BAR_BOTTOM = 'bottom-[7%] sm:bottom-[9%]';
-const BAR_HEIGHT = 'h-[10px] sm:h-[14px]';
+// ─── TIMING ─────────────────────────────────────────────────────────────────
+// The counter tracks REAL loading of the images the site needs first, but never finishes faster
+// than MIN_DURATION_MS (so the intro can play) nor waits longer than MAX_WAIT_MS on a slow network.
+const MIN_DURATION_MS = 2800;
+const MAX_WAIT_MS = 7000;
+const HOLD_AT_100_MS = 380;
+const EXIT_MS = 1250;
 // ────────────────────────────────────────────────────────────────────────────
 
-// Pointed ends, like a katana blade.
-const BLADE = 'polygon(0 50%, 10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%)';
+const EASE = [0.76, 0, 0.24, 1];
+const NAME_LINES = ["Muhammad Nurrahman", "Juliansyah"];
 
-const LoadingBar = ({ progress, done }) => {
-  const width = useTransform(progress, (v) => `${v}%`);
-  const label = useTransform(progress, (v) => `${Math.round(v)}%`);
+const assetsToPreload = () => [
+  window.innerWidth < 640 ? "/Samurai-mobile.webp" : "/Samurai-desktop.webp",
+  "/Portrait.webp",
+  "/Kane.webp",
+  "/Torii-Gate.webp",
+];
+
+function preload(urls, onEach) {
+  return Promise.all(
+    urls.map(
+      (url) =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.onload = img.onerror = () => {
+            onEach();
+            resolve();
+          };
+          img.src = url;
+        })
+    )
+  );
+}
+
+// Slow drifting embers — pure CSS, cheap.
+const EMBERS = Array.from({ length: 16 }, (_, i) => ({
+  left: `${(i * 61) % 100}%`,
+  delay: `${(i * 0.37) % 5}s`,
+  duration: `${6 + ((i * 1.7) % 5)}s`,
+  size: 2 + (i % 3),
+}));
+
+function Scene({ progress, reduce }) {
+  const moonOpacity = useTransform(progress, [0, 55], [0.35, 1]);
+  const moonScale = useTransform(progress, [0, 100], [0.9, 1]);
+  const shadowX = useTransform(progress, [0, 100], ["0%", reduce ? "0%" : "-118%"]);
+  const glow = useTransform(progress, [0, 100], [0.25, 0.8]);
+  const gateY = useTransform(progress, [0, 100], ["6%", "0%"]);
 
   return (
-    <div
-      className={`pointer-events-none absolute inset-x-0 ${BAR_BOTTOM} ${BAR_SIDE_GAP}`}
-      role="progressbar"
-      aria-label="Loading"
-    >
-      <div className="mb-2 flex items-end justify-between text-[11px] font-medium tracking-[0.35em] text-amber-100/80 sm:mb-3 sm:text-sm">
-        <span>LOADING</span>
-        <motion.span
-          className={`tabular-nums tracking-widest transition-colors duration-500 ${
-            done ? 'text-white' : 'text-amber-200'
-          }`}
-        >
-          {label}
-        </motion.span>
+    <div className="absolute inset-0 overflow-hidden bg-[#050404]">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#2a0d08_0%,#0b0605_45%,#050404_75%)]" />
+
+      {/* Blood moon, unveiled by a sliding eclipse shadow as loading progresses */}
+      <div className="absolute left-1/2 top-[42%] aspect-square w-[min(66vmin,560px)] -translate-x-1/2 -translate-y-1/2">
+        <motion.div
+          aria-hidden="true"
+          className="absolute -inset-[30%] rounded-full bg-[radial-gradient(circle,rgba(232,71,47,0.55)_0%,rgba(232,71,47,0.12)_40%,transparent_68%)]"
+          style={{ opacity: glow }}
+        />
+        <motion.img
+          src="/Blood-Moon.webp"
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full select-none rounded-full"
+          style={{ opacity: moonOpacity, scale: moonScale }}
+        />
+        <div className="absolute inset-0 overflow-hidden rounded-full">
+          <motion.div className="absolute inset-[-2%] rounded-full bg-[#050404] blur-[10px]" style={{ x: shadowX }} />
+        </div>
       </div>
 
-      {/* The drop-shadow lives on this wrapper (not on the clipped shapes) so the glow follows the blade outline. */}
-      <div
-        className={`relative ${BAR_HEIGHT} transition-[filter] duration-500`}
-        style={{
-          filter: done
-            ? 'drop-shadow(0 0 14px rgba(251,191,36,0.95))'
-            : 'drop-shadow(0 0 6px rgba(224,35,28,0.55))',
-        }}
-      >
-        {/* Light the fill spills onto the artwork */}
-        <motion.div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-red-700 via-orange-500 to-amber-400 opacity-70 blur-xl"
-          style={{ width }}
-        />
+      {/* Torii silhouette standing in front of the moon */}
+      {/* x lives in `style`: framer-motion owns this element's transform, so a Tailwind translate would be dropped */}
+      <motion.img
+        src="/Torii-Gate-sm.webp"
+        alt=""
+        draggable={false}
+        className="absolute bottom-[30%] left-1/2 w-[min(100vmin,92vw)] max-w-[980px] select-none brightness-0 sm:bottom-0"
+        style={{ x: "-50%", y: gateY }}
+      />
+      <div className="absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-black via-black/70 to-transparent" />
 
-        {/* Edge: dark red → gold → dark red */}
-        <div className="absolute inset-0 bg-gradient-to-r from-red-900 via-amber-500/80 to-red-900" style={{ clipPath: BLADE }}>
-          {/* Track */}
-          <div className="absolute inset-[1.5px] overflow-hidden bg-black/75 backdrop-blur-sm" style={{ clipPath: BLADE }}>
-            {/* Fill — slides to the right as progress grows */}
-            <motion.div
-              className="relative h-full overflow-hidden bg-gradient-to-r from-red-800 via-red-600 to-orange-400"
-              style={{ width }}
+      {!reduce &&
+        EMBERS.map((e, i) => (
+          <span
+            key={i}
+            aria-hidden="true"
+            className="absolute bottom-[-10px] rounded-full bg-shu-400 opacity-0 shadow-[0_0_8px_2px_rgba(255,109,82,0.6)]"
+            style={{
+              left: e.left,
+              width: e.size,
+              height: e.size,
+              animation: `ember-rise ${e.duration} ${e.delay} linear infinite`,
+            }}
+          />
+        ))}
+    </div>
+  );
+}
+
+function Counter({ progress }) {
+  const [value, setValue] = useState(0);
+  useEffect(() => progress.on("change", (v) => setValue(Math.floor(v))), [progress]);
+  return <span className="tabular-nums">{String(value).padStart(3, "0")}</span>;
+}
+
+// `clone` marks the copy inside the second half: visible, but hidden from screen readers and the tab order.
+function Overlay({ progress, t, onSkip, clone = false }) {
+  const lineScale = useTransform(progress, [0, 100], [0, 1]);
+  return (
+    <div
+      aria-hidden={clone || undefined}
+      className="pointer-events-none absolute inset-0 flex flex-col justify-between p-5 sm:p-8 lg:p-10"
+    >
+      <div className="flex items-start justify-between">
+        <motion.div
+          className="flex items-center gap-3"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
+        >
+          <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-[6px] bg-shu-500 font-kanji text-lg font-extrabold text-white">侍</span>
+          <span className="leading-tight">
+            <span className="block text-sm font-semibold tracking-[0.25em] text-washi">{SITE.shortName.toUpperCase()}</span>
+            <span className="block text-[11px] tracking-[0.2em] text-washi-subtle">
+              {t.welcome.tagline.toUpperCase()} © {new Date().getFullYear()}
+            </span>
+          </span>
+        </motion.div>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          tabIndex={clone ? -1 : undefined}
+          className="pointer-events-auto rounded-full border border-white/20 bg-black/40 px-4 py-2 text-xs font-medium tracking-[0.25em] text-washi/90 backdrop-blur-sm transition-colors hover:border-white/50 hover:text-white"
+        >
+          {t.welcome.skip.toUpperCase()}
+        </button>
+      </div>
+
+      <div>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="font-display text-[clamp(1.9rem,6.2vw,5.6rem)] font-extrabold uppercase leading-[0.92] tracking-tight text-washi font-wide">
+              {NAME_LINES.map((line, li) => (
+                <span key={line} className="block overflow-hidden pb-[0.06em]">
+                  <motion.span
+                    className="block"
+                    initial={{ y: "110%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 1.1, delay: 0.35 + li * 0.14, ease: EASE }}
+                  >
+                    {line}
+                  </motion.span>
+                </span>
+              ))}
+            </p>
+            <motion.p
+              className="mt-4 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-washi-muted sm:text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.9 }}
             >
-              <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
-              <span className="animate-loader-shimmer absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-            </motion.div>
+              <span className="h-px w-10 bg-shu-500" />
+              {SITE.role}
+            </motion.p>
+          </div>
+
+          <div className="flex items-end justify-between gap-6 lg:flex-col lg:items-end lg:gap-2">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-washi-subtle lg:order-2">{t.welcome.loading}</p>
+            <p className="font-display text-[clamp(3rem,11vw,8.5rem)] font-bold leading-[0.8] text-washi font-semiwide lg:order-1">
+              <Counter progress={progress} />
+              <span className="ml-1 align-top text-[0.3em] text-shu-400">%</span>
+            </p>
           </div>
         </div>
 
-        {/* Glowing spark riding the leading edge of the fill */}
-        <motion.div className="absolute inset-y-0 left-0" style={{ width }}>
-          <span className="absolute right-0 top-1/2 h-5 w-5 -translate-y-1/2 translate-x-1/2 rounded-full bg-amber-300 blur-md sm:h-7 sm:w-7" />
-          <span className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white blur-[2px]" />
-        </motion.div>
+        <div className="mt-6 h-[2px] w-full overflow-hidden bg-white/10">
+          <motion.div className="h-full origin-left bg-gradient-to-r from-shu-600 via-shu-400 to-kin-400" style={{ scaleX: lineScale }} />
+        </div>
+        <p className="mt-3 hidden text-center text-[11px] tracking-[0.2em] text-washi-subtle sm:block">{t.welcome.hint}</p>
       </div>
     </div>
   );
-};
+}
 
-const WelcomeScreen = ({ onLoadingComplete }) => {
+// onReveal: the cut has started (the site underneath begins to show) · onLoadingComplete: fully gone.
+const WelcomeScreen = ({ onReveal, onLoadingComplete }) => {
   const { t } = useLanguage();
-  const [isLoading, setIsLoading] = useState(true);
-  const [done, setDone] = useState(false);
+  const reduce = useReducedMotion();
   const progress = useMotionValue(0);
-
-  // Kept in a ref so a parent re-render (new callback identity) never restarts the bar.
-  const onCompleteRef = useRef(onLoadingComplete);
-  useEffect(() => {
-    onCompleteRef.current = onLoadingComplete;
-  }, [onLoadingComplete]);
-
-  const controlsRef = useRef(null);
-  const timersRef = useRef([]);
+  const [phase, setPhase] = useState("loading"); // loading → exit → (unmounted by parent)
+  const [slashAngle, setSlashAngle] = useState(-9);
+  const callbacks = useRef({ onReveal, onLoadingComplete });
   const leavingRef = useRef(false);
+  const timers = useRef([]);
+  useScrollLock(true);
 
-  // Starts the exit (fade + hand over to the site) exactly once — whether the bar reached 100% or the visitor skipped.
+  useEffect(() => {
+    callbacks.current = { onReveal, onLoadingComplete };
+  }, [onReveal, onLoadingComplete]);
+
   const leave = useCallback(() => {
     if (leavingRef.current) return;
     leavingRef.current = true;
     markWelcomeSeen();
-    setIsLoading(false);
-    timersRef.current.push(
-      setTimeout(() => {
-        onCompleteRef.current?.();
-      }, 1000)
-    );
-  }, []);
+    callbacks.current.onReveal?.();
+    // Angle of the diagonal cut for this screen's aspect ratio (it runs from 58% height on the left to 42% on the right).
+    setSlashAngle((-Math.atan2(window.innerHeight * 0.16, window.innerWidth) * 180) / Math.PI);
+    setPhase("exit");
+    timers.current.push(setTimeout(() => callbacks.current.onLoadingComplete?.(), reduce ? 500 : EXIT_MS));
+  }, [reduce]);
 
   const skip = useCallback(() => {
-    controlsRef.current?.stop();
+    animate(progress, 100, { duration: 0.25 });
     leave();
-  }, [leave]);
+  }, [leave, progress]);
 
+  // Real loading progress, eased so it never jumps.
   useEffect(() => {
-    progress.set(0);
-    leavingRef.current = false;
+    window.scrollTo(0, 0);
+    const urls = assetsToPreload();
+    let loaded = 0;
+    let allLoaded = false;
+    preload(urls, () => (loaded += 1)).then(() => (allLoaded = true));
 
-    // Surges and eases three times on the way to 100% so it reads like real loading, not a flat ramp.
-    controlsRef.current = animate(progress, [0, 34, 58, 100], {
-      duration: LOADING_DURATION_MS / 1000,
-      times: [0, 0.35, 0.65, 1],
-      ease: 'easeInOut',
-      onComplete: () => {
-        setDone(true);
-        timersRef.current.push(setTimeout(leave, HOLD_AT_100_MS));
-      },
-    });
+    const start = performance.now();
+    const minDuration = reduce ? 1000 : MIN_DURATION_MS;
+    let raf;
+    const tick = (now) => {
+      if (leavingRef.current) return; // skipped: the skip animation owns the counter now
+      // A frame's timestamp can predate `start` by a few ms, so clamp at 0 (else the counter shows "0-1").
+      const elapsed = Math.max(0, now - start);
+      const timeShare = Math.min(1, elapsed / minDuration);
+      const easedTime = 1 - Math.pow(1 - timeShare, 2.2);
+      const loadShare = allLoaded || elapsed > MAX_WAIT_MS ? 1 : Math.min(0.97, loaded / urls.length);
+      const target = Math.min(easedTime, loadShare) * 100;
+      const current = progress.get();
+      const next = current + (target - current) * 0.12;
+      progress.set(next > 99.6 ? 100 : next);
 
-    const timers = timersRef.current;
-    return () => {
-      controlsRef.current?.stop();
-      timers.forEach(clearTimeout);
-      timers.length = 0;
+      if (progress.get() >= 100) {
+        timers.current.push(setTimeout(leave, HOLD_AT_100_MS));
+        return;
+      }
+      raf = requestAnimationFrame(tick);
     };
-  }, [progress, leave]);
+    raf = requestAnimationFrame(tick);
+
+    // Any real key skips — but not Tab, lone modifiers, or shortcuts like Alt+Tab / Ctrl+R.
+    const onKey = (e) => {
+      if (e.key === "Tab" || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (["Shift", "Control", "Alt", "Meta", "CapsLock"].includes(e.key)) return;
+      skip();
+    };
+    window.addEventListener("keydown", onKey);
+
+    const pending = timers.current;
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKey);
+      pending.forEach(clearTimeout);
+    };
+  }, [progress, leave, skip, reduce]);
+
+  const exiting = phase === "exit";
+  // The halves stay opaque until they are nearly off-screen, so the site never ghosts through them.
+  const halfTransition = { duration: 1.0, delay: 0.28, ease: EASE, opacity: { duration: 1.0, delay: 0.28, times: [0, 0.75, 1] } };
 
   return (
-    <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          className="fixed inset-0 bg-[#0a0705]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{
-            opacity: 0,
-            scale: 1.1,
-            filter: 'blur(10px)',
-            transition: { duration: 0.8, ease: 'easeInOut' },
-          }}
-        >
-          {/* Fills the screen (cover). On phones the artwork is cropped left/right —
-              change the first object-[X%_Y%] value to pick which part stays visible
-              (0% = left edge ... 100% = right edge). */}
-          <img
-            src={WELCOME_IMAGE_URL}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            className="absolute inset-0 h-full w-full select-none object-cover object-[40%_50%] md:object-center"
-          />
+    <div className="fixed inset-0 z-[100]" aria-busy={!exiting}>
+      <style>{`
+        @keyframes ember-rise {
+          0% { transform: translate3d(0, 0, 0); opacity: 0; }
+          10% { opacity: 0.9; }
+          100% { transform: translate3d(30px, -85vh, 0); opacity: 0; }
+        }
+      `}</style>
 
-          {/* Darkens the bottom so the bar and its label stay readable on the misty artwork */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
-
-          <LoadingBar progress={progress} done={done} />
-
-          {/* Nobody should have to wait: skip straight to the site (also shown only once per session) */}
-          <button
-            type="button"
-            onClick={skip}
-            className="absolute right-4 top-4 sm:right-8 sm:top-6 rounded-full border border-white/20 bg-black/40 px-4 py-1.5
-                       text-xs sm:text-sm font-medium tracking-[0.2em] text-amber-100/90 backdrop-blur-sm
-                       hover:border-white/40 hover:text-white transition-colors duration-300
-                       focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300"
-          >
-            {t.welcome.skip.toUpperCase()}
-          </button>
+      {reduce ? (
+        <motion.div className="absolute inset-0" animate={{ opacity: exiting ? 0 : 1 }} transition={{ duration: 0.45 }}>
+          <Scene progress={progress} reduce />
+          <Overlay progress={progress} t={t} onSkip={skip} />
         </motion.div>
+      ) : (
+        <>
+          {/* The same scene twice, clipped into two halves along a diagonal, so it can be "cut" open */}
+          {[
+            { clip: "polygon(0 0, 100% 0, 100% calc(42% + 1px), 0 calc(58% + 1px))", to: { y: "-62%", x: "-3%", rotate: -2 } },
+            { clip: "polygon(0 58%, 100% 42%, 100% 100%, 0 100%)", to: { y: "62%", x: "3%", rotate: 2 } },
+          ].map((half, i) => (
+            <motion.div
+              key={i}
+              className="absolute inset-0"
+              style={{ clipPath: half.clip }}
+              animate={exiting ? { ...half.to, opacity: [1, 1, 0] } : { y: 0, x: 0, rotate: 0, opacity: 1 }}
+              transition={halfTransition}
+            >
+              <Scene progress={progress} reduce={false} />
+              <Overlay progress={progress} t={t} onSkip={skip} clone={i === 1} />
+            </motion.div>
+          ))}
+
+          {/* The katana slash along the cut: rotated around the screen centre, drawn from its left end */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="w-[140vmax]" style={{ transform: `rotate(${slashAngle}deg)` }}>
+              <motion.div
+                className="h-[2px] w-full origin-left bg-white shadow-[0_0_18px_4px_rgba(255,109,82,0.9),0_0_60px_12px_rgba(232,71,47,0.5)]"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={exiting ? { scaleX: [0, 1, 1], opacity: [1, 1, 0] } : { scaleX: 0, opacity: 0 }}
+                transition={{ duration: 0.7, times: [0, 0.45, 1], ease: "easeOut" }}
+              />
+            </div>
+          </div>
+        </>
       )}
-    </AnimatePresence>
+    </div>
   );
 };
 

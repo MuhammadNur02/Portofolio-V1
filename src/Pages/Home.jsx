@@ -1,289 +1,225 @@
-import { useState, useEffect, useCallback, memo } from "react"
-import { Helmet } from "react-helmet-async"
-import { Mail, ExternalLink } from "lucide-react"
-import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa6"
-import AOS from 'aos'
-import 'aos/dist/aos.css'
-import { useLanguage } from "../context/LanguageContext"
+import { memo } from "react";
+import { Helmet } from "react-helmet-async";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Star } from "lucide-react";
+import { FaGithub, FaLinkedinIn, FaInstagram } from "react-icons/fa6";
+import { useLanguage } from "../context/LanguageContext";
+import { useCollection } from "../lib/useCollection";
+import { scrollToTarget } from "../lib/smoothScroll";
+import { MARQUEE_STACK } from "../lib/tech";
+import { SITE, SOCIALS, yearsOfExperience } from "../config/site";
+import LogoMarquee from "../components/ui/LogoMarquee";
+import CountUp from "../components/ui/CountUp";
+import CvLink from "../components/ui/CvLink";
 
-const MainTitle = memo(() => {
-  const { lang } = useLanguage();
-  const [line1, line2] = lang === "en"
-    ? ["AI-Assisted", "Fullstack Developer"]
-    : ["Fullstack Developer", "Berbasis AI"];
-  return (
-    <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
-      <h1 className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
-        <span className="relative inline-block">
-          <span className="absolute -inset-2 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] blur-2xl opacity-20"></span>
-          <span className="relative bg-gradient-to-r from-white via-amber-100 to-orange-200 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
-            {line1}
-          </span>
-        </span>
-        <br />
-        <span className="relative inline-block mt-2">
-          <span className="absolute -inset-2 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] blur-2xl opacity-20"></span>
-          {/* On phones the headline sits on the red moon, so the gradient ends in a lighter orange there (pure red on red is unreadable) */}
-          <span className="relative bg-gradient-to-r from-[#fbbf24] to-[#f97316] sm:to-[#dc2626] bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
-            {line2}
-          </span>
-        </span>
-      </h1>
-    </div>
-  );
+const EASE = [0.22, 1, 0.36, 1];
+const SOCIAL_ICONS = { github: FaGithub, linkedin: FaLinkedinIn, instagram: FaInstagram };
+
+// Everything in the hero waits for `ready` (the welcome screen has gone) before animating in.
+const enter = (ready, delay, reduce) => ({
+  initial: reduce ? { opacity: 0 } : { opacity: 0, y: 24, filter: "blur(8px)" },
+  animate: ready ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined,
+  transition: { duration: 0.9, delay, ease: EASE },
 });
 
-const TechStack = memo(({ tech }) => (
-  <div className="px-4 py-2 hidden sm:block rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-sm text-gray-300 hover:bg-white/10 transition-colors">
-    {tech}
-  </div>
-));
+function HeadlineLine({ children, ready, delay, reduce, className }) {
+  return (
+    <span className="block overflow-hidden pb-[0.04em]">
+      <motion.span
+        className={`block ${className || ""}`}
+        initial={reduce ? { opacity: 0 } : { y: "105%", rotate: 2 }}
+        animate={ready ? { y: "0%", rotate: 0, opacity: 1 } : undefined}
+        transition={{ duration: 1.1, delay, ease: EASE }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  );
+}
 
-const CTAButton = memo(({ href, text, icon: Icon, variant }) => (
-  <a href={href} className="group relative block w-[160px]">
-    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#e0231c] to-[#ea580c] rounded-xl opacity-50 blur-md group-hover:opacity-90 transition-all duration-700"></div>
-    <div className="relative h-11 bg-[#0a0705] backdrop-blur-xl rounded-lg border border-white/10 leading-none overflow-hidden">
-      <div className="absolute inset-0 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 bg-gradient-to-r from-[#e0231c]/20 to-[#ea580c]/20"></div>
-      <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm group-hover:gap-3 transition-all duration-300">
-        <span className="bg-gradient-to-r from-gray-200 to-white bg-clip-text text-transparent font-medium z-10">
-          {text}
-        </span>
-        <Icon className={`w-4 h-4 text-gray-200 ${variant === 'contact' ? 'group-hover:translate-x-1' : 'group-hover:rotate-45'} transform transition-all duration-300 z-10`} />
-      </span>
+function TrustAvatars({ testimonials, label }) {
+  const people = testimonials.slice(0, 4);
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex -space-x-3">
+        {people.map((p) =>
+          p.avatar ? (
+            <img key={p.id} src={p.avatar} alt="" className="h-10 w-10 rounded-full border-2 border-ink object-cover" />
+          ) : (
+            <span
+              key={p.id}
+              aria-hidden="true"
+              className="grid h-10 w-10 place-items-center rounded-full border-2 border-ink bg-ink-600 text-sm font-semibold text-washi"
+            >
+              {(p.name || "?").trim().charAt(0).toUpperCase()}
+            </span>
+          )
+        )}
+      </div>
+      <div>
+        <div className="flex gap-0.5" aria-label="5/5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} aria-hidden="true" className="h-4 w-4 fill-kin-400 text-kin-400" />
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-washi-muted">{label}</p>
+      </div>
     </div>
-  </a>
-));
+  );
+}
 
-const SocialLink = memo(({ icon: Icon, link, label, color }) => (
-  <a href={link} target="_blank" rel="noopener noreferrer" aria-label={label} className="group relative block p-3">
-    <div className="absolute inset-0 bg-gradient-to-r from-[#fbbf24] to-[#dc2626] rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-    <div className="relative rounded-xl bg-black/50 backdrop-blur-xl p-2 flex items-center justify-center border border-white/10 group-hover:border-white/20 transition-all duration-300">
-      <Icon
-        className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-        style={{ color }}
-      />
-    </div>
-  </a>
-));
+const Home = ({ ready = true }) => {
+  const { t } = useLanguage();
+  const reduce = useReducedMotion();
+  const { data: projects } = useCollection("projects");
+  const { data: certificates } = useCollection("certificates");
+  const { data: testimonials } = useCollection("testimonials");
 
-const TYPING_SPEED = 100;
-const ERASING_SPEED = 50;
-const PAUSE_DURATION = 2000;
-const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
-const SOCIAL_LINKS = [
-  { icon: FaGithub, link: "https://github.com/MuhammadNur02", label: "GitHub Profile", color: "#ffffff" },
-  { icon: FaLinkedin, link: "https://www.linkedin.com/in/MuchammadNur/", label: "LinkedIn Profile", color: "#0A66C2" },
-  { icon: FaInstagram, link: "https://www.instagram.com/rianz_yan/", label: "Instagram Profile", color: "#E4405F" }
-];
-
-const Home = () => {
-  const { t, lang } = useLanguage()
-  const WORDS = t.hero.words
-  const [text, setText] = useState("")
-  const [isTyping, setIsTyping] = useState(true)
-  const [wordIndex, setWordIndex] = useState(0)
-  const [charIndex, setCharIndex] = useState(0)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
-  const [parallax, setParallax] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    setText("")
-    setCharIndex(0)
-    setWordIndex(0)
-    setIsTyping(true)
-  }, [lang])
-
-  useEffect(() => {
-    const initAOS = () => {
-      AOS.init({
-        once: true,
-        offset: 10,
-      });
-    };
-
-    initAOS();
-    window.addEventListener('resize', initAOS);
-    return () => window.removeEventListener('resize', initAOS);
-  }, []);
-
-  useEffect(() => {
-    setIsLoaded(true);
-    return () => setIsLoaded(false); 
-  }, []);
-
-  const handleTyping = useCallback(() => {
-    if (isTyping) {
-      if (charIndex < WORDS[wordIndex].length) {
-        setText(prev => prev + WORDS[wordIndex][charIndex]);
-        setCharIndex(prev => prev + 1);
-      } else {
-        setTimeout(() => setIsTyping(false), PAUSE_DURATION);
-      }
-    } else {
-      if (charIndex > 0) {
-        setText(prev => prev.slice(0, -1));
-        setCharIndex(prev => prev - 1);
-      } else {
-        setWordIndex(prev => (prev + 1) % WORDS.length);
-        setIsTyping(true);
-      }
-    }
-  }, [charIndex, isTyping, wordIndex, WORDS]);
-
-  useEffect(() => {
-    const timeout = setTimeout(
-      handleTyping,
-      isTyping ? TYPING_SPEED : ERASING_SPEED
-    );
-    return () => clearTimeout(timeout);
-  }, [handleTyping, isTyping]);
+  const stats = [
+    { value: projects.length, label: t.hero.statProjects },
+    { value: certificates.length, label: t.hero.statCertificates },
+    { value: yearsOfExperience(), label: t.hero.statYears, suffix: "+" },
+  ];
+  const socials = SOCIALS.filter((s) => SOCIAL_ICONS[s.id]);
 
   return (
     <>
       <Helmet>
-        <title>Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer</title>
-        <meta name="description" content="Website resmi Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer. Saya berfokus pada penciptaan pengalaman digital yang menarik dan selalu berupaya memberikan solusi terbaik dalam setiap proyek yang saya kerjakan." />
-     <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://portofolio-v1-one-gamma.vercel.app/" />
-        <meta property="og:title" content="Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer" />
-     <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer." />
-        <meta property="og:url" content="https://portofolio-v1-one-gamma.vercel.app/" />
+        <title>{`${SITE.name} — ${SITE.role}`}</title>
+        <meta
+          name="description"
+          content="Portofolio Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer — aplikasi web cepat dan rapi dengan React, Next.js, dan Supabase."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`${SITE.url}/`} />
+        <meta property="og:title" content={`${SITE.name} — ${SITE.role}`} />
+        <meta property="og:url" content={`${SITE.url}/`} />
         <meta property="og:type" content="website" />
-        <script type="application/ld+json">{`
-          {
-            "@context": "https://schema.org",
-            "@type": "Person",
-            "name": "Muhammad Nurrahman Juliansyah",
-            "jobTitle": "AI-Assisted Fullstack Developer",
-            "url": "https://portofolio-v1-one-gamma.vercel.app/",
-            "sameAs": [
-              "https://github.com/MuhammadNur02",
-              "https://www.linkedin.com/in/MuchammadNur/",
-              "https://www.instagram.com/rianz_yan/"
-            ]
-          }
-        `}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#0a0705] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
-        <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
-          <div className="container mx-auto min-h-screen">
-            <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen pt-20 md:justify-between gap-0 sm:gap-12 lg:gap-20">
-              {/* Left Column */}
-              {/* Left Column */}
-<div className="w-full lg:w-1/2 space-y-6 sm:space-y-8 text-left lg:text-left order-1 lg:order-1 lg:mt-0 relative z-20"
-  data-aos="fade-right"
-  data-aos-delay="200">
-  
-  <div className="space-y-6">
-    <MainTitle />
+      <section id="Home" className="relative flex min-h-[100svh] flex-col overflow-hidden">
+        {/* Legibility shading over the 3D artwork — confined to the hero */}
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/45 to-transparent" />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
 
-    {/* Typing Effect */}
-    <div className="h-8 flex items-center" data-aos="fade-up" data-aos-delay="800">
-      <span className="text-xl md:text-2xl bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent font-light">
-        {text}
-      </span>
-      <span className="w-[3px] h-6 bg-gradient-to-t from-[#fbbf24] to-[#e0231c] ml-1 animate-blink"></span>
-    </div>
+        <div className="container-site relative flex flex-1 flex-col justify-center pb-12 pt-32 sm:pt-36">
+          <div className="max-w-4xl">
+            {SITE.availableForWork && (
+              <motion.p
+                {...enter(ready, 0.1, reduce)}
+                className="inline-flex items-center gap-2.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.07] px-3.5 py-1.5 text-xs font-medium text-emerald-200 backdrop-blur-sm sm:text-sm"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                </span>
+                {t.hero.available}
+              </motion.p>
+            )}
 
-    {/* Description */}
-    <p className="text-base md:text-lg text-gray-400 max-w-xl leading-relaxed font-light"
-      data-aos="fade-up"
-      data-aos-delay="1000">
-      {t.hero.description}
-    </p>
+            <motion.p {...enter(ready, 0.2, reduce)} className="mt-7 flex items-center gap-3 text-sm text-washi-muted sm:text-base">
+              <span aria-hidden="true" className="h-px w-10 bg-shu-500" />
+              {t.hero.greeting}
+            </motion.p>
 
-    {/* Tech Stack */}
-    <div className="flex flex-wrap gap-3 justify-start" data-aos="fade-up" data-aos-delay="1200">
-      {TECH_STACK.map((tech, index) => (
-        <TechStack key={index} tech={tech} />
-      ))}
-    </div>
+            <h1 className="mt-5 font-display text-[11.5vw] font-extrabold uppercase leading-[0.88] tracking-tight text-washi font-semiwide sm:text-[8.2vw] sm:font-wide lg:text-[7vw] 2xl:text-[7.5rem]">
+              <span className="sr-only">{SITE.name} — </span>
+              <HeadlineLine ready={ready} delay={0.3} reduce={reduce}>
+                {t.hero.titleA}
+              </HeadlineLine>
+              <HeadlineLine ready={ready} delay={0.42} reduce={reduce} className="text-shu-500">
+                {t.hero.titleB}
+              </HeadlineLine>
+            </h1>
 
-    {/* CTA Buttons (Projects, Contact) */}
-    <div className="flex flex-row gap-3 w-full justify-start flex-wrap" data-aos="fade-up" data-aos-delay="1400">
-      <CTAButton href="#Portofolio" text={t.hero.projects} icon={ExternalLink} variant="projects" />
-      <CTAButton href="#Contact" text={t.hero.contact} icon={Mail} variant="contact" />
-    </div>
+            <motion.p
+              {...enter(ready, 0.6, reduce)}
+              className="mt-7 max-w-xl text-base leading-relaxed text-washi-muted text-pretty sm:text-lg"
+            >
+              {t.hero.sub}
+            </motion.p>
 
-    {/* Social Links */}
-    <div className="hidden sm:flex gap-4 justify-start" data-aos="fade-up" data-aos-delay="1600">
-      {SOCIAL_LINKS.map((social, index) => (
-        <SocialLink key={index} {...social} />
-      ))}
-    </div>
-  </div>
-</div>
+            <motion.div {...enter(ready, 0.72, reduce)} className="mt-9 flex flex-wrap items-center gap-3">
+              <a
+                href="#Portofolio"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToTarget("#Portofolio");
+                }}
+                className="btn-primary group"
+              >
+                {t.hero.ctaWork}
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </a>
+              <CvLink className="btn-ghost group">{t.hero.ctaCv}</CvLink>
+              <ul className="ml-1 flex items-center gap-1">
+                {socials.map((s) => {
+                  const Icon = SOCIAL_ICONS[s.id];
+                  return (
+                    <li key={s.id}>
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={s.label}
+                        className="grid h-11 w-11 place-items-center rounded-full text-washi-muted transition-colors duration-300 hover:bg-white/[0.06] hover:text-washi"
+                      >
+                        <Icon className="h-[18px] w-[18px]" />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </motion.div>
 
-{/* Right Column - GIF illustration */}
-<div
-  className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[260px] sm:h-[400px] lg:h-[600px] xl:h-[750px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0"
-  onMouseMove={(e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-    const relY = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-    setParallax({ x: relX * 12, y: relY * 12 });
-  }}
-  onMouseLeave={() => setParallax({ x: 0, y: 0 })}
->
-
-  {/* GIF Illustration */}
-  <div
-    onMouseEnter={() => setIsHovering(true)}
-    onMouseLeave={() => setIsHovering(false)}
-    className="absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out opacity-100 translate-x-0 scale-100"
-  >
-    <div
-      className="relative w-full opacity-90"
-      style={{
-        transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)`,
-        transition: "transform 0.3s ease-out",
-      }}
-    >
-      <div className={`absolute inset-0 bg-gradient-to-r from-[#fbbf24]/10 to-[#dc2626]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
-        isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
-      }`}></div>
-
-      <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
-        isHovering ? "scale-105" : "scale-100"
-      }`}>
-        {/* Float lives on a wrapper so its transform doesn't fight the hover scale/rotate on the <img> */}
-        <div className="animate-gate-float">
-          <img
-            src="/Gate-Japanese.webp"
-            alt="Japanese torii gate"
-            className={`w-full h-full object-contain transition-all duration-500 ${
-              isHovering
-                ? "scale-[75%] sm:scale-[85%] md:scale-[90%] lg:scale-[90%] rotate-2"
-                : "scale-[65%] sm:scale-[75%] md:scale-[80%] lg:scale-[80%]"
-            }`}
-            // Dark aura hugging the gate's silhouette: tight edge shadow + wide soft falloff.
-            style={{
-              filter:
-                "drop-shadow(0 0 6px rgba(0,0,0,0.9)) drop-shadow(0 0 22px rgba(0,0,0,0.85)) drop-shadow(0 0 56px rgba(0,0,0,0.7))",
-            }}
-          />
-        </div>
-      </div>
-
-      <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
-        isHovering ? "opacity-50" : "opacity-20"
-      }`}>
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-orange-500/10 to-amber-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
-          isHovering ? "scale-110" : "scale-100"
-        }`}></div>
-      </div>
-    </div>
-  </div>
-</div>
-            </div>
+            <motion.div
+              {...enter(ready, 0.85, reduce)}
+              className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-6 border-t border-white/10 pt-8"
+            >
+              <dl className="flex gap-8 sm:gap-10">
+                {stats.map((s) => (
+                  <div key={s.label} className="flex flex-col-reverse gap-1">
+                    <dt className="text-xs uppercase tracking-[0.16em] text-washi-subtle">{s.label}</dt>
+                    <dd className="font-display text-3xl font-bold text-washi font-semiwide sm:text-4xl">
+                      <CountUp value={s.value} start={ready} suffix={s.suffix} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {testimonials.length > 0 && <TrustAvatars testimonials={testimonials} label={t.hero.trustedBy} />}
+            </motion.div>
           </div>
         </div>
-      </div>
+
+        <motion.div {...enter(ready, 1, reduce)} className="relative border-t border-white/[0.06] bg-ink/40 py-6 backdrop-blur-sm">
+          <p className="container-site mb-4 text-[11px] font-medium uppercase tracking-[0.3em] text-washi-subtle">{t.hero.stackLabel}</p>
+          <LogoMarquee
+            label={t.hero.stackLabel}
+            items={MARQUEE_STACK}
+            speed={36}
+            hoverSpeed={8}
+            gap="3.25rem"
+            renderItem={(tech) => (
+              <span
+                className="group flex items-center gap-2.5 text-washi-subtle transition-colors duration-300 hover:text-washi"
+                style={{ "--brand": tech.color }}
+              >
+                <tech.icon aria-hidden="true" className="h-6 w-6 transition-colors duration-300 group-hover:text-[color:var(--brand)]" />
+                <span className="whitespace-nowrap text-sm font-medium">{tech.name}</span>
+              </span>
+            )}
+          />
+        </motion.div>
+
+        <div aria-hidden="true" className="absolute bottom-40 right-6 hidden flex-col items-center gap-3 lg:flex xl:right-10">
+          <span className="text-[10px] uppercase tracking-[0.3em] text-washi-subtle [writing-mode:vertical-rl]">{t.hero.scroll}</span>
+          <span className="relative h-16 w-px overflow-hidden bg-white/10">
+            <span className="absolute inset-0 animate-scroll-cue bg-shu-500" />
+          </span>
+        </div>
+      </section>
     </>
   );
 };
 
 export default memo(Home);
-

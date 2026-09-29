@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from "../../supabase";
+import { compressImage, safeFileName } from "../../lib/compressImage";
 import { Award, Upload, Trash2, ImageIcon, Plus } from 'lucide-react'
 
 const Card = ({ children, className = '' }) => (
@@ -85,8 +86,14 @@ export default function Certificates() {
   const uploadImage = async () => {
     if (!file) return
     setUploading(true)
-    const fileName = `cert-${Date.now()}-${file.name}`
-    await supabase.storage.from('certificate-images').upload(fileName, file)
+    const f = await compressImage(file)
+    const fileName = `cert-${Date.now()}-${safeFileName(f.name)}`
+    const { error } = await supabase.storage.from('certificate-images').upload(fileName, f)
+    if (error) {
+      alert(`Upload failed: ${error.message}`)
+      setUploading(false)
+      return
+    }
     const { data } = supabase.storage.from('certificate-images').getPublicUrl(fileName)
     await supabase.from('certificates').insert({ Img: data.publicUrl })
     setFile(null); setPreview(null); setUploading(false)

@@ -11,8 +11,26 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
-  <!-- welcome screen artwork: start downloading right away so the screen is never an empty dark box on slow phone networks -->
-  <link rel="preload" as="image" href="/WelcomeScreenNew.webp" type="image/webp" fetchpriority="high" />
+  <!-- welcome screen artwork (blood moon + torii silhouette): fetched right away so the intro never starts empty -->
+  <!-- only for visitors who will actually see the intro (it plays once per session) -->
+  <script>
+    try {
+      if (sessionStorage.getItem("welcomeSeen") !== "1" && location.pathname === "/") {
+        ["/Blood-Moon.webp", "/Torii-Gate-sm.webp"].forEach(function (href, i) {
+          var link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.type = "image/webp";
+          link.href = href;
+          if (i === 0) link.setAttribute("fetchpriority", "high");
+          document.head.appendChild(link);
+        });
+      }
+    } catch (e) {}
+  </script>
+
+  <!-- Open the connection to the database early: the hero's stats come from there -->
+  <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
 
   <!-- SEO Utama -->
   <title>Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer</title>
@@ -21,7 +39,7 @@
   <meta name="author" content="Muhammad Nurrahman Juliansyah" />
 
   <!-- Theme / PWA -->
-  <meta name="theme-color" content="#0a0705" />
+  <meta name="theme-color" content="#0a0807" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -55,7 +73,7 @@
     "@type": "Person",
     "name": "Muhammad Nurrahman Juliansyah",
     "url": "https://portofolio-v1-one-gamma.vercel.app/",
-    "image": "https://portofolio-v1-one-gamma.vercel.app/Profil.jpeg",
+    "image": "https://portofolio-v1-one-gamma.vercel.app/Portrait.webp",
     "jobTitle": "AI-Assisted Fullstack Developer",
     "description": "Combining AI-assisted workflows, clean design, and full-stack architecture to build web applications that are fast, scalable, and intuitive. Focused on crafting seamless UI, robust APIs, and end-to-end user experiences.",
     "sameAs": [

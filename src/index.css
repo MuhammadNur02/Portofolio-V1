@@ -2,227 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	  font-family: "Zen Kaku Gothic New", system-ui, sans-serif;
-	scroll-behavior: smooth;
-	scrollbar-width: thin;
-	scrollbar-color: rgba(224, 35, 28, 0.3) rgba(18, 10, 6, 0.356);
+/* Decorative kanji (侍, 私, 作品 …) — Shippori Mincho ExtraBold, subset to ONLY the glyphs the site
+   uses: ~3 KB instead of the 1.4 MB full Japanese font. Using a new kanji? Regenerate the subset
+   (e.g. with the `subset-font` npm package) or it falls back to the system serif. */
+@font-face {
+	font-family: "Shippori Mincho";
+	font-style: normal;
+	font-weight: 800;
+	font-display: swap;
+	src: url("./assets/fonts/shippori-mincho-800-subset.woff2") format("woff2");
 }
 
-html,
-body {
-	overflow-x: hidden;
-	background: #0a0705;
-	scroll-behavior: smooth !important;
-}
-
-@keyframes blob {
-	0%,
-	100% {
-		transform: translateY(0);
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+		text-rendering: optimizeLegibility;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		scrollbar-width: thin;
+		scrollbar-color: #2a231f transparent;
+		/* Keep the scrollbar's space reserved, so locking scroll (menu, lightbox) doesn't shift the layout */
+		scrollbar-gutter: stable;
 	}
-	50% {
-		transform: translateY(-20px);
+
+	html,
+	body {
+		overflow-x: clip;
+		background: theme("colors.ink.DEFAULT");
+		color: theme("colors.washi.DEFAULT");
+		font-family: theme("fontFamily.sans");
 	}
-}
 
-.animate-blob {
-	animation: blob 8s infinite;
-}
-
-.animation-delay-2000 {
-	animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-	animation-delay: 4s;
-}
-
-/* Hero torii gate: slow levitation with a hint of sway */
-@keyframes gate-float {
-	0%,
-	100% {
-		transform: translate3d(0, 0, 0) rotate(-0.8deg);
+	::selection {
+		background: theme("colors.shu.500");
+		color: #fff;
 	}
-	50% {
-		transform: translate3d(0, -22px, 0) rotate(0.8deg);
+
+	:focus-visible {
+		outline: 2px solid theme("colors.shu.400");
+		outline-offset: 3px;
+		border-radius: 4px;
 	}
-}
 
-.animate-gate-float {
-	animation: gate-float 6s ease-in-out infinite;
-	will-change: transform;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.animate-gate-float {
-		animation: none;
+	::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
 	}
-}
-
-/* Welcome screen loading bar: a soft highlight sweeping across the fill */
-@keyframes loader-shimmer {
-	from {
-		transform: translateX(-100%);
-	}
-	to {
-		transform: translateX(400%);
-	}
-}
-
-.animate-loader-shimmer {
-	animation: loader-shimmer 1.6s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.animate-loader-shimmer {
-		animation: none;
-	}
-}
-
-/* Enhanced Custom Scrollbar Styles */
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-	background-color: transparent;
-  }
-  
-  ::-webkit-scrollbar-track {
-	background: rgba(10, 7, 5, 0.4);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-	border: 1px solid rgba(224, 35, 28, 0.1);
-  }
-  
-  ::-webkit-scrollbar-thumb {
-	background: rgba(224, 35, 28, 0.3);
-	backdrop-filter: blur(4px);
-	-webkit-backdrop-filter: blur(4px);
-	border-radius: 20px;
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	box-shadow: 
-	  inset 0 0 20px rgba(220, 38, 38, 0.2),
-	  0 0 10px rgba(224, 35, 28, 0.2);
-	transition: all 0.3s ease;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-	background: rgba(224, 35, 28, 0.5);
-	border: 1px solid rgba(220, 38, 38, 0.3);
-	box-shadow: 
-	  inset 0 0 30px rgba(220, 38, 38, 0.3),
-	  0 0 15px rgba(224, 35, 28, 0.3);
-  }
-  
-  /* When scrollbar is in active/clicked state */
-  ::-webkit-scrollbar-thumb:active {
-	background: rgba(224, 35, 28, 0.6);
-	border: 1px solid rgba(220, 38, 38, 0.4);
-	box-shadow: 
-	  inset 0 0 40px rgba(220, 38, 38, 0.4),
-	  0 0 20px rgba(224, 35, 28, 0.4);
-  }
-  
-  ::-webkit-scrollbar-corner {
-	background: transparent;
-  }
-
-  [data-aos] {
-	will-change: transform, opacity !important;
-  }
-
-
-
- @keyframes shine {
-  from {
-	     left: -100%;
-  }
-	  to {
-	    left: 200%;
-	   }
-	 }
-	 .animate-shine {
-   animation: shine 1.5s ease-in-out infinite;
- }
-
-  
-/*   @media (prefers-color-scheme: dark) {
 	::-webkit-scrollbar-track {
-	  background: rgba(10, 7, 5, 0.6);
+		background: transparent;
 	}
-  } */
+	::-webkit-scrollbar-thumb {
+		background: #2a231f;
+		border: 3px solid theme("colors.ink.DEFAULT");
+		border-radius: 999px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: theme("colors.shu.700");
+	}
 
+	img {
+		-webkit-user-drag: none;
+	}
+}
 
-/* 
-  .container {
-	width: 100%;
-	height: 100%;
-  }
-  
-  .main > div {
-	position: absolute;
-	will-change: transform;
-	border-radius: 50%;
-	background: lightcoral;
-	box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-	opacity: 0.6;
-  }
-  
-  .main > div:nth-child(1) {
-	width: 60px;
-	height: 60px;
-  }
-  
-  .main > div:nth-child(2) {
-	width: 125px;
-	height: 125px;
-  }
-  
-  .main > div:nth-child(3) {
-	width: 75px;
-	height: 75px;
-  }
-  
-  .main > div::after {
-	content: '';
-	position: absolute;
-	top: 20px;
-	left: 20px;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	background: rgba(255, 0, 0, 0.8);
-  }
-  
-  .main > div:nth-child(2)::after {
-	top: 35px;
-	left: 35px;
-	width: 35px;
-	height: 35px;
-  }
-  
-  .main > div:nth-child(3)::after {
-	top: 25px;
-	left: 25px;
-	width: 25px;
-	height: 25px;
-  }
-  
-  .main {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	filter: url('#blob');
-	overflow: hidden;
-	background: transparent;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	cursor: default;
-  } */
+@layer components {
+	/* One horizontal rhythm for every section */
+	.container-site {
+		@apply mx-auto w-full max-w-site px-5 sm:px-8 lg:px-12;
+	}
+
+	.section-y {
+		@apply py-24 sm:py-28 lg:py-36;
+	}
+
+	/* Hairline card surface used across the site */
+	.surface {
+		@apply rounded-2xl border border-white/[0.07] bg-white/[0.025] backdrop-blur-md;
+	}
+
+	.btn {
+		@apply relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full px-6 text-sm font-medium
+			transition-[transform,background-color,border-color,color,box-shadow] duration-300 ease-out
+			active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+	}
+	.btn-primary {
+		@apply btn bg-shu-600 text-white shadow-[0_10px_40px_-12px_rgba(232,71,47,0.7)] hover:bg-shu-700
+			hover:shadow-[0_14px_50px_-12px_rgba(232,71,47,0.9)];
+	}
+	.btn-ghost {
+		@apply btn border border-white/15 bg-white/[0.03] text-washi backdrop-blur-sm hover:border-white/35 hover:bg-white/[0.07];
+	}
+}
+
+@layer utilities {
+	.font-wide {
+		font-stretch: 125%;
+	}
+	.font-semiwide {
+		font-stretch: 112%;
+	}
+	.text-balance {
+		text-wrap: balance;
+	}
+	.text-pretty {
+		text-wrap: pretty;
+	}
+	.mask-fade-x {
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+		mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+	}
+	.mask-fade-y {
+		-webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+		mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+	}
+}
+
+/* Film grain: a very faint noise layer that keeps large dark areas from looking flat */
+.grain {
+	pointer-events: none;
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	opacity: 0.05;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Lenis smooth scrolling (https://github.com/darkroomengineering/lenis) */
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+.lenis.lenis-smooth {
+	scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+	overflow: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
