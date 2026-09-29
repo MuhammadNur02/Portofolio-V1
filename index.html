@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <!-- Basic -->
   <meta charset="UTF-8" />
@@ -35,10 +35,13 @@
   <!-- Open the connection to the database early: the hero's stats come from there -->
   <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
 
-  <!-- SEO Utama -->
+  <!-- Primary SEO. English on purpose: this is the static markup search engines and link-preview bots
+       (LinkedIn, WhatsApp, Twitter/X) read before any client-side JS runs, regardless of which
+       language a visitor later toggles to in the UI — so it's what decides how this site is found by
+       and presented to an international audience. -->
   <title>Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer</title>
-  <meta name="description" content="Website resmi Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer. Saya berfokus pada penciptaan pengalaman digital yang menarik dan selalu berupaya memberikan solusi terbaik dalam setiap proyek yang saya kerjakan." />
-  <meta name="keywords" content="Muhammad Nurrahman Juliansyah, MuhammadNur02, AI-Assisted Fullstack Developer, Portofolio" />
+  <meta name="description" content="Portfolio of Muhammad Nurrahman Juliansyah, an AI-Assisted Fullstack Developer building fast, scalable web applications with React, Next.js, Node.js and Supabase — combining modern architecture with AI-driven workflows." />
+  <meta name="keywords" content="Muhammad Nurrahman Juliansyah, MuhammadNur02, AI-Assisted Fullstack Developer, Full-Stack Developer, React Developer, Next.js Developer, Web Developer Indonesia, Portfolio" />
   <meta name="author" content="Muhammad Nurrahman Juliansyah" />
 
   <!-- Theme / PWA -->
@@ -49,13 +52,13 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:locale" content="id_ID" />
+  <meta property="og:locale" content="en_US" />
   <!-- The site toggles ID/EN client-side rather than serving separate URLs, so this is a locale hint
        for platforms unfurling the link — not a substitute for hreflang, which needs distinct URLs. -->
-  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="id_ID" />
   <meta property="og:url" content="https://juliansyah.vercel.app/" />
   <meta property="og:title" content="Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer" />
-  <meta property="og:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah, AI-Assisted Fullstack Developer." />
+  <meta property="og:description" content="AI-Assisted Fullstack Developer building fast, scalable web applications with React, Next.js and Supabase." />
   <meta property="og:image" content="https://juliansyah.vercel.app/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -65,7 +68,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://juliansyah.vercel.app/" />
   <meta name="twitter:title" content="Muhammad Nurrahman Juliansyah | AI-Assisted Fullstack Developer" />
-  <meta name="twitter:description" content="Website resmi dan portofolio Muhammad Nurrahman Juliansyah." />
+  <meta name="twitter:description" content="AI-Assisted Fullstack Developer building fast, scalable web applications with React, Next.js and Supabase." />
   <meta name="twitter:image" content="https://juliansyah.vercel.app/og-image.jpg" />
   <meta name="twitter:image:alt" content="Muhammad Nurrahman Juliansyah — AI-Assisted Fullstack Developer" />
 
@@ -115,7 +118,7 @@
 </head>
 
 <body>
-  <!-- Konten teks penting untuk SEO -->
+  <!-- Real text content for SEO/no-JS crawlers, matching the hidden-until-hydrated hero heading -->
   <header style="display:none">
     <h1>Muhammad Nurrahman Juliansyah</h1>
     <p>
