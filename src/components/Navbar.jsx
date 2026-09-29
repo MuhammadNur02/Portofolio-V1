@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { scrollToTarget, useScrollLock } from "../lib/smoothScroll";
 import { cn } from "../lib/utils";
-import { SITE, SOCIALS } from "../config/site";
+import { SITE, SOCIALS, waLink } from "../config/site";
 import MenuToggleIcon from "./ui/MenuToggleIcon";
 
 const SECTIONS = ["About", "Experience", "Portofolio", "Gallery", "Testimonials", "Contact"];
@@ -218,8 +218,9 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <a
-              href="#Contact"
-              onClick={(e) => go(e, "#Contact")}
+              href={waLink(t.nav.hireMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
               className="btn-primary hidden h-10 px-5 md:inline-flex"
             >
               {t.nav.hire}

@@ -6,7 +6,7 @@ export const SITE = {
   name: "Muhammad Nurrahman Juliansyah",
   shortName: "Julian",
   role: "AI-Assisted Fullstack Developer",
-  email: "muhammadnurrahmanjuliansyah@gmail.com",
+  email: "muchammad.nur02@gmail.com",
   // The day you started coding — "years of experience" is counted from here.
   startDate: "2021-11-06",
   // Shows the green "available" badge in the hero and contact section. Set to false once you're hired.
@@ -16,8 +16,14 @@ export const SITE = {
   cvUrl: "https://drive.google.com/drive/folders/1gkmicadsk_7yh5qpweNi23js5rCBcsb6",
 };
 
-// Country code + number, digits only (e.g. "6281234567890"). Leave empty to hide WhatsApp.
-const WHATSAPP_NUMBER = "";
+// Country code + number, digits only (e.g. "6281234567890"). Leave empty to hide WhatsApp everywhere
+// (the socials list below and the "Hire Me" nav button both fall back gracefully — see waLink()).
+export const WHATSAPP_NUMBER = "62895329278298";
+
+// Builds a wa.me link, optionally with a prefilled message (e.g. the "Hire Me" button's greeting).
+// Returns null when no number is set, so callers can hide/disable the link instead of pointing nowhere.
+export const waLink = (message = "") =>
+  WHATSAPP_NUMBER ? `https://wa.me/${WHATSAPP_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ""}` : null;
 
 export const SOCIALS = [
   { id: "github", label: "GitHub", handle: "@MuhammadNur02", url: "https://github.com/MuhammadNur02" },
