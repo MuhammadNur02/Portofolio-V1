@@ -24,8 +24,15 @@ const enter = (ready, delay, reduce) => ({
 
 function HeadlineLine({ children, ready, delay, reduce, className }) {
   return (
-    <span className="block overflow-hidden pb-[0.04em]">
+    // Extra room above/below the glyphs: this box also drives the reveal animation (overflow-hidden
+    // masks the slide-up), and the display font's bold/wide cut can overshoot a tight line-height
+    // without it. The hero content is centered as a whole block, so the couple extra pixels this adds
+    // are absorbed automatically — nothing else needs to shift to compensate.
+    <span className="block overflow-hidden pb-[0.14em] pt-[0.04em]">
       <motion.span
+        // data-text feeds the ::before/::after outline layers in .text-outline-shu (see index.css) —
+        // harmless on lines that don't use that class.
+        data-text={children}
         className={`block ${className || ""}`}
         initial={reduce ? { opacity: 0 } : { y: "105%", rotate: 2 }}
         animate={ready ? { y: "0%", rotate: 0, opacity: 1 } : undefined}
@@ -124,10 +131,10 @@ const Home = ({ ready = true }) => {
 
             <h1 className="mt-5 font-display text-[11.5vw] font-extrabold uppercase leading-[0.88] tracking-tight text-washi font-semiwide sm:text-[8.2vw] sm:font-wide lg:text-[7vw] 2xl:text-[7.5rem]">
               <span className="sr-only">{SITE.name} — </span>
-              <HeadlineLine ready={ready} delay={0.3} reduce={reduce}>
+              <HeadlineLine ready={ready} delay={0.3} reduce={reduce} className="text-shine">
                 {t.hero.titleA}
               </HeadlineLine>
-              <HeadlineLine ready={ready} delay={0.42} reduce={reduce} className="text-shu-500">
+              <HeadlineLine ready={ready} delay={0.42} reduce={reduce} className="text-outline-shu">
                 {t.hero.titleB}
               </HeadlineLine>
             </h1>
@@ -174,12 +181,12 @@ const Home = ({ ready = true }) => {
 
             <motion.div
               {...enter(ready, 0.85, reduce)}
-              className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-6 border-t border-white/10 pt-8"
+              className="mt-12 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 border-t border-white/10 pt-8"
             >
               <dl className="flex gap-8 sm:gap-10">
                 {stats.map((s) => (
-                  <div key={s.label} className="flex flex-col-reverse gap-1">
-                    <dt className="text-xs uppercase tracking-[0.16em] text-washi-subtle">{s.label}</dt>
+                  <div key={s.label} className="flex flex-col-reverse items-center gap-1 text-center">
+                    <dt className="whitespace-nowrap text-xs uppercase tracking-[0.16em] text-washi-subtle">{s.label}</dt>
                     <dd className="font-display text-3xl font-bold text-washi font-semiwide sm:text-4xl">
                       <CountUp value={s.value} start={ready} suffix={s.suffix} />
                     </dd>
