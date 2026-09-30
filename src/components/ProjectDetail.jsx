@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Code2, Layers, Lock } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, ChevronRight, Code2, Compass, Layers, Lock, Target, TrendingUp, User } from "lucide-react";
 import { FaGithub } from "react-icons/fa6";
 import { supabase } from "../supabase";
 import { toSlug } from "../utils/slug";
@@ -142,6 +142,12 @@ const ProjectDetails = () => {
   ].filter((s) => s.value > 0);
   const hasTech = project.TechStack.length > 0;
   const hasFeatures = project.Features.length > 0;
+  const caseStudyItems = [
+    { key: "challenge", icon: Target, label: t.projectDetail.challenge, text: project.Challenge },
+    { key: "approach", icon: Compass, label: t.projectDetail.approach, text: project.Approach },
+    { key: "role", icon: User, label: t.projectDetail.role, text: project.Role },
+    { key: "results", icon: TrendingUp, label: t.projectDetail.results, text: project.Results },
+  ].filter((item) => item.text?.trim());
 
   return (
     <>
@@ -249,6 +255,28 @@ const ProjectDetails = () => {
               <BrowserFrame key={project.id} src={project.Img} alt={project.Title} url={project.Link} eager />
             </motion.div>
           </div>
+
+          {caseStudyItems.length > 0 && (
+            <div className="mt-20">
+              <Reveal>
+                <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.28em] text-shu-400">
+                  <span aria-hidden="true" className="h-px w-8 bg-shu-500/70" />
+                  {t.projectDetail.caseStudy}
+                </p>
+              </Reveal>
+              <RevealGroup as="div" className="mt-6 grid gap-6 sm:grid-cols-2" stagger={0.08}>
+                {caseStudyItems.map(({ key, icon: Icon, label, text }) => (
+                  <RevealItem as="div" key={key} className="surface p-6 sm:p-8">
+                    <h2 className="flex items-center gap-3 font-display text-lg font-bold text-washi font-semiwide">
+                      <Icon aria-hidden="true" className="h-5 w-5 text-shu-400" />
+                      {label}
+                    </h2>
+                    <p className="mt-4 text-washi-muted leading-relaxed text-pretty">{text}</p>
+                  </RevealItem>
+                ))}
+              </RevealGroup>
+            </div>
+          )}
 
           {(hasTech || hasFeatures) && (
             <div className={`mt-20 grid gap-10 ${hasTech && hasFeatures ? "lg:grid-cols-2" : ""}`}>

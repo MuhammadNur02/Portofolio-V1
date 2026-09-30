@@ -211,6 +211,10 @@ const ProjectForm = ({
       : initial?.Features || "",
     Link: initial?.Link || "",
     Github: initial?.Github || "",
+    Role: initial?.Role || "",
+    Challenge: initial?.Challenge || "",
+    Approach: initial?.Approach || "",
+    Results: initial?.Results || "",
   });
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(initial?.Img || null);
@@ -280,6 +284,67 @@ const ProjectForm = ({
           onChange={set("Github")}
           placeholder="https://github.com/username/repo"
         />
+
+        <div className="sm:col-span-2 pt-2 border-t border-white/8">
+          <p className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
+            Case Study (optional)
+          </p>
+          <p className="text-xs text-gray-600 mt-1">
+            Leave any of these blank to skip that section on the project page.
+          </p>
+        </div>
+
+        <div className="sm:col-span-2 space-y-1.5">
+          <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
+            My Role
+          </label>
+          <textarea
+            value={form.Role}
+            onChange={set("Role")}
+            placeholder="What you actually did on this project, and with who..."
+            rows={2}
+            className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
+          />
+        </div>
+
+        <div className="sm:col-span-2 space-y-1.5">
+          <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
+            The Challenge
+          </label>
+          <textarea
+            value={form.Challenge}
+            onChange={set("Challenge")}
+            placeholder="What problem existed, for who, and why it wasn't trivial..."
+            rows={3}
+            className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
+          />
+        </div>
+
+        <div className="sm:col-span-2 space-y-1.5">
+          <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
+            The Approach
+          </label>
+          <textarea
+            value={form.Approach}
+            onChange={set("Approach")}
+            placeholder="The decisions you made and why, not just a list of tools..."
+            rows={3}
+            className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
+          />
+        </div>
+
+        <div className="sm:col-span-2 space-y-1.5">
+          <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
+            The Outcome
+          </label>
+          <textarea
+            value={form.Results}
+            onChange={set("Results")}
+            placeholder="What changed because of it — be honest if it's still a prototype..."
+            rows={2}
+            className="w-full bg-[#17110a] border border-white/10 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-600 text-sm outline-none focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20 transition-all resize-none"
+          />
+        </div>
 
         <div className="sm:col-span-2 space-y-1.5">
           <label className="text-xs text-amber-300/70 uppercase tracking-wider font-medium">
@@ -395,6 +460,10 @@ export default function Projects() {
         .filter(Boolean),
       Link: form.Link,
       Github: form.Github,
+      Role: form.Role,
+      Challenge: form.Challenge,
+      Approach: form.Approach,
+      Results: form.Results,
     });
     setShowCreate(false);
     setUploading(false);
@@ -422,6 +491,10 @@ export default function Projects() {
           .filter(Boolean),
         Link: form.Link,
         Github: form.Github,
+        Role: form.Role,
+        Challenge: form.Challenge,
+        Approach: form.Approach,
+        Results: form.Results,
       })
       .eq("id", editProject.id);
     setEditProject(null);

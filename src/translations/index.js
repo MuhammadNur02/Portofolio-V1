@@ -192,6 +192,11 @@ export const translations = {
       totalTech: "Teknologi",
       totalFeatures: "Fitur Utama",
       privateText: "Kode sumber proyek ini bersifat privat.",
+      caseStudy: "Studi Kasus",
+      role: "Peran Saya",
+      challenge: "Tantangan",
+      approach: "Pendekatan",
+      results: "Hasil",
     },
   },
   en: {
@@ -387,6 +392,11 @@ export const translations = {
       totalTech: "Technologies",
       totalFeatures: "Key Features",
       privateText: "The source code for this project is private.",
+      caseStudy: "Case Study",
+      role: "My Role",
+      challenge: "The Challenge",
+      approach: "The Approach",
+      results: "The Outcome",
     },
   },
 };

@@ -103,7 +103,7 @@ The app expects these tables and storage buckets:
 - **Tables:** `projects`, `certificates`, `experience`, `testimonials`, `gallery`, `portfolio_comments`, `profiles` (admin access is granted through the `role` column).
 - **Storage buckets:** `project-images`, `certificate-images`, `testimonial-images`, `gallery-images`, `profile-images`.
 
-The gallery table, its bucket and their policies are created by [`supabase/gallery.sql`](supabase/gallery.sql) — run it once in the Supabase SQL editor. [`supabase/security-check.sql`](supabase/security-check.sql) lists RLS status and every policy, so over-broad write access is easy to spot.
+The gallery table, its bucket and their policies are created by [`supabase/gallery.sql`](supabase/gallery.sql) — run it once in the Supabase SQL editor. [`supabase/case-study-fields.sql`](supabase/case-study-fields.sql) adds the optional case-study columns (`Role`, `Challenge`, `Approach`, `Results`) to `projects`, shown on the project detail page only for whichever fields are filled in; [`supabase/case-study-content.sql`](supabase/case-study-content.sql) has draft copy for the projects already in the table. [`supabase/security-check.sql`](supabase/security-check.sql) lists RLS status and every policy, so over-broad write access is easy to spot.
 
 **Disable public sign-ups** (Authentication → Sign In / Providers → Email → "Allow new users to sign up"): the admin account already exists, and policies that trust any `authenticated` user are only safe when nobody else can create one.
 
