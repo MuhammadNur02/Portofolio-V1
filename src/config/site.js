@@ -20,8 +20,8 @@ export const SITE = {
   startDate: "2024-04-05",
   // Shows the green "available" badge in the hero and contact section. Set to false once you're hired.
   availableForWork: true,
-  // Tip: a direct PDF in /public (e.g. "/CV-Muhammad-Nurrahman-Juliansyah.pdf") beats a Drive folder —
-  // it opens instantly, downloads in one tap, and applicant-tracking tools can read it.
+  // Fallback only: once a PDF is uploaded in the dashboard (CV page, supabase/cv.sql) every CV button
+  // links to that file instead — it opens instantly and applicant-tracking tools can read it.
   cvUrl: "https://drive.google.com/drive/folders/1gkmicadsk_7yh5qpweNi23js5rCBcsb6",
 };
 
@@ -48,5 +48,3 @@ export const yearsOfExperience = (now = new Date()) => {
   const beforeAnniversary = now < new Date(now.getFullYear(), start.getMonth(), start.getDate());
   return now.getFullYear() - start.getFullYear() - (beforeAnniversary ? 1 : 0);
 };
-
-export const isExternalCv = !SITE.cvUrl.startsWith("/");
