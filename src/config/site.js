@@ -34,7 +34,7 @@ export const waLink = (message = "") =>
 
 export const SOCIALS = [
   { id: "github", label: "GitHub", handle: "@MuhammadNur02", url: "https://github.com/MuhammadNur02" },
-  { id: "linkedin", label: "LinkedIn", handle: "in/MuchammadNur", url: "https://www.linkedin.com/in/MuchammadNur/" },
+  { id: "linkedin", label: "LinkedIn", handle: "in/muhammad-nurrahman-juliansyah", url: "https://www.linkedin.com/in/muhammad-nurrahman-juliansyah-47080b2b8" },
   { id: "instagram", label: "Instagram", handle: "@rianz_yan", url: "https://www.instagram.com/rianz_yan/" },
   { id: "youtube", label: "YouTube", handle: "@Julian.Alvarez02", url: "https://www.youtube.com/@Julian.Alvarez02" },
   { id: "tiktok", label: "TikTok", handle: "@julian.alvareezz", url: "https://www.tiktok.com/@julian.alvareezz" },

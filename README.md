@@ -144,4 +144,4 @@ Deployed on Vercel. `vercel.json` provides the single-page-app rewrite, security
 
 **Muhammad Nurrahman Juliansyah** — AI-assisted fullstack developer, Informatics Education student.
 
-[LinkedIn](https://www.linkedin.com/in/MuchammadNur/) · [GitHub](https://github.com/MuhammadNur02) · [Instagram](https://www.instagram.com/rianz_yan/) · [YouTube](https://www.youtube.com/@Julian.Alvarez02)
+[LinkedIn](https://www.linkedin.com/in/muhammad-nurrahman-juliansyah-47080b2b8) · [GitHub](https://github.com/MuhammadNur02) · [Instagram](https://www.instagram.com/rianz_yan/) · [YouTube](https://www.youtube.com/@Julian.Alvarez02)
