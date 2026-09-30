@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Projects from './dashboard/Projects'
@@ -7,7 +7,7 @@ import Comments from './dashboard/Comments'
 import Experience from './dashboard/Experience'
 import Testimonials from './dashboard/Testimonials'
 import Gallery from './dashboard/Gallery'
-import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote, Images } from 'lucide-react'
+import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote, Images, Eye } from 'lucide-react'
 
 const NAV_ITEMS = [
   { to: 'projects', label: 'Projects', icon: FolderGit2 },
@@ -22,6 +22,18 @@ export default function Dashboard() {
   const location = useLocation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [traffic, setTraffic] = useState(null) // { today, total } — devices, each counted once (supabase/visitors.sql)
+
+  // Re-read on every page switch, so the numbers stay current while the dashboard is open.
+  useEffect(() => {
+    let active = true
+    supabase.rpc('visitor_stats').then(({ data }) => {
+      if (active && data) setTraffic(data)
+    })
+    return () => {
+      active = false
+    }
+  }, [location.pathname])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -50,8 +62,23 @@ export default function Dashboard() {
         <span className="text-amber-300 text-xs font-medium">Portfolio Manager</span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-1 flex-1 min-h-0">
+      {/* Traffic */}
+      {traffic && (
+        <div className="shrink-0 flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-white/10 bg-white/5">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-[10px] text-gray-500 uppercase tracking-widest">
+              <Eye className="w-3 h-3 shrink-0 text-amber-400" />
+              Visitors today
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500">{traffic.total.toLocaleString()} in total</p>
+          </div>
+          <p className="text-2xl font-bold text-white tabular-nums">{traffic.today.toLocaleString()}</p>
+        </div>
+      )}
+
+      {/* Nav — scrolls on short screens instead of running into Sign Out; the padding (cancelled by the
+          negative margin) leaves room for focus rings, which a scroll container would otherwise clip */}
+      <nav className="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto -mx-2 px-2 pb-2">
         <p className="text-[10px] text-gray-600 uppercase tracking-widest px-3 mb-2 shrink-0">Menu</p>
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
           const active = location.pathname.includes(to)
@@ -124,6 +151,12 @@ export default function Dashboard() {
             <Menu className="w-4 h-4" />
           </button>
           <span className="text-sm font-medium text-white">Dashboard</span>
+          {traffic && (
+            <span className="ml-auto flex items-center gap-1.5 text-xs text-gray-400 tabular-nums">
+              <Eye className="w-3.5 h-3.5 text-amber-400" />
+              {traffic.today.toLocaleString()} today
+            </span>
+          )}
         </div>
 
         {/* Hanya main yang overflow-y-auto — scrollbar bisa diklik normal */}

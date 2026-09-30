@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Eye } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { scrollToTarget, useScrollLock } from "../lib/smoothScroll";
+import { useVisitorCount } from "../lib/useVisitorCount";
 import { cn } from "../lib/utils";
 import { SITE, SOCIALS, waLink } from "../config/site";
 import MenuToggleIcon from "./ui/MenuToggleIcon";
@@ -105,6 +106,23 @@ export function LanguageToggle({ className }) {
   );
 }
 
+// How many devices have opened the site. Rendering it is also what records this visit.
+export function VisitorCount({ className }) {
+  const { lang, t } = useLanguage();
+  const count = useVisitorCount();
+  if (count == null) return null;
+  return (
+    <span
+      title={t.nav.visitors}
+      className={cn("flex items-center gap-1.5 text-xs font-semibold tabular-nums text-washi-muted", className)}
+    >
+      <Eye aria-hidden="true" className="h-4 w-4 text-shu-400" />
+      <span className="sr-only">{t.nav.visitors}:</span>
+      {count.toLocaleString(lang)}
+    </span>
+  );
+}
+
 export default function Navbar() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -196,7 +214,7 @@ export default function Navbar() {
                       onClick={(e) => go(e, item.href)}
                       aria-current={active === item.id ? "true" : undefined}
                       className={cn(
-                        "relative block rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300",
+                        "relative block rounded-full px-3 py-2 text-sm font-medium transition-colors duration-300 xl:px-4",
                         active === item.id ? "text-washi" : "text-washi-muted hover:text-washi"
                       )}
                     >
@@ -216,6 +234,7 @@ export default function Navbar() {
           </LayoutGroup>
 
           <div className="flex items-center gap-2">
+            <VisitorCount className="hidden min-[360px]:flex sm:mr-1" />
             <LanguageToggle />
             <a
               href={waLink(t.nav.hireMessage)}

@@ -32,6 +32,7 @@ A bilingual (Bahasa Indonesia / English) portfolio for an **AI-assisted fullstac
 - **Accessibility:** skip link, visible form labels, focus-visible rings, labelled icon buttons, `aria` state on tabs/menus/carousels, focus returned after closing the lightbox, reduced-motion support throughout.
 - **SEO:** canonical URLs, Open Graph / Twitter cards, JSON-LD `Person` and per-project `CreativeWork`, sitemap and robots.txt.
 - **Spam-resistant forms:** honeypot fields and a per-browser cooldown on both the contact form and the guestbook, plus a link limit on comments.
+- **Visitor counter that counts devices, not page loads.** The eye in the navbar is the number of devices that have ever opened the site; the dashboard shows today's. The browser never sends a number — the database decides whether a device is new, and it has to be new twice over: an id kept in `localStorage` *and* a salted hash of the request's network address, browser, screen size and device model. Refreshing, clearing site data or a private window adds nothing; crawlers are skipped; one network can add at most 40 devices a day.
 
 ## UI components
 
@@ -103,7 +104,9 @@ The app expects these tables and storage buckets:
 - **Tables:** `projects`, `certificates`, `experience`, `testimonials`, `gallery`, `portfolio_comments`, `profiles` (admin access is granted through the `role` column).
 - **Storage buckets:** `project-images`, `certificate-images`, `testimonial-images`, `gallery-images`, `profile-images`.
 
-The gallery table, its bucket and their policies are created by [`supabase/gallery.sql`](supabase/gallery.sql) — run it once in the Supabase SQL editor. [`supabase/case-study-fields.sql`](supabase/case-study-fields.sql) adds the optional case-study columns (`Role`, `Challenge`, `Approach`, `Results`) to `projects`, shown on the project detail page only for whichever fields are filled in; [`supabase/case-study-content.sql`](supabase/case-study-content.sql) has draft copy for the projects already in the table. [`supabase/security-check.sql`](supabase/security-check.sql) lists RLS status and every policy, so over-broad write access is easy to spot.
+The gallery table, its bucket and their policies are created by [`supabase/gallery.sql`](supabase/gallery.sql) — run it once in the Supabase SQL editor. [`supabase/case-study-fields.sql`](supabase/case-study-fields.sql) adds the optional case-study columns (`Role`, `Challenge`, `Approach`, `Results`) to `projects`, shown on the project detail page only for whichever fields are filled in; [`supabase/case-study-content.sql`](supabase/case-study-content.sql) has draft copy for the projects already in the table, and [`supabase/project-github-links.sql`](supabase/project-github-links.sql) points each one at its real public repo. [`supabase/security-check.sql`](supabase/security-check.sql) lists RLS status and every policy, so over-broad write access is easy to spot.
+
+The visitor counter needs [`supabase/visitors.sql`](supabase/visitors.sql), run once as well; until then the eye stays hidden. It creates `site_visitors` (one row per device, ever), `site_visits` (one row per device per day, WIB) and `site_visit_salt`, all with RLS on and no policies: the only way in is `record_visit()`, which the site calls on each page load, and `visitor_stats()`, which answers the admin only. No IP address, user-agent or device model is stored — only hashes salted with a secret that never leaves the database.
 
 **Disable public sign-ups** (Authentication → Sign In / Providers → Email → "Allow new users to sign up"): the admin account already exists, and policies that trust any `authenticated` user are only safe when nobody else can create one.
 
@@ -125,7 +128,7 @@ src/
 ├─ translations/       All UI strings, both languages
 └─ *.test.js           Unit tests + site integrity checks
 public/                Optimised images, sitemap.xml, robots.txt
-supabase/              SQL for the gallery table and bucket
+supabase/              SQL to run once: gallery, case-study fields, visitor counter, security check
 docs/screenshots/      README images
 ```
 

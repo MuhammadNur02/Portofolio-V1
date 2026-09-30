@@ -13,6 +13,7 @@ export const translations = {
       openMenu: "Buka menu",
       closeMenu: "Tutup menu",
       language: "Ganti bahasa",
+      visitors: "Total pengunjung",
     },
     welcome: {
       skip: "Lewati",
@@ -213,6 +214,7 @@ export const translations = {
       openMenu: "Open menu",
       closeMenu: "Close menu",
       language: "Switch language",
+      visitors: "Total visitors",
     },
     welcome: {
       skip: "Skip",

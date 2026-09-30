@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 // The Supabase client (~30 KB gzipped) is loaded on first use instead of with the initial bundle,
 // so it never delays the first paint of the hero.
-const loadClient = () => import("../supabase").then((m) => m.supabase);
+export const loadClient = () => import("../supabase").then((m) => m.supabase);
 
 // Every public list the site shows, fetched once per page load and shared by every component
 // that asks for it (the hero, About and Portfolio all need the project count, for example).
