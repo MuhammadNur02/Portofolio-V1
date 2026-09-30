@@ -14,8 +14,10 @@ export const SITE = {
   shortName: "Julian",
   role: "AI-Assisted Fullstack Developer",
   email: "muchammad.nur02@gmail.com",
-  // The day you started coding — "years of experience" is counted from here.
-  startDate: "2021-11-06",
+  // "Years of experience" is counted from here. Set to your GitHub join date (Settings → check
+  // "joined GitHub" on your public profile) so the number matches evidence anyone can verify —
+  // your earliest public commit is usually even later, which would make this look worse, not better.
+  startDate: "2024-04-05",
   // Shows the green "available" badge in the hero and contact section. Set to false once you're hired.
   availableForWork: true,
   // Tip: a direct PDF in /public (e.g. "/CV-Muhammad-Nurrahman-Juliansyah.pdf") beats a Drive folder —
