@@ -95,6 +95,7 @@ const Footer = () => {
             </button>
           </div>
         </div>
+        <p className="mt-8 max-w-2xl text-xs leading-relaxed text-washi-subtle">{t.footer.privacy}</p>
       </div>
     </footer>
   );

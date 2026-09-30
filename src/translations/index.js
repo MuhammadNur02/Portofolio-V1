@@ -158,6 +158,8 @@ export const translations = {
       builtWith: "Dibangun dengan React, Three.js & Framer Motion",
       backToTop: "Kembali ke atas",
       rights: "Seluruh Hak Cipta Dilindungi.",
+      privacy:
+        "Penghitung pengunjung tidak memakai cookie pelacak: hanya hash anonim dan ID acak di browser Anda yang disimpan, tidak pernah alamat IP atau data pribadi.",
     },
     lightbox: {
       dialog: "Penampil gambar",
@@ -359,6 +361,8 @@ export const translations = {
       builtWith: "Built with React, Three.js & Framer Motion",
       backToTop: "Back to top",
       rights: "All Rights Reserved.",
+      privacy:
+        "The visitor counter uses no tracking cookies: it stores only anonymous hashes and a random ID in your browser — never your IP address or personal data.",
     },
     lightbox: {
       dialog: "Image viewer",
