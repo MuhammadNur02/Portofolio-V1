@@ -3,7 +3,7 @@ import { ArrowUp, ArrowUpRight } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { scrollToTarget } from "../lib/smoothScroll";
 import { SITE, SOCIALS } from "../config/site";
-import { Hanko } from "./Navbar";
+import BrandMark from "./ui/BrandMark";
 
 const NAV = [
   ["#About", "about"],
@@ -76,7 +76,7 @@ const Footer = () => {
 
         <div className="flex flex-col gap-6 pt-8 text-sm text-washi-subtle sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <Hanko className="h-7 w-7 text-sm" />
+            <BrandMark className="h-8 w-8 text-sm" />
             <p>
               © {year} {SITE.name}. {t.footer.rights}
             </p>

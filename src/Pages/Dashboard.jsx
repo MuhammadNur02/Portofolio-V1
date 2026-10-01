@@ -8,7 +8,8 @@ import Experience from './dashboard/Experience'
 import Testimonials from './dashboard/Testimonials'
 import Gallery from './dashboard/Gallery'
 import CV from './dashboard/CV'
-import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote, Images, Eye, FileText } from 'lucide-react'
+import Profile from './dashboard/Profile'
+import { FolderGit2, Award, MessageSquare, LogOut, LayoutDashboard, Menu, History, MessageSquareQuote, Images, Eye, FileText, CircleUserRound } from 'lucide-react'
 
 const NAV_ITEMS = [
   { to: 'projects', label: 'Projects', icon: FolderGit2 },
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { to: 'gallery', label: 'Gallery', icon: Images },
   { to: 'comments', label: 'Comments', icon: MessageSquare },
   { to: 'cv', label: 'CV', icon: FileText },
+  { to: 'profile', label: 'Profile Photo', icon: CircleUserRound },
 ]
 
 export default function Dashboard() {
@@ -172,6 +174,7 @@ export default function Dashboard() {
             <Route path="gallery" element={<Gallery />} />
             <Route path="comments" element={<Comments />} />
             <Route path="cv" element={<CV />} />
+            <Route path="profile" element={<Profile />} />
           </Routes>
         </main>
       </div>

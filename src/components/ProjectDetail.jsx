@@ -8,7 +8,8 @@ import { supabase } from "../supabase";
 import { toSlug } from "../utils/slug";
 import { useLanguage } from "../context/LanguageContext";
 import { SITE } from "../config/site";
-import { Hanko, LanguageToggle, VisitorCount } from "./Navbar";
+import { LanguageToggle, VisitorCount } from "./Navbar";
+import BrandMark from "./ui/BrandMark";
 import BrowserFrame from "./ui/BrowserFrame";
 import TechBadge from "./ui/TechBadge";
 import Reveal, { RevealGroup, RevealItem } from "./ui/Reveal";
@@ -50,7 +51,7 @@ function TopBar({ t, title }) {
         <VisitorCount />
         <LanguageToggle />
         <Link to="/" title={SITE.name} className="hidden items-center gap-2.5 sm:flex">
-          <Hanko />
+          <BrandMark />
           <span className="font-display text-lg font-bold text-washi font-semiwide">
             {SITE.shortName}
             <span className="text-shu-500">.</span>

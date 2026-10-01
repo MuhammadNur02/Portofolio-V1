@@ -7,6 +7,7 @@ import { useVisitorCount } from "../lib/useVisitorCount";
 import { cn } from "../lib/utils";
 import { SITE, SOCIALS, waLink } from "../config/site";
 import MenuToggleIcon from "./ui/MenuToggleIcon";
+import BrandMark from "./ui/BrandMark";
 
 const SECTIONS = ["About", "Experience", "Portofolio", "Gallery", "Testimonials", "Contact"];
 const LABEL_KEY = {
@@ -56,20 +57,6 @@ function useActiveSection(ids) {
     return () => observer.disconnect();
   }, [ids]);
   return active;
-}
-
-export function Hanko({ className }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "grid h-8 w-8 shrink-0 place-items-center rounded-[6px] bg-shu-500 font-kanji text-base font-extrabold text-white shadow-[0_6px_20px_-6px_rgba(232,71,47,0.8)]",
-        className
-      )}
-    >
-      侍
-    </span>
-  );
 }
 
 export function LanguageToggle({ className }) {
@@ -197,7 +184,7 @@ export default function Navbar() {
           )}
         >
           <a href="#Home" onClick={(e) => go(e, 0)} className="flex items-center gap-2.5 rounded-full pr-2" title={SITE.name}>
-            <Hanko />
+            <BrandMark />
             <span className="font-display text-lg font-bold tracking-tight text-washi font-semiwide">
               {SITE.shortName}
               <span className="text-shu-500">.</span>
