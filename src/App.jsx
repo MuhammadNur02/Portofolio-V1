@@ -25,6 +25,7 @@ const Gallery = lazy(() => import("./Pages/Gallery"));
 const Testimonials = lazy(() => import("./Pages/Testimonials"));
 const ContactPage = lazy(() => import("./Pages/Contact"));
 const ProjectDetails = lazy(() => import("./components/ProjectDetail"));
+const TestimonialForm = lazy(() => import("./Pages/TestimonialForm"));
 const NotFoundPage = lazy(() => import("./Pages/404"));
 const Login = lazy(() => import("./Pages/Login"));
 const Dashboard = lazy(() => import("./Pages/Dashboard"));
@@ -215,6 +216,23 @@ const ProjectPageLayout = () => {
   );
 };
 
+const TestimonialPageLayout = () => {
+  useSmoothScroll();
+  return (
+    <>
+      <ScrollProgress />
+      <main className="relative z-10">
+        <ErrorBoundary>
+          <Suspense fallback={<div className="min-h-screen" />}>
+            <TestimonialForm />
+          </Suspense>
+        </ErrorBoundary>
+      </main>
+      <Footer />
+    </>
+  );
+};
+
 function App() {
   return (
     <HelmetProvider>
@@ -236,6 +254,7 @@ function App() {
               {/* PUBLIC */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/project/:slug" element={<ProjectPageLayout />} />
+              <Route path="/testimoni" element={<TestimonialPageLayout />} />
 
               {/* AUTH */}
               <Route

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
+import { ArrowLeft, ArrowRight, FolderOpen, Quote } from "lucide-react";
 import { cn } from "../../lib/utils";
+import Stars from "./Stars";
 
 // Port of maxim.bort.devel/circular-testimonials (Namer UI) to JSX + Tailwind.
 // Changes from the original: themed to the site, cards without a photo get a monogram portrait,
@@ -46,7 +48,7 @@ function Portrait({ testimonial, style }) {
   );
 }
 
-export default function CircularTestimonials({ testimonials, autoplay = true, interval = 6000 }) {
+export default function CircularTestimonials({ testimonials, projectLabel, autoplay = true, interval = 6000 }) {
   const reduce = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(1200);
@@ -142,6 +144,22 @@ export default function CircularTestimonials({ testimonials, autoplay = true, in
                 <Quote aria-hidden="true" className="mb-6 h-8 w-8 text-shu-500" />
                 <h3 className="font-display text-2xl font-bold text-washi font-semiwide">{active.name}</h3>
                 <p className="mt-1 text-sm text-washi-subtle">{active.designation}</p>
+                {(active.rating || active.project) && (
+                  <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+                    {active.rating && <Stars value={active.rating} label={active.ratingLabel} />}
+                    {active.project && (
+                      <Link
+                        to={active.project.href}
+                        title={projectLabel}
+                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-xs text-washi-muted transition-colors hover:border-shu-500/60 hover:text-washi"
+                      >
+                        <FolderOpen aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-shu-400" />
+                        <span className="sr-only">{projectLabel}: </span>
+                        <span className="truncate">{active.project.title}</span>
+                      </Link>
+                    )}
+                  </div>
+                )}
                 <blockquote className="mt-8 text-lg leading-relaxed text-washi-muted sm:text-xl">
                   {active.quote.split(" ").map((word, i) => (
                     <motion.span

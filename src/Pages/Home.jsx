@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { FaGithub, FaLinkedinIn, FaInstagram } from "react-icons/fa6";
 import { useLanguage } from "../context/LanguageContext";
 import { useCollection } from "../lib/useCollection";
@@ -11,6 +11,8 @@ import { SITE, SOCIALS, yearsOfExperience } from "../config/site";
 import LogoMarquee from "../components/ui/LogoMarquee";
 import CountUp from "../components/ui/CountUp";
 import CvLink from "../components/ui/CvLink";
+import Stars from "../components/ui/Stars";
+import { averageRating, testimonialPhoto } from "../lib/testimonials";
 
 const EASE = [0.22, 1, 0.36, 1];
 const SOCIAL_ICONS = { github: FaGithub, linkedin: FaLinkedinIn, instagram: FaInstagram };
@@ -48,14 +50,16 @@ function HeadlineLine({ children, ready, delay, reduce, className }) {
   );
 }
 
-function TrustAvatars({ testimonials, label }) {
+function TrustAvatars({ testimonials, label, ratingLabel }) {
   const people = testimonials.slice(0, 4);
+  // The real average of the testimonials' ratings — no stars at all while none is rated.
+  const average = averageRating(testimonials);
   return (
     <div className="flex items-center gap-4">
       <div className="flex -space-x-3">
         {people.map((p) =>
-          p.avatar ? (
-            <img key={p.id} src={p.avatar} alt="" className="h-10 w-10 rounded-full border-2 border-ink object-cover" />
+          testimonialPhoto(p) ? (
+            <img key={p.id} src={testimonialPhoto(p)} alt="" className="h-10 w-10 rounded-full border-2 border-ink object-cover" />
           ) : (
             <span
               key={p.id}
@@ -68,11 +72,12 @@ function TrustAvatars({ testimonials, label }) {
         )}
       </div>
       <div>
-        <div className="flex gap-0.5" aria-label="5/5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} aria-hidden="true" className="h-4 w-4 fill-kin-400 text-kin-400" />
-          ))}
-        </div>
+        {average && (
+          <div className="flex items-center gap-2">
+            <Stars value={average.value} label={ratingLabel.replace("{value}", average.value.toFixed(1))} />
+            <span className="text-xs font-semibold tabular-nums text-washi">{average.value.toFixed(1)}</span>
+          </div>
+        )}
         <p className="mt-1 text-xs text-washi-muted">{label}</p>
       </div>
     </div>
@@ -201,7 +206,9 @@ const Home = ({ ready = true }) => {
                   </div>
                 ))}
               </dl>
-              {testimonials.length > 0 && <TrustAvatars testimonials={testimonials} label={t.hero.trustedBy} />}
+              {testimonials.length > 0 && (
+                <TrustAvatars testimonials={testimonials} label={t.hero.trustedBy} ratingLabel={t.testimonialForm.ratingOutOf} />
+              )}
             </motion.div>
           </div>
         </div>

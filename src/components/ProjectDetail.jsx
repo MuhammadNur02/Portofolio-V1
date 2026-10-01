@@ -10,6 +10,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { SITE } from "../config/site";
 import { LanguageToggle, VisitorCount } from "./Navbar";
 import BrandMark from "./ui/BrandMark";
+import ProjectTestimonials from "./ProjectTestimonials";
 import BrowserFrame from "./ui/BrowserFrame";
 import TechBadge from "./ui/TechBadge";
 import Reveal, { RevealGroup, RevealItem } from "./ui/Reveal";
@@ -318,6 +319,8 @@ const ProjectDetails = () => {
               )}
             </div>
           )}
+
+          <ProjectTestimonials project={project} />
         </div>
       </div>
     </>

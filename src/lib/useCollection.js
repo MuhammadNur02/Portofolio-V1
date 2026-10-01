@@ -69,6 +69,11 @@ function request(name) {
   return promise;
 }
 
+/** Forgets a list, so the next component that asks for it fetches it again (e.g. right after a new testimonial). */
+export function refreshCollection(name) {
+  store.delete(name);
+}
+
 /**
  * @param {keyof typeof QUERIES} name
  * @returns {{ data: any[], loading: boolean }}

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
 import { compressImage, safeFileName } from "../../lib/compressImage";
+import { PHOTO_BUCKET, testimonialDesignation, testimonialPhoto } from "../../lib/testimonials";
+import { translations } from "../../translations";
+import { toSlug } from "../../utils/slug";
+import Stars from "../../components/ui/Stars";
 import {
   Plus,
   Trash2,
@@ -9,7 +13,11 @@ import {
   X,
   Pencil,
   ImageIcon,
+  FolderOpen,
+  ExternalLink,
 } from "lucide-react";
+
+const RELATION_LABELS = translations.en.testimonialForm.relations;
 
 const Card = ({ children, className = "" }) => (
   <div className={`relative group ${className}`}>
@@ -51,10 +59,11 @@ const SkeletonCard = () => (
 );
 
 const Avatar = ({ item, size = "w-10 h-10" }) => {
-  if (item.avatar) {
+  const photo = testimonialPhoto(item);
+  if (photo) {
     return (
       <img
-        src={item.avatar}
+        src={photo}
         alt={item.name}
         className={`${size} rounded-full object-cover border border-white/10 shrink-0`}
       />
@@ -70,34 +79,66 @@ const Avatar = ({ item, size = "w-10 h-10" }) => {
   );
 };
 
-const TestimonialCard = ({ item, onDelete, onEdit }) => (
+const TestimonialCard = ({ item, project, onDelete, onEdit }) => {
+  const fromForm = item.source === "form";
+  return (
   <Card>
     <div className="p-4 flex flex-col h-full">
       <div className="flex items-center gap-3 mb-3">
         <Avatar item={item} />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-white text-sm truncate">
             {item.name}
           </h3>
-          <p className="text-gray-500 text-xs truncate">{item.role}</p>
+          <p className="text-gray-500 text-xs truncate">{testimonialDesignation(item, RELATION_LABELS)}</p>
         </div>
+        {fromForm && (
+          <span title="Sent by the person themselves through the public form" className="shrink-0 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
+            Form
+          </span>
+        )}
       </div>
-      <p className="text-gray-400 text-xs mb-3 line-clamp-3 leading-relaxed flex-1">
+      {(item.rating || project) && (
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          {item.rating && <Stars value={item.rating} label={`${item.rating} out of 5 stars`} starClassName="h-3.5 w-3.5" />}
+          {project && (
+            <span className="inline-flex min-w-0 items-center gap-1 text-[11px] text-gray-400">
+              <FolderOpen className="h-3 w-3 shrink-0 text-amber-400" />
+              <span className="truncate">{project.Title}</span>
+            </span>
+          )}
+        </div>
+      )}
+      <p className="text-gray-400 text-xs mb-3 line-clamp-4 leading-relaxed flex-1">
         "{item.quote}"
       </p>
       <div className="mt-auto flex items-center justify-between gap-2 pt-2 border-t border-white/8">
         <span className="text-[10px] text-gray-600 uppercase tracking-wider">
-          Urutan: {item.order_index ?? 0}
+          {fromForm && item.created_at ? new Date(item.created_at).toLocaleDateString() : `Urutan: ${item.order_index ?? 0}`}
         </span>
         <div className="flex gap-2">
+          {fromForm ? (
+            project && (
+              <a
+                href={`/project/${toSlug(project.Title)}#testimoni`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="See it on the project page"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-gray-400 hover:text-white text-xs transition-colors"
+              >
+                <ExternalLink className="w-3 h-3" /> View
+              </a>
+            )
+          ) : (
           <button
             onClick={() => onEdit(item)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/25 text-amber-400 hover:bg-amber-500/10 text-xs transition-colors"
           >
             <Pencil className="w-3 h-3" /> Edit
           </button>
+          )}
           <button
-            onClick={() => onDelete(item.id)}
+            onClick={() => onDelete(item)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 text-xs transition-colors"
           >
             <Trash2 className="w-3 h-3" /> Delete
@@ -106,7 +147,8 @@ const TestimonialCard = ({ item, onDelete, onEdit }) => (
       </div>
     </div>
   </Card>
-);
+  );
+};
 
 const Modal = ({ title, onClose, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
@@ -263,6 +305,7 @@ const TestimonialForm = ({
 
 export default function Testimonials() {
   const [items, setItems] = useState([]);
+  const [projects, setProjects] = useState(new Map());
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editItem, setEditItem] = useState(null);
@@ -270,12 +313,16 @@ export default function Testimonials() {
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("testimonials")
-      .select("*")
-      .order("order_index", { ascending: true })
-      .order("created_at", { ascending: false });
+    const [{ data }, { data: projectRows }] = await Promise.all([
+      supabase
+        .from("testimonials")
+        .select("*")
+        .order("order_index", { ascending: true })
+        .order("created_at", { ascending: false }),
+      supabase.from("projects").select("id, Title"),
+    ]);
     setItems(data || []);
+    setProjects(new Map((projectRows || []).map((p) => [p.id, p])));
     setLoading(false);
   };
 
@@ -326,9 +373,11 @@ export default function Testimonials() {
     fetchItems();
   };
 
-  const deleteItem = async (id) => {
+  const deleteItem = async (item) => {
     if (!confirm("Delete this testimonial?")) return;
-    await supabase.from("testimonials").delete().eq("id", id);
+    await supabase.from("testimonials").delete().eq("id", item.id);
+    // A photo sent through the form belongs to that testimonial only.
+    if (item.photo_path) await supabase.storage.from(PHOTO_BUCKET).remove([item.photo_path]);
     fetchItems();
   };
 
@@ -408,6 +457,7 @@ export default function Testimonials() {
             <TestimonialCard
               key={item.id}
               item={item}
+              project={projects.get(item.project_id)}
               onDelete={deleteItem}
               onEdit={setEditItem}
             />
